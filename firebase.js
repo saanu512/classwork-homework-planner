@@ -39,7 +39,7 @@ export const CloudAPI = {
   async isAdmin(uid){
     if(!uid) return false;
     const snap = await getDoc(doc(db,'admins',uid));
-    return snap.exists() && snap.data().active !== false;
+    return snap.exists() && snap.data().role === 'admin';
   },
   async getAllStudents(){
     const snap = await getDocs(collection(db,'users'));
