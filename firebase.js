@@ -19,6 +19,10 @@ const cleanForCloud = data => {
   const x = JSON.parse(JSON.stringify(data || {}));
   delete x.admin;
   delete x._savedAt;
+  delete x.role;
+  delete x.isAdmin;
+  delete x.permissions;
+  delete x.adminPermissions;
   return x;
 };
 

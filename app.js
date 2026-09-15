@@ -95,7 +95,22 @@ async function syncCurrentUser(direction='merge'){
       toast('✓ Firebase synchronized');
     }
     return true;
-  }catch(e){console.error(e);toast('Cloud sync failed — check Firebase setup/rules');return false}
+  }catch(e){
+    console.error('Cloud sync failed:', e);
+    const code=e?.code||'unknown';
+    const detail=({
+      'permission-denied':'Permission denied by Firestore Rules.',
+      'failed-precondition':'Firestore is not ready or the database is unavailable.',
+      'unavailable':'Firebase is temporarily unavailable or offline.',
+      'unauthenticated':'Firebase session expired. Please sign in again.',
+      'invalid-argument':'The data sent to Firebase is invalid.',
+      'resource-exhausted':'Firebase quota/resource limit reached.'
+    })[code] || `Firebase error: ${code}`;
+    const status=$('cloudAccountStatus');
+    if(status)status.textContent=detail;
+    toast(detail);
+    return false
+  }
   finally{suppressCloudQueue=previousSuppress;cloudBusy=false}
 }
 async function cloudSignIn(email,password){
@@ -120,7 +135,7 @@ async function loadAdminCloudData(el){
     list.innerHTML=cloudStudents.length?cloudStudents.map((st,i)=>`<div class="adminListRow"><div><b>${esc(st.profile?.name||st.name||'Unnamed student')}</b><small>${esc(st.profile?.email||st.email||'')} ${st.profile?.roll?' · Roll '+esc(st.profile.roll):''}</small></div><div class="adminRowActions"><button class="addRow" data-cloud-view="${i}">VIEW RECORDS</button></div></div>`).join(''):'<div class="empty glass">No student cloud records yet.</div>';
     list.querySelectorAll('[data-cloud-view]').forEach(b=>b.onclick=()=>showCloudStudentDetails(cloudStudents[Number(b.dataset.cloudView)]));
     const note=document.querySelector('#studentsPanel .adminNote'); if(note)note.textContent='Cloud-connected students. Select VIEW RECORDS to inspect saved classwork, homework and syllabus.';
-  }catch(e){console.error(e);const note=document.querySelector('#studentsPanel .adminNote');if(note)note.textContent='Unable to read cloud students. Check that this signed-in account exists in the admins collection and Firestore rules allow admin access.'}
+  }catch(e){console.error('Admin cloud read failed:',e);const note=document.querySelector('#studentsPanel .adminNote');if(note)note.textContent=`Unable to read cloud students (${e?.code||'unknown'}). Check the published Firestore Rules.`}
 }
 function showCloudStudentDetails(st){
   const box=$('studentCloudDetail'); if(!box)return;
