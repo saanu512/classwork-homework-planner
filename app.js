@@ -97,13 +97,13 @@ async function syncCurrentUser(direction='merge'){
     return true;
   }catch(e){
     console.error('Cloud sync failed:', e);
-    const code=e?.code||'unknown';
+    const code=e?.code||e?.name||'unknown';
     const detail=({
       'permission-denied':'Permission denied by Firestore Rules.',
       'failed-precondition':'Firestore is not ready or the database is unavailable.',
       'unavailable':'Firebase is temporarily unavailable or offline.',
       'unauthenticated':'Firebase session expired. Please sign in again.',
-      'invalid-argument':'The data sent to Firebase is invalid.',
+      'invalid-argument':'Firebase rejected the data. The app has sanitized unsupported values; try SYNC NOW again.',
       'resource-exhausted':'Firebase quota/resource limit reached.'
     })[code] || `Firebase error: ${code}`;
     const status=$('cloudAccountStatus');
