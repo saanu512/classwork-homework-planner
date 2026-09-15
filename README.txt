@@ -1,8 +1,1 @@
-Classwork–Homework Planner v34
-
-Based on v33. Changes:
-- Syllabus PDF export now includes Chapter.
-- Cards have tactile 3D depth.
-- Input/select/textarea fields have a distinct filled surface and inset depth.
-- Topic/Homework fields retain the divided rectangular layout.
-- Firebase remains disconnected.
+Classwork–Homework Planner v36. Fixed the v35 JavaScript build corruption that caused blank screens on every tab. Cache version bumped and old caches are invalidated.
