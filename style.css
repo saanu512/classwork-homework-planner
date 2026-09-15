@@ -214,3 +214,101 @@ button{font-size:clamp(10px,1.8vw,12px)}
 .mutedIntro{color:var(--muted);font-size:12px;line-height:1.5;margin:5px 0 0}.cardTopRow{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:start}.cardSubject h2{margin:0;font-family:'Plus Jakarta Sans';font-size:19px;line-height:1.15}.cardMiddle{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}.cardHalf{min-width:0}.cardFieldLabel{display:block;font-size:9px;letter-spacing:1.1px;font-weight:900;color:var(--muted);margin-bottom:5px}.cardTopic,.cardHomework{min-height:100px;padding:10px;font-size:12px}.cardTeacher{margin-top:auto}.cardTeacherInput{font-size:12px!important}.defaultTeacher{display:block;color:var(--muted);font-size:10px;margin-top:4px}.classEntryWrap{display:grid;grid-template-columns:minmax(0,1fr) 76px;gap:8px;align-items:center;margin-bottom:14px}.classEntryWrap .classCard{margin:0;max-width:none}.cardActions{display:flex;flex-direction:column;gap:8px}.cardSaveBtn,.cardDeleteBtn{width:72px;min-height:42px}.filterBar{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}.subjectGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.subjectTile{border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:20px;padding:16px;text-align:left;box-shadow:var(--shadow2);display:flex;flex-direction:column;gap:7px}.subjectTile b{font-family:'Plus Jakarta Sans';font-size:13px}.subjectTile span{color:var(--muted);font-size:11px}.topicList{display:grid;gap:9px}.topicRecord{display:grid;grid-template-columns:95px 1fr;gap:12px;padding:14px;border:1px solid var(--line);background:var(--surface);border-radius:18px;box-shadow:var(--shadow2)}.topicDate{display:flex;flex-direction:column;gap:3px;font-size:11px}.topicDate span{color:var(--muted);font-size:10px}.topicRecord h3{margin:0 0 4px;font-size:14px}.topicRecord p,.topicRecord small{margin:3px 0;color:var(--muted);font-size:10px}.exportBtn{width:auto!important}.switchLine{display:flex;align-items:center;gap:8px;font-size:12px}.switchLine input{width:auto}.statsGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.statsGrid .miniCard{display:flex;flex-direction:column;gap:4px}.statsGrid strong{font-family:'Plus Jakarta Sans';font-size:22px}.statsGrid span{font-size:10px;color:var(--muted)}.scheduleToolbar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end}.scheduleExtraBox{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px;padding:11px;border:1px dashed var(--line);border-radius:14px}.scheduleExtraBox b{display:block;font-size:12px}.scheduleExtraBox small{display:block;color:var(--muted);font-size:10px;margin-top:3px}.addRow{border:1px solid var(--line);background:var(--surface2);color:var(--accent);border-radius:10px;padding:8px 10px;font-weight:900;font-size:10px}.scheduleDayHead{display:flex;justify-content:space-between;align-items:center;margin:8px 0}.scheduleDay{font-family:'Plus Jakarta Sans';font-weight:800;font-size:16px}.scheduleHeader,.scheduleRow{display:grid;grid-template-columns:82px 82px 230px 210px 34px;gap:8px;align-items:center}.scheduleHeader{color:var(--muted);font-size:9px;letter-spacing:1px;padding:4px 0}.scheduleRow{margin:5px 0}.scheduleRow select,.scheduleRow input{margin:0!important}.removeRow{width:34px;height:38px;border:1px solid rgba(220,70,90,.2);border-radius:10px;background:rgba(220,70,90,.08);color:#d64a5d;font-weight:900}.aiAnswer{white-space:normal}.modal{position:fixed;inset:0;background:rgba(0,0,0,.38);display:none;place-items:center;z-index:100;padding:20px}.modal.show{display:grid}.modalBox{width:min(420px,100%);background:var(--surface2);color:var(--text);border:1px solid var(--line);border-radius:22px;padding:20px;box-shadow:var(--shadow)}.modalBox h3{margin:0 0 8px;font-family:'Plus Jakarta Sans'}.modalBox p{color:var(--muted);line-height:1.5}.modalActions{display:flex;justify-content:flex-end;gap:8px}.modalActions button{border:0;border-radius:12px;padding:10px 14px;font-weight:900}.modalActions .no{background:var(--surface);color:var(--text)}.modalActions .yes{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}.toast{position:fixed;left:50%;bottom:95px;transform:translate(-50%,15px);opacity:0;pointer-events:none;background:var(--surface2);border:1px solid var(--line);color:var(--text);padding:10px 14px;border-radius:999px;box-shadow:var(--shadow2);z-index:120;font-size:11px;font-weight:800;transition:.2s}.toast.show{opacity:1;transform:translate(-50%,0)}
 @media(max-width:620px){.cardMiddle{grid-template-columns:1fr 1fr}.classEntryWrap{grid-template-columns:minmax(0,1fr) 68px}.cardSaveBtn,.cardDeleteBtn{width:68px}.subjectGrid{grid-template-columns:1fr 1fr}.topicRecord{grid-template-columns:82px 1fr}.filterBar{grid-template-columns:1fr 1fr}.scheduleCard #scheduleEditor{max-height:55vh}.scheduleCard #scheduleEditor .daySchedule{min-width:760px;width:760px}.scheduleHeader,.scheduleRow{grid-template-columns:82px 82px 230px 210px 34px!important}}
 @media(max-width:430px){.cardMiddle{grid-template-columns:1fr}.classEntryWrap{grid-template-columns:minmax(0,1fr) 64px}.cardSaveBtn,.cardDeleteBtn{width:64px}.subjectGrid{grid-template-columns:1fr 1fr}.statsGrid{grid-template-columns:1fr 1fr}nav button{font-size:10px;padding-left:4px;padding-right:4px}}
+
+/* v29 readability + larger Today subject cards */
+body{font-size:17px}
+#dateLine,.small,#sync{font-size:13px}
+header h1{font-size:30px}
+main{padding-top:12px}
+.dayHint{font-size:14px}
+.classEntryWrap{display:block;margin-bottom:18px}
+.classEntryWrap .classCard{width:100%;max-width:520px;min-height:440px;aspect-ratio:auto;margin:0 auto;padding:22px;border-radius:28px}
+.cardTopRow{gap:14px}
+.cardSubject h2{font-size:23px;line-height:1.12}
+.teacherUnderSubject{font-size:14px;font-weight:700;color:var(--muted);margin-top:5px;line-height:1.25;word-break:break-word}
+.cardFieldLabel{font-size:11px;letter-spacing:1.15px;margin-bottom:6px}
+.cardChapter{position:relative;z-index:1;margin:15px 0 11px}
+.cardChapterInput{font-size:15px!important;min-height:44px}
+.cardMiddle{gap:12px;margin:11px 0 14px}
+.cardTopic,.cardHomework{min-height:118px;padding:12px;font-size:15px}
+.cardTeacher{position:relative;z-index:1;margin-top:0}
+.cardTeacherInput{font-size:15px!important;min-height:44px}
+.defaultTeacher{font-size:12px;margin-top:5px}
+.cardActions{display:flex;flex-direction:row;justify-content:flex-end;gap:9px;margin-top:15px;position:relative;z-index:2}
+.cardSaveBtn,.cardDeleteBtn{width:auto;min-width:88px;min-height:44px;border:0;border-radius:13px;padding:10px 16px;font-size:13px;font-weight:900}
+.cardSaveBtn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 9px 20px rgba(99,91,255,.20)}
+.cardDeleteBtn{background:rgba(220,70,90,.10);color:#d64a5d;border:1px solid rgba(220,70,90,.18)}
+.timePill,.extraPill,.indicator{font-size:12px}
+.infoValue,.teacherName{font-size:14px}
+label{font-size:15px}
+input,select,textarea{font-size:15px;padding:13px 14px}
+nav button{font-size:13px}
+.mutedIntro{font-size:14px}
+.subhead{font-size:16px}
+.miniCard{padding:17px}
+.miniCard p{font-size:14px}
+.subjectTile{min-height:92px;padding:18px}
+.subjectTile b{font-size:16px}
+.subjectTile span{font-size:13px}
+
+@media(max-width:620px){
+  .classEntryWrap .classCard{min-height:0;padding:19px;border-radius:25px}
+  .cardSubject h2{font-size:22px}
+  .teacherUnderSubject{font-size:14px}
+  .cardMiddle{grid-template-columns:1fr 1fr}
+  .cardTopic,.cardHomework{min-height:125px}
+}
+@media(max-width:430px){
+  body{font-size:16px}
+  header h1{font-size:28px}
+  .cardMiddle{grid-template-columns:1fr}
+  .classEntryWrap .classCard{padding:17px}
+  .cardTopic,.cardHomework{min-height:100px}
+  .cardSaveBtn,.cardDeleteBtn{min-width:82px}
+}
+
+/* v29 readability + larger Today subject cards */
+body{font-size:17px}
+#dateLine,.small,#sync{font-size:13px}
+header h1{font-size:30px}
+main{padding-top:12px}
+.dayHint{font-size:14px}
+.classEntryWrap{display:block;margin-bottom:18px}
+.classEntryWrap .classCard{width:100%;max-width:520px;min-height:440px;aspect-ratio:auto;margin:0 auto;padding:22px;border-radius:28px}
+.cardTopRow{gap:14px}
+.cardSubject h2{font-size:23px;line-height:1.12}
+.teacherUnderSubject{font-size:14px;font-weight:700;color:var(--muted);margin-top:5px;line-height:1.25;word-break:break-word}
+.cardFieldLabel{font-size:11px;letter-spacing:1.15px;margin-bottom:6px}
+.cardChapter{position:relative;z-index:1;margin:15px 0 11px}
+.cardChapterInput{font-size:15px!important;min-height:44px}
+.cardMiddle{gap:12px;margin:11px 0 14px}
+.cardTopic,.cardHomework{min-height:118px;padding:12px;font-size:15px}
+.cardTeacher{position:relative;z-index:1;margin-top:0}
+.cardTeacherInput{font-size:15px!important;min-height:44px}
+.defaultTeacher{font-size:12px;margin-top:5px}
+.cardActions{display:flex;flex-direction:row;justify-content:flex-end;gap:9px;margin-top:15px;position:relative;z-index:2}
+.cardSaveBtn,.cardDeleteBtn{width:auto;min-width:88px;min-height:44px;border:0;border-radius:13px;padding:10px 16px;font-size:13px;font-weight:900}
+.cardSaveBtn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 9px 20px rgba(99,91,255,.20)}
+.cardDeleteBtn{background:rgba(220,70,90,.10);color:#d64a5d;border:1px solid rgba(220,70,90,.18)}
+.timePill,.extraPill,.indicator{font-size:12px}
+.infoValue,.teacherName{font-size:14px}
+label{font-size:15px}
+input,select,textarea{font-size:15px;padding:13px 14px}
+nav button{font-size:13px}
+.mutedIntro{font-size:14px}
+.subhead{font-size:16px}
+.miniCard{padding:17px}
+.miniCard p{font-size:14px}
+.subjectTile{min-height:92px;padding:18px}
+.subjectTile b{font-size:16px}
+.subjectTile span{font-size:13px}
+@media(max-width:620px){.classEntryWrap .classCard{min-height:0;padding:19px;border-radius:25px}.cardSubject h2{font-size:22px}.teacherUnderSubject{font-size:14px}.cardMiddle{grid-template-columns:1fr 1fr}.cardTopic,.cardHomework{min-height:125px}}
+@media(max-width:430px){body{font-size:16px}header h1{font-size:28px}.cardMiddle{grid-template-columns:1fr}.classEntryWrap .classCard{padding:17px}.cardTopic,.cardHomework{min-height:100px}.cardSaveBtn,.cardDeleteBtn{min-width:82px}}
+.cardSubject{min-width:0}
+.cardSubject .teacherUnderSubject{display:block;width:100%;margin-top:7px;min-height:40px;font-size:15px!important;font-weight:600;padding:9px 11px!important;border-radius:12px!important}
+.subjectDefaultTeacher{display:block;margin-top:4px}
+.cardTeacher{display:none!important}
+
+/* v30: protected administrator area */
+.authWrap{max-width:520px;margin:12px auto 28px}.authCard{border-radius:26px;padding:22px}.authCard h2{margin:5px 0 7px;font-family:'Plus Jakarta Sans';font-size:24px}.authCard .wideAction{margin-top:16px}.authCard .backLink{display:block;margin:13px auto 0;font-size:13px}.tinyNote{font-size:10px!important;color:var(--muted);line-height:1.5;margin-top:14px!important;text-align:center}.adminGeminiCard{margin-bottom:12px}.adminGeminiCard input{font-size:14px!important;padding:12px 13px!important}.adminGeminiCard .settingSave{font-size:11px!important}
+.sectionHead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.sectionHead .logoutBtn{width:auto;margin:0;white-space:nowrap}
