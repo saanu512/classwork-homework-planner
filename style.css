@@ -312,3 +312,103 @@ nav button{font-size:13px}
 /* v30: protected administrator area */
 .authWrap{max-width:520px;margin:12px auto 28px}.authCard{border-radius:26px;padding:22px}.authCard h2{margin:5px 0 7px;font-family:'Plus Jakarta Sans';font-size:24px}.authCard .wideAction{margin-top:16px}.authCard .backLink{display:block;margin:13px auto 0;font-size:13px}.tinyNote{font-size:10px!important;color:var(--muted);line-height:1.5;margin-top:14px!important;text-align:center}.adminGeminiCard{margin-bottom:12px}.adminGeminiCard input{font-size:14px!important;padding:12px 13px!important}.adminGeminiCard .settingSave{font-size:11px!important}
 .sectionHead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.sectionHead .logoutBtn{width:auto;margin:0;white-space:nowrap}
+
+/* v32 — mobile readability, safe-area and standard controls */
+html{font-size:16px}
+body{font-size:16px;line-height:1.4;overflow-x:hidden}
+.app{padding-top:0}
+header{
+  padding:calc(20px + env(safe-area-inset-top, 0px)) 18px 10px;
+  top:0;
+  min-height:calc(78px + env(safe-area-inset-top, 0px));
+}
+header h1{font-size:32px;line-height:1.05}
+#dateLine{font-size:16px;line-height:1.3;margin-top:6px}
+main{padding:12px 15px calc(125px + env(safe-area-inset-bottom, 0px))}
+.dayHint{font-size:16px;margin:12px 4px 16px}
+
+/* Standard, touch-friendly controls across the app */
+button{font-size:14px;line-height:1.2;min-height:44px}
+.iconBtn,.todayBtn,.datePicker{height:48px;min-height:48px;border-radius:15px}
+.iconBtn{font-size:26px}
+.todayBtn{font-size:14px;padding:0 16px}
+.datePicker{font-size:15px;padding:0 14px}
+.primary,.wideAction,.settingSave{font-size:14px;min-height:44px;padding:11px 15px}
+.chip,.addRow{font-size:13px;min-height:40px;padding:9px 12px}
+.extraBtn{font-size:14px;min-height:44px;padding:11px 16px}
+input,select,textarea{font-size:16px;line-height:1.35;min-height:46px;padding:11px 13px}
+label{font-size:15px}
+
+/* Today cards: keep all fields visible and remove the large artificial gaps. */
+.classEntryWrap{margin-bottom:18px}
+.classEntryWrap .classCard{
+  min-height:0;
+  height:auto;
+  aspect-ratio:auto;
+  justify-content:flex-start;
+  padding:20px;
+  border-radius:28px;
+}
+.cardTopRow{gap:14px}
+.cardSubject h2{font-size:24px;line-height:1.15}
+.teacherUnderSubject{font-size:16px;line-height:1.3;margin-top:5px;min-height:46px;padding:10px 12px!important}
+.defaultTeacher{font-size:13px;line-height:1.3}
+.cardChapter{margin:16px 0 13px}
+.cardFieldLabel{font-size:12px;letter-spacing:1.15px;margin-bottom:7px}
+.cardChapterInput{font-size:16px!important;min-height:48px}
+.cardMiddle{grid-template-columns:1fr 1fr;gap:12px;margin:0 0 14px}
+.cardTopic,.cardHomework{font-size:16px;line-height:1.4;min-height:120px;padding:12px}
+.cardActions{margin-top:0;padding-top:2px;justify-content:flex-end}
+.cardSaveBtn,.cardDeleteBtn{min-width:92px;min-height:46px;font-size:14px;padding:10px 16px}
+.timePill,.extraPill,.indicator{font-size:13px}
+
+/* Prevent the fixed bottom navigation from covering content. */
+nav{
+  bottom:calc(10px + env(safe-area-inset-bottom, 0px));
+  min-height:64px;
+  padding:6px;
+  border-radius:22px;
+}
+nav button{font-size:13px;min-height:50px;padding:8px 5px;line-height:1.15}
+
+/* Standard readable typography on secondary screens */
+.sectionHead h2{font-size:26px}
+.mutedIntro{font-size:15px}
+.subhead{font-size:17px}
+.miniCard p{font-size:15px}
+.miniTitle b{font-size:15px}
+.miniTitle span{font-size:12px}
+.subjectTile{min-height:100px;padding:17px}
+.subjectTile b{font-size:17px}
+.subjectTile span{font-size:13px}
+.topicRecord h3{font-size:16px}
+.topicRecord p,.topicRecord small{font-size:12px}
+.syllItem{font-size:14px}
+.settingCard h3{font-size:16px!important}
+.settingCard p{font-size:13px!important}
+.settingCard input,.settingCard select{font-size:15px!important;min-height:44px}
+.settingSave{font-size:13px!important}
+.scheduleRow select,.scheduleRow input{font-size:14px!important;min-height:42px}
+.scheduleHeader{font-size:11px!important}
+.scheduleDay{font-size:18px!important}
+
+@media(max-width:620px){
+  header{padding-left:16px;padding-right:16px}
+  header h1{font-size:31px}
+  #dateLine{font-size:15px}
+  main{padding-left:14px;padding-right:14px}
+  .classEntryWrap .classCard{padding:18px;border-radius:25px}
+  .cardSubject h2{font-size:23px}
+  .teacherUnderSubject{font-size:15px}
+  .cardMiddle{grid-template-columns:1fr}
+  .cardTopic,.cardHomework{min-height:110px}
+}
+@media(max-width:430px){
+  body{font-size:16px}
+  header h1{font-size:30px}
+  #dateLine{font-size:15px}
+  .calendarbar{grid-template-columns:44px minmax(0,1fr) 44px auto;gap:6px}
+  .datePicker{font-size:14px;padding:0 9px}
+  .todayBtn{padding:0 13px}
+  nav button{font-size:12px;min-height:48px}
+}
