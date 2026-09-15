@@ -62,8 +62,10 @@ service cloud.firestore {
     }
 
     match /admins/{uid} {
-      allow read: if isAdmin();
-      allow create, update, delete: if false;
+      // An admin must be able to read their own allow-list document so the
+      // client can verify role == "admin". Writes remain blocked from clients.
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow write: if false;
 
       match /{document=**} {
         allow read, write: if false;
