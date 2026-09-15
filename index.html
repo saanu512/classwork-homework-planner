@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#635bff"><meta name="description" content="Offline-first Classwork and Homework Planner">
+<link rel="manifest" href="manifest.json"><title>Classwork Planner</title>
+</head>
+<body>
+<div id="app" class="app">
+<header><div><h1 id="pageTitle">Today</h1><div id="dateLine"></div></div><button id="quickAdd" class="todayBtn">＋ Add</button></header>
+<main id="main"></main>
+<nav>
+<button data-page="today">⌂<br>Today</button>
+<button data-page="homework">✓<br>Homework</button>
+<button data-page="syllabus">◈<br>Syllabus</button>
+<button data-page="ai">✦<br>Gemini AI</button>
+<button data-page="settings">⚙<br>Settings</button>
+</nav>
+</div>
+<div id="toast" class="toast"></div>
+<div id="confirmModal" class="modal"><div class="modalBox"><h3 id="confirmTitle">Confirm</h3><p id="confirmText"></p><div class="modalActions"><button class="no" id="confirmNo">CANCEL</button><button class="yes" id="confirmYes">CONFIRM</button></div></div></div>
+<div id="reminderModal" class="modal"><div class="modalBox"><h3>Homework Reminder</h3><p id="reminderText"></p><div class="modalActions"><button class="no" id="reminderClose">CLOSE</button><button class="yes" id="reminderOpen">OPEN HOMEWORK</button></div></div></div>
+<script src="app.js"></script>
+</body></html>
