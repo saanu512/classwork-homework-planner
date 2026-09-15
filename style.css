@@ -412,3 +412,87 @@ nav button{font-size:13px;min-height:50px;padding:8px 5px;line-height:1.15}
   .todayBtn{padding:0 13px}
   nav button{font-size:12px;min-height:48px}
 }
+
+/* v33 — final Today card layout correction */
+html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{min-height:100dvh}
+header{padding-top:calc(18px + env(safe-area-inset-top,0px));}
+
+/* Subject cards must size naturally; never reserve a giant grid row for fields. */
+.classEntryWrap .classCard{
+  display:flex !important;
+  flex-direction:column !important;
+  justify-content:flex-start !important;
+  align-items:stretch !important;
+  height:auto !important;
+  min-height:0 !important;
+  aspect-ratio:auto !important;
+  overflow:hidden !important;
+}
+
+.cardTopRow{flex:none}
+.cardChapter{flex:none}
+
+/* One large rectangular Topic/Homework area with a clean partition. */
+.cardMiddle{
+  display:grid !important;
+  grid-template-columns:1fr 1fr !important;
+  gap:0 !important;
+  width:100%;
+  margin:0 0 14px !important;
+  border:1px solid var(--line);
+  border-radius:18px;
+  overflow:hidden;
+  background:rgba(255,255,255,.14);
+}
+.cardHalf{
+  min-width:0;
+  padding:11px;
+  display:flex;
+  flex-direction:column;
+}
+.cardHalf + .cardHalf{border-left:1px solid var(--line)}
+.cardHalf .cardFieldLabel{margin-bottom:7px}
+.cardTopic,.cardHomework{
+  width:100%;
+  min-height:118px !important;
+  height:118px;
+  flex:1;
+  margin:0;
+  resize:none;
+  border:0;
+  border-radius:10px;
+  background:rgba(255,255,255,.20);
+}
+.cardTopic:focus,.cardHomework:focus{
+  box-shadow:0 0 0 2px rgba(99,91,255,.16);
+}
+
+.cardActions{
+  flex:none !important;
+  display:flex !important;
+  flex-direction:row !important;
+  justify-content:flex-end !important;
+  align-items:center !important;
+  gap:9px;
+  margin:0 !important;
+  padding:0 0 1px !important;
+}
+.cardSaveBtn,.cardDeleteBtn{
+  width:auto !important;
+  min-width:92px !important;
+  min-height:46px !important;
+}
+
+@media(max-width:620px){
+  .classEntryWrap .classCard{padding:18px !important}
+  .cardMiddle{grid-template-columns:1fr 1fr !important}
+  .cardHalf{padding:10px}
+  .cardTopic,.cardHomework{min-height:112px !important;height:112px}
+}
+@media(max-width:430px){
+  .cardMiddle{grid-template-columns:1fr 1fr !important}
+  .cardFieldLabel{font-size:11px}
+  .cardTopic,.cardHomework{min-height:108px !important;height:108px;font-size:15px}
+  .cardSaveBtn,.cardDeleteBtn{min-width:84px !important;min-height:44px !important;font-size:13px}
+}
