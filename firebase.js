@@ -13,8 +13,13 @@ export const firebaseConfig = {
 
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
+// Separate Firebase app/auth session for administrators. This keeps the admin
+// login completely independent from the student's Firebase session.
+export const adminApp = initializeApp(firebaseConfig, 'adminApp');
+export const adminAuth = getAuth(adminApp);
 // Ignore accidental undefined fields instead of rejecting an otherwise valid sync.
 export const db = initializeFirestore(app, { ignoreUndefinedProperties: true });
+export const adminDb = initializeFirestore(adminApp, { ignoreUndefinedProperties: true });
 
 // Firestore does not support arrays directly inside arrays.
 // The app's schedule uses [start, end, subject] rows, so encode those
@@ -79,12 +84,16 @@ const decodeCloudData = data => {
 };
 
 export const CloudAPI = {
-  auth, db,
+  auth, db, adminAuth, adminDb,
   onAuthStateChanged: cb => onAuthStateChanged(auth, cb),
+  onAdminAuthStateChanged: cb => onAuthStateChanged(adminAuth, cb),
   signIn: (email,password) => signInWithEmailAndPassword(auth,email,password),
   signUp: (email,password) => createUserWithEmailAndPassword(auth,email,password),
   signOut: () => signOut(auth),
   currentUser: () => auth.currentUser,
+  adminSignIn: (email,password) => signInWithEmailAndPassword(adminAuth,email,password),
+  adminSignOut: () => signOut(adminAuth),
+  adminCurrentUser: () => adminAuth.currentUser,
   async getUserData(uid){
     const snap = await getDoc(doc(db,'users',uid));
     return snap.exists() ? decodeCloudData(snap.data()) : null;
@@ -94,11 +103,11 @@ export const CloudAPI = {
   },
   async isAdmin(uid){
     if(!uid) return false;
-    const snap = await getDoc(doc(db,'admins',uid));
+    const snap = await getDoc(doc(adminDb,'admins',uid));
     return snap.exists() && snap.data().role === 'admin';
   },
   async getAllStudents(){
-    const snap = await getDocs(collection(db,'users'));
+    const snap = await getDocs(collection(adminDb,'users'));
     return snap.docs.map(d=>({id:d.id,...decodeCloudData(d.data())}));
   }
 };
