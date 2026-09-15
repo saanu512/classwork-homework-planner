@@ -496,3 +496,42 @@ header{padding-top:calc(18px + env(safe-area-inset-top,0px));}
   .cardTopic,.cardHomework{min-height:108px !important;height:108px;font-size:15px}
   .cardSaveBtn,.cardDeleteBtn{min-width:84px !important;min-height:44px !important;font-size:13px}
 }
+
+
+/* v34 — tactile 3D cards and clearly separated input surfaces */
+.classCard,.formCard,.miniCard,.settingCard,.topicRecord,.subjectTile,.empty.glass,.scheduleCard,.authCard{
+  box-shadow:0 10px 0 rgba(65,72,105,.10), 0 18px 35px rgba(46,54,85,.14), inset 0 1px 0 rgba(255,255,255,.72) !important;
+  transform:translateY(-1px);
+}
+:root[data-theme=dark] .classCard,:root[data-theme=dark] .formCard,:root[data-theme=dark] .miniCard,:root[data-theme=dark] .settingCard,:root[data-theme=dark] .topicRecord,:root[data-theme=dark] .subjectTile,:root[data-theme=dark] .empty.glass,:root[data-theme=dark] .scheduleCard,:root[data-theme=dark] .authCard{
+  box-shadow:0 9px 0 rgba(0,0,0,.30),0 18px 38px rgba(0,0,0,.36),inset 0 1px 0 rgba(255,255,255,.08) !important;
+}
+.classCard:active,.subjectTile:active,.miniCard:active{transform:translateY(1px);}
+input,select,textarea{
+  background:linear-gradient(180deg,rgba(255,255,255,.78),rgba(246,248,253,.68)) !important;
+  border:1px solid rgba(74,82,110,.16) !important;
+  box-shadow:inset 0 2px 5px rgba(35,42,65,.08),0 2px 5px rgba(35,42,65,.06) !important;
+}
+:root[data-theme=dark] input,:root[data-theme=dark] select,:root[data-theme=dark] textarea{
+  background:linear-gradient(180deg,rgba(39,46,61,.94),rgba(25,30,42,.92)) !important;
+  border-color:rgba(255,255,255,.12) !important;
+  box-shadow:inset 0 2px 6px rgba(0,0,0,.28),0 2px 6px rgba(0,0,0,.22) !important;
+}
+.cardMiddle{
+  box-shadow:inset 0 2px 6px rgba(35,42,65,.07),0 3px 8px rgba(35,42,65,.06) !important;
+}
+.cardTopic,.cardHomework{
+  background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(247,249,253,.82)) !important;
+  box-shadow:inset 0 2px 6px rgba(35,42,65,.09) !important;
+}
+:root[data-theme=dark] .cardTopic,:root[data-theme=dark] .cardHomework{
+  background:linear-gradient(180deg,rgba(42,49,65,.96),rgba(28,34,47,.94)) !important;
+  box-shadow:inset 0 2px 7px rgba(0,0,0,.32) !important;
+}
+.cardSaveBtn,.cardDeleteBtn,.primary,.wideAction,.settingSave,.extraBtn,.todayBtn,.iconBtn,.datePicker,.chip{
+  box-shadow:0 5px 0 rgba(65,72,105,.10),0 9px 18px rgba(46,54,85,.12) !important;
+}
+@media(max-width:430px){
+  .classEntryWrap .classCard{padding:18px !important;}
+  .cardTopic,.cardHomework{min-height:112px !important;height:112px;font-size:16px !important;}
+}
