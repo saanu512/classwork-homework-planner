@@ -73,35 +73,16 @@ function syllabusData(){const out={};Object.entries(D.records).forEach(([k,r])=>
 function renderSyllabus(el){const data=syllabusData();el.innerHTML=`<div class="sectionHead"><div><div class="eyebrow">LEARNING MAP</div><h2>Syllabus</h2><p class="mutedIntro">Subject-wise topics taught and progress from your daily records.</p></div><button class="primary exportBtn" id="exportAll">EXPORT PDF</button></div><div class="subjectGrid">${SUBJECTS.map(s=>{const n=(data[s]||[]).length;return `<button class="subjectTile" data-subject="${esc(s)}"><b>${esc(s)}</b><span>${n} topic${n===1?'':'s'}</span></button>`}).join('')}</div>`;el.querySelectorAll('[data-subject]').forEach(b=>b.onclick=()=>renderSyllabusDetail(b.dataset.subject));$('exportAll').onclick=()=>exportSyllabusPDF()}
 function renderSyllabusDetail(subject){const el=$('syllabus'),data=syllabusData()[subject]||[];$('pageTitle').textContent=subject;$('dateLine').textContent='Saved topics';el.innerHTML=`<button class="backLink" id="syllBack">‹ All subjects</button><div class="sectionHead"><div><div class="eyebrow">${esc(subject)}</div><h2>Topics</h2></div><button class="primary exportBtn" id="exportTopics">EXPORT PDF</button></div>${data.length?`<div class="topicList">${data.map(x=>`<div class="topicRecord"><div class="topicDate"><b>${esc(x.date)}</b><span>${esc(x.time)}</span></div><div><h3>${esc(x.topic)}</h3>${x.chapter?`<p>Chapter: ${esc(x.chapter)}</p>`:''}<small>Teacher: ${esc(x.teacher)}</small></div></div>`).join('')}</div>`:'<div class="empty glass">No saved topics yet.</div>'}`;$('syllBack').onclick=()=>show('syllabus');$('exportTopics').onclick=()=>exportSyllabusPDF(subject)}
 function exportSyllabusPDF(subject){
-  const data=subject?{[subject]:syllabusData()[subject]||[]}:syllabusData();
-  const rows=Object.entries(data).flatMap(([s,arr])=>arr.map(x=>`<tr><td>${esc(s)}</td><td>${esc(x.date)}</td><td>${esc(x.time)}</td><td>${esc(x.chapter||'')}</td><td>${esc(x.topic)}</td><td>${esc(x.teacher)}</td></tr>`)).join('');
-  const old=document.getElementById('pdfPrintOverlay');
-  if(old) old.remove();
-  const overlay=document.createElement('div');
-  overlay.id='pdfPrintOverlay';
-  overlay.innerHTML=`<div class="pdfPrintSheet">
-    <div class="pdfPrintToolbar"><button type="button" id="pdfPrintNow">PRINT / SAVE AS PDF</button><button type="button" id="pdfPrintClose">CLOSE</button></div>
-    <div class="pdfPrintTitle">Classwork Planner — ${esc(subject||'Syllabus')}</div>
-    <table><thead><tr><th>Subject</th><th>Date</th><th>Time</th><th>Chapter</th><th>Topic</th><th>Teacher</th></tr></thead><tbody>${rows||'<tr><td colspan="6">No saved topics.</td></tr>'}</tbody></table>
-  </div>`;
-  document.body.appendChild(overlay);
-  const cleanup=()=>{document.body.classList.remove('printing-pdf');overlay.remove();window.removeEventListener('afterprint',cleanup)};
-  const doPrint=()=>{
-    document.body.classList.add('printing-pdf');
-    requestAnimationFrame(()=>setTimeout(()=>{
-      try{
-        if(typeof window.print!=='function') throw new Error('print unavailable');
-        window.print();
-      }catch(e){
-        toast('Print is unavailable in this app container. Use the PRINT / SAVE AS PDF button.');
-      }
-    },120));
-  };
-  overlay.querySelector('#pdfPrintNow').onclick=doPrint;
-  overlay.querySelector('#pdfPrintClose').onclick=cleanup;
-  window.addEventListener('afterprint',cleanup,{once:true});
-  doPrint();
+  const data=syllabusData();
+  const list=subject?(data[subject]||[]).map(x=>({...x,subject})):Object.entries(data).flatMap(([subject,items])=>items.map(x=>({...x,subject})));
+  const rows=list.map(x=>`<tr><td>${esc(x.subject||'')}</td><td>${esc(x.date||'')}</td><td>${esc(x.time||'')}</td><td>${esc(x.chapter||'')}</td><td>${esc(x.topic||'')}</td><td>${esc(x.teacher||'')}</td></tr>`).join('');
+  const w=window.open('','_blank');
+  if(!w){toast('Allow pop-ups for this app to print.');return;}
+  w.document.open();
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Classwork Planner</title><style>body{font-family:Arial,sans-serif;padding:24px;color:#111}h1{font-size:22px;margin:0 0 16px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #777;padding:8px;text-align:left;vertical-align:top}th{background:#eee}@media print{body{padding:0}h1{margin-bottom:12px}table{font-size:11px}}</style></head><body><h1>Classwork Planner — ${esc(subject||'Syllabus')}</h1><table><thead><tr><th>Subject</th><th>Date</th><th>Time</th><th>Chapter</th><th>Topic</th><th>Teacher</th></tr></thead><tbody>${rows||'<tr><td colspan="6">No saved topics.</td></tr>'}</tbody></table><script>window.onload=function(){setTimeout(function(){window.focus();window.print();},300)};window.onafterprint=function(){setTimeout(function(){window.close()},200)};<\/script></body></html>`);
+  w.document.close();
 }
+
 function remindersDue(){return (D.reminders||[]).filter(r=>!r.done).sort((a,b)=>a.when-b.when)}
 function scheduleHomeworkReminder(c,homework){if(!homework)return;const dueDate=iso(today);const due=new Date(dueDate+'T23:59:00').getTime();const when=D.settings.oneDayBefore?Math.max(Date.now()+30000,due-86400000):Math.max(Date.now()+30000,due-((D.settings.reminderLead||60)*60000));D.reminders=(D.reminders||[]).filter(r=>!(r.sourceKey===recKey(c)&&!r.done));D.reminders.push({id:crypto.randomUUID?crypto.randomUUID():Date.now().toString(36),sourceKey:recKey(c),subject:c.subject,homework,due,when,done:false});saveAll();scheduleNextReminder()}
 function scheduleNextReminder(){if(!('Notification' in window))return;const r=remindersDue()[0];if(!r)return;const delay=Math.max(1000,r.when-Date.now());clearTimeout(window.__cwpReminderTimer);window.__cwpReminderTimer=setTimeout(()=>{fireReminder(r);},Math.min(delay,2147483647))}
@@ -182,14 +163,11 @@ function renderAdmin(el){
   $('adminExportRecords').onclick=()=>{const rows=[['Subject','Date','Time','Chapter','Topic','Homework','Teacher']];records.forEach(([k,r])=>{const m=recordMeta(k);rows.push([m.subject,m.date,m.time,r.chapter||'',r.topic||'',r.homework||'',r.teacher||''])});const csv=rows.map(row=>row.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='classwork-planner-records.csv';a.click();toast('✓ CSV exported')};
   $('adminExportPdf').onclick=()=>{
     const rows=records.map(([k,r])=>{const m=recordMeta(k);return `<tr><td>${esc(m.subject)}</td><td>${esc(m.date)}</td><td>${esc(m.time)}</td><td>${esc(r.chapter||'')}</td><td>${esc(r.topic||'')}</td><td>${esc(r.homework||'')}</td><td>${esc(r.teacher||'')}</td></tr>`}).join('');
-    const old=document.getElementById('pdfPrintOverlay'); if(old) old.remove();
-    const overlay=document.createElement('div'); overlay.id='pdfPrintOverlay';
-    overlay.innerHTML=`<div class="pdfPrintSheet"><div class="pdfPrintToolbar"><button type="button" id="pdfPrintNow">PRINT / SAVE AS PDF</button><button type="button" id="pdfPrintClose">CLOSE</button></div><div class="pdfPrintTitle">Classwork Planner Records</div><table><thead><tr><th>Subject</th><th>Date</th><th>Time</th><th>Chapter</th><th>Topic</th><th>Homework</th><th>Teacher</th></tr></thead><tbody>${rows||'<tr><td colspan="7">No records.</td></tr>'}</tbody></table></div>`;
-    document.body.appendChild(overlay);
-    const cleanup=()=>{document.body.classList.remove('printing-pdf');overlay.remove()};
-    const doPrint=()=>{document.body.classList.add('printing-pdf');requestAnimationFrame(()=>setTimeout(()=>{try{if(typeof window.print!=='function')throw new Error('print unavailable');window.print()}catch(e){toast('Print is unavailable here. Use PRINT / SAVE AS PDF.')}},120))};
-    overlay.querySelector('#pdfPrintNow').onclick=doPrint; overlay.querySelector('#pdfPrintClose').onclick=cleanup;
-    window.addEventListener('afterprint',cleanup,{once:true}); doPrint();
+    const w=window.open('','_blank');
+    if(!w){toast('Allow pop-ups for this app to print.');return;}
+    w.document.open();
+    w.document.write(`<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Classwork Planner Records</title><style>body{font-family:Arial,sans-serif;padding:24px;color:#111}h1{font-size:22px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #777;padding:7px;text-align:left}th{background:#eee}@media print{body{padding:0}table{font-size:10px}}</style></head><body><h1>Classwork Planner Records</h1><table><thead><tr><th>Subject</th><th>Date</th><th>Time</th><th>Chapter</th><th>Topic</th><th>Homework</th><th>Teacher</th></tr></thead><tbody>${rows||'<tr><td colspan="7">No records.</td></tr>'}</tbody></table><script>window.onload=function(){setTimeout(function(){window.focus();window.print();},300)};window.onafterprint=function(){setTimeout(function(){window.close()},200)};<\/script></body></html>`);
+    w.document.close();
   };
 
   $('saveAppConfig').onclick=()=>{D.admin.app=D.admin.app||{};D.admin.app.minVersion=$('minVersion').value.trim();saveAll();toast('✓ App configuration saved')};
