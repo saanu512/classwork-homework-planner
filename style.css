@@ -535,3 +535,17 @@ input,select,textarea{
   .classEntryWrap .classCard{padding:18px !important;}
   .cardTopic,.cardHomework{min-height:112px !important;height:112px;font-size:16px !important;}
 }
+
+
+/* v37: direct system print for syllabus PDF export */
+#pdfPrintOverlay{display:none}
+@media print{
+  body.printing-pdf > *:not(#pdfPrintOverlay){display:none!important}
+  body.printing-pdf #pdfPrintOverlay{display:block!important;position:static!important;background:#fff!important;color:#111!important}
+  body.printing-pdf #pdfPrintOverlay .pdfPrintSheet{display:block!important;width:auto!important;margin:0!important;padding:18mm!important;background:#fff!important;color:#111!important}
+  body.printing-pdf #pdfPrintOverlay .pdfPrintTitle{font:700 24px Arial,sans-serif!important;margin:0 0 18px!important;color:#111!important}
+  body.printing-pdf #pdfPrintOverlay table{width:100%!important;border-collapse:collapse!important;font:12px Arial,sans-serif!important;color:#111!important}
+  body.printing-pdf #pdfPrintOverlay th,body.printing-pdf #pdfPrintOverlay td{border:1px solid #888!important;padding:8px!important;text-align:left!important;vertical-align:top!important;color:#111!important;background:#fff!important}
+  body.printing-pdf #pdfPrintOverlay th{font-weight:700!important;background:#eee!important}
+  @page{size:auto;margin:10mm}
+}
