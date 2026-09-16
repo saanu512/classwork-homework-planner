@@ -91,6 +91,7 @@ export const CloudAPI = {
   onAdminAuthStateChanged: cb => onAuthStateChanged(adminAuth, cb),
   signIn: (email,password) => signInWithEmailAndPassword(auth,email,password),
   signUp: (email,password) => createUserWithEmailAndPassword(auth,email,password),
+  setPersistence: () => setPersistence(auth, browserLocalPersistence),
   signOut: () => signOut(auth),
   currentUser: () => auth.currentUser,
   adminSignIn: (email,password) => signInWithEmailAndPassword(adminAuth,email,password),
