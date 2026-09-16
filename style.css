@@ -559,3 +559,12 @@ input,select,textarea{
 @media(max-width:620px){.adminStatsGrid{grid-template-columns:1fr 1fr}.adminTwo{grid-template-columns:1fr}.adminScheduleSummary{grid-template-columns:1fr 1fr}.adminPanel{padding:14px}.adminPanelHead h3{font-size:16px}.adminFeatureGrid{grid-template-columns:1fr}.adminToolbar .settingSave,.adminToolbar .addRow{width:100%}.adminToolbar input,.adminToolbar select{width:100%;min-width:100%}}
 
 .startupAuthOverlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.52);display:grid;place-items:center;padding:18px;padding-top:max(18px,env(safe-area-inset-top));padding-bottom:max(18px,env(safe-area-inset-bottom))}.startupAuthCard{width:min(430px,100%);max-height:calc(100vh - 36px);overflow:auto;border-radius:26px;padding:22px;box-shadow:var(--shadow)}.startupAuthCard h2{margin:5px 0 7px;font-family:'Plus Jakarta Sans';font-size:24px}.startupAuthCard label{display:block;margin-top:11px}.startupAuthCard input{margin-top:5px}.startupAdminLink{display:block;margin:14px auto 0;border:0;background:transparent;color:var(--accent);font-weight:900;font-size:12px;padding:8px 12px}\n
+/* Final authentication UX: opaque locked login surfaces and admin popup mode */
+.startupAuthCard{background:#fff !important;opacity:1 !important;backdrop-filter:none !important;-webkit-backdrop-filter:none !important;border:1px solid rgba(28,35,52,.10) !important}
+:root[data-theme=dark] .startupAuthCard{background:#161b26 !important;color:#f4f6fb !important}
+.startupAuthOverlay{background:rgba(0,0,0,.58) !important}
+.startupForgotLink,.authForgotLink{display:block;margin:9px auto 0;border:0;background:transparent;color:var(--accent);font-weight:900;font-size:11px;padding:6px 10px;text-decoration:none}
+.adminAuthOverlay{z-index:700}
+.adminPopupCard{width:min(430px,100%)}
+#adminAuthPopup .startupAuthCard{background:#fff !important}
+:root[data-theme=dark] #adminAuthPopup .startupAuthCard{background:#161b26 !important}

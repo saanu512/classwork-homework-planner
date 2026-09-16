@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
-import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 import { initializeFirestore, doc, getDoc, setDoc, collection, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
 export const firebaseConfig = {
@@ -92,11 +92,13 @@ export const CloudAPI = {
   onAdminAuthStateChanged: cb => onAuthStateChanged(adminAuth, cb),
   signIn: (email,password) => signInWithEmailAndPassword(auth,email,password),
   signUp: (email,password) => createUserWithEmailAndPassword(auth,email,password),
+  resetPassword: email => sendPasswordResetEmail(auth,email),
   setPersistence: () => setPersistence(auth, browserLocalPersistence),
   adminSetPersistence: () => setPersistence(adminAuth, browserLocalPersistence),
   signOut: () => signOut(auth),
   currentUser: () => auth.currentUser,
   adminSignIn: (email,password) => signInWithEmailAndPassword(adminAuth,email,password),
+  adminResetPassword: email => sendPasswordResetEmail(adminAuth,email),
   adminSignOut: () => signOut(adminAuth),
   adminCurrentUser: () => adminAuth.currentUser,
   async getUserData(uid){
