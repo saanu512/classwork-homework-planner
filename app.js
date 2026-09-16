@@ -373,6 +373,17 @@ function renderReminders(el){const list=remindersDue();el.innerHTML=`<div class=
 function aiContext(){const records=Object.entries(D.records).map(([k,r])=>({meta:recordMeta(k),teacher:r.teacher,topic:r.topic,homework:r.homework,completed:r.completed}));return JSON.stringify({profile:D.profile,teachers:D.teachers,records,reminders:D.reminders,syllabus:syllabusData()},null,2)}
 async function askGemini(prompt){const key=D.admin?.geminiKey||'';if(!key){toast('Gemini is not configured. Ask the administrator to add the API key.');return}const model='gemini-2.5-flash';const url=`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`;const body={contents:[{parts:[{text:`You are the Classwork Planner study assistant. Answer clearly and accurately. You may use the student's records below. Do not invent records.\n\nSTUDENT DATA:\n${aiContext()}\n\nUSER QUESTION:\n${prompt}`}]}],generationConfig:{temperature:.25}};try{const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const j=await r.json();if(!r.ok)throw new Error(j?.error?.message||'Gemini request failed');return j?.candidates?.[0]?.content?.parts?.map(x=>x.text).join('\n')||'No answer returned.'}catch(e){toast(e.message||'Gemini error');return ''}}
 function renderAI(el){el.innerHTML=`<div class="sectionHead"><div><div class="eyebrow">STUDY ASSISTANT</div><h2>Gemini AI</h2><p class="mutedIntro">Ask anything. Gemini can also use your saved classwork, homework and syllabus.</p></div></div><div class="formCard"><label>Ask Gemini</label><textarea id="aiPrompt" placeholder="e.g. Consolidate my syllabus and make a revision plan."></textarea><div class="suggestions"><button class="chip" data-q="Consolidate my syllabus">Consolidate my syllabus</button><button class="chip" data-q="What did I study this week?">What did I study this week?</button><button class="chip" data-q="Which topics need revision?">Topics needing revision</button><button class="chip" data-q="Prioritize my homework">Prioritize my homework</button></div><button class="primary wideAction" id="askAI">ASK GEMINI</button><div id="aiAnswer" class="miniCard" style="display:none"></div></div>`;el.querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>{$('aiPrompt').value=b.dataset.q});$('askAI').onclick=async()=>{const p=$('aiPrompt').value.trim();if(!p)return toast('Enter a question');$('askAI').disabled=true;$('askAI').textContent='THINKING…';const a=await askGemini(p);if(a){$('aiAnswer').style.display='block';$('aiAnswer').innerHTML=esc(a).replace(/\n/g,'<br>')}$('askAI').disabled=false;$('askAI').textContent='ASK GEMINI'}}
+let studentAuthResolved=false;
+let adminAuthResolved=false;
+let startupFinished=false;
+function closeStartupLoading(){const m=$('startupLoading');if(m)m.style.display='none'}
+function finishStartupAuthCheck(){
+  if(startupFinished||(!studentAuthResolved||!adminAuthResolved))return;
+  startupFinished=true;
+  closeStartupLoading();
+  if(cloudUser||adminUser){closeStartupAuth();return;}
+  showStartupAuth();
+}
 function closeStartupAuth(){const m=$('startupAuth');if(m)m.style.display='none'}
 function showStartupAuth(){
   if(cloudUser||adminUser){closeStartupAuth();return;}
@@ -511,14 +522,12 @@ function confirmBox(title,text){return new Promise(resolve=>{const m=$('confirmM
 function resetAtMidnight(){clearTimeout(midnightTimer);const now=new Date(),next=new Date(now);next.setHours(24,0,1,0);midnightTimer=setTimeout(()=>{today=startOfDay(new Date());show('today');resetAtMidnight()},next-now)}
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>show(b.dataset.page));
 loadLocal();setTheme();resetAtMidnight();show('today');scheduleNextReminder();
-// Show the student login immediately for first-time/cleared-data launches.
-// If Firebase restores an existing student session, the auth callback below closes it.
-// The startup login overlay is present in index.html immediately, so AppGeyser/WebView
-// cannot briefly render the main app without the login gate. Firebase auth callbacks
-// close it automatically when a persisted student/admin session is restored.
-try{showStartupAuth()}catch(_){showStartupAuth()}
+// Keep the startup loading screen visible until both Firebase student and admin
+// authentication states have been resolved. Only then show the login gate or open
+// the restored session, avoiding a confusing login popup during the initial check.
 CloudAPI.onAuthStateChanged(async user=>{
   cloudUser=user||null;
+  studentAuthResolved=true;
   if(user){try{localStorage.setItem(STUDENT_SESSION_HINT,'1')}catch(_){} closeStartupAuth();}
   if(user){
     D.profile.email=user.email||D.profile.email;
@@ -533,17 +542,20 @@ CloudAPI.onAuthStateChanged(async user=>{
     }
   }else{
     stopAutomaticCloudSync();
-    if(!adminUser&&!adminAuthInProgress){try{localStorage.removeItem(STUDENT_SESSION_HINT)}catch(_){} showStartupAuth();}
+    if(!adminUser&&!adminAuthInProgress){try{localStorage.removeItem(STUDENT_SESSION_HINT)}catch(_){}}
     if($('settings'))show('settings');
   }
+  finishStartupAuthCheck();
 });
 CloudAPI.onAdminAuthStateChanged(async user=>{
   adminUser=user||null;
+  adminAuthResolved=true;
   if(user&&!adminAuthInProgress){
     try{
       const allowed=await CloudAPI.isAdmin(user.uid);
       if(allowed){
         adminSession=true;
+        finishStartupAuthCheck();
         closeStartupAuth();
         show('admin');
         return;
@@ -553,8 +565,8 @@ CloudAPI.onAdminAuthStateChanged(async user=>{
   }
   if(!user){
     adminSession=false;
-    if(!cloudUser)showStartupAuth();
   }
+  finishStartupAuthCheck();
 });
 window.addEventListener('online',()=>{toast('Back online — syncing…');if(cloudUser)syncCurrentUser('upload',true)});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&cloudUser){startAutomaticCloudSync();syncCurrentUser('upload',true)}});
