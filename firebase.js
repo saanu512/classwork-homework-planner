@@ -19,6 +19,7 @@ setPersistence(auth, browserLocalPersistence).catch(e => console.warn("Student a
 // login completely independent from the student's Firebase session.
 export const adminApp = initializeApp(firebaseConfig, 'adminApp');
 export const adminAuth = getAuth(adminApp);
+setPersistence(adminAuth, browserLocalPersistence).catch(e => console.warn("Admin auth persistence setup failed", e));
 // Ignore accidental undefined fields instead of rejecting an otherwise valid sync.
 export const db = initializeFirestore(app, { ignoreUndefinedProperties: true });
 export const adminDb = initializeFirestore(adminApp, { ignoreUndefinedProperties: true });
@@ -92,6 +93,7 @@ export const CloudAPI = {
   signIn: (email,password) => signInWithEmailAndPassword(auth,email,password),
   signUp: (email,password) => createUserWithEmailAndPassword(auth,email,password),
   setPersistence: () => setPersistence(auth, browserLocalPersistence),
+  adminSetPersistence: () => setPersistence(adminAuth, browserLocalPersistence),
   signOut: () => signOut(auth),
   currentUser: () => auth.currentUser,
   adminSignIn: (email,password) => signInWithEmailAndPassword(adminAuth,email,password),
