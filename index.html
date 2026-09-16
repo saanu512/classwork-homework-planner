@@ -25,6 +25,17 @@
   <button data-page="settings">⚙<br>Settings</button>
 </nav>
 </div>
+<div id="startupAuth" class="startupAuthOverlay">
+  <div class="startupAuthCard glass">
+    <div class="eyebrow">WELCOME</div><h2>Homework Reminder</h2>
+    <p class="mutedIntro">Sign in as a student to keep your classwork, homework and syllabus synchronized with the cloud.</p>
+    <label>Email</label><input id="startEmail" type="email" autocomplete="email" placeholder="Student email">
+    <label>Password</label><input id="startPassword" type="password" autocomplete="current-password" placeholder="Password (6+ characters)">
+    <div class="twoCol"><button class="settingSave" id="startLogin">SIGN IN</button><button class="settingSave" id="startSignup">CREATE ACCOUNT</button></div>
+    <p id="startAuthStatus" class="statusPill">Checking sign-in status…</p>
+    <button class="startupAdminLink" id="startAdmin">Admin Login</button>
+  </div>
+</div>
 <div id="toast" class="toast"></div>
 <div id="confirmModal" class="modal"><div class="modalBox"><h3 id="confirmTitle">Confirm</h3><p id="confirmText"></p><div class="modalActions"><button class="no" id="confirmNo">CANCEL</button><button class="yes" id="confirmYes">CONFIRM</button></div></div></div>
 <script type="module" src="app.js"></script>

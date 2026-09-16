@@ -222,26 +222,21 @@ function renderReminders(el){const list=remindersDue();el.innerHTML=`<div class=
 function aiContext(){const records=Object.entries(D.records).map(([k,r])=>({meta:recordMeta(k),teacher:r.teacher,topic:r.topic,homework:r.homework,completed:r.completed}));return JSON.stringify({profile:D.profile,teachers:D.teachers,records,reminders:D.reminders,syllabus:syllabusData()},null,2)}
 async function askGemini(prompt){const key=D.admin?.geminiKey||'';if(!key){toast('Gemini is not configured. Ask the administrator to add the API key.');return}const model='gemini-2.5-flash';const url=`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`;const body={contents:[{parts:[{text:`You are the Classwork Planner study assistant. Answer clearly and accurately. You may use the student's records below. Do not invent records.\n\nSTUDENT DATA:\n${aiContext()}\n\nUSER QUESTION:\n${prompt}`}]}],generationConfig:{temperature:.25}};try{const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const j=await r.json();if(!r.ok)throw new Error(j?.error?.message||'Gemini request failed');return j?.candidates?.[0]?.content?.parts?.map(x=>x.text).join('\n')||'No answer returned.'}catch(e){toast(e.message||'Gemini error');return ''}}
 function renderAI(el){el.innerHTML=`<div class="sectionHead"><div><div class="eyebrow">STUDY ASSISTANT</div><h2>Gemini AI</h2><p class="mutedIntro">Ask anything. Gemini can also use your saved classwork, homework and syllabus.</p></div></div><div class="formCard"><label>Ask Gemini</label><textarea id="aiPrompt" placeholder="e.g. Consolidate my syllabus and make a revision plan."></textarea><div class="suggestions"><button class="chip" data-q="Consolidate my syllabus">Consolidate my syllabus</button><button class="chip" data-q="What did I study this week?">What did I study this week?</button><button class="chip" data-q="Which topics need revision?">Topics needing revision</button><button class="chip" data-q="Prioritize my homework">Prioritize my homework</button></div><button class="primary wideAction" id="askAI">ASK GEMINI</button><div id="aiAnswer" class="miniCard" style="display:none"></div></div>`;el.querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>{$('aiPrompt').value=b.dataset.q});$('askAI').onclick=async()=>{const p=$('aiPrompt').value.trim();if(!p)return toast('Enter a question');$('askAI').disabled=true;$('askAI').textContent='THINKING…';const a=await askGemini(p);if(a){$('aiAnswer').style.display='block';$('aiAnswer').innerHTML=esc(a).replace(/\n/g,'<br>')}$('askAI').disabled=false;$('askAI').textContent='ASK GEMINI'}}
-function closeStartupAuth(){const m=$('startupAuth');if(m)m.remove()}
+function closeStartupAuth(){const m=$('startupAuth');if(m)m.style.display='none'}
 function showStartupAuth(){
-  if(cloudUser||adminUser)return;
-  closeStartupAuth();
-  const m=document.createElement('div'); m.id='startupAuth'; m.className='startupAuthOverlay';
-  m.innerHTML=`<div class="startupAuthCard glass">
-    <div class="eyebrow">WELCOME</div><h2>Homework Reminder</h2>
-    <p class="mutedIntro">Sign in as a student to keep your classwork, homework and syllabus synchronized with the cloud.</p>
-    <label>Email</label><input id="startEmail" type="email" autocomplete="email" placeholder="Student email">
-    <label>Password</label><input id="startPassword" type="password" autocomplete="current-password" placeholder="Password (6+ characters)">
-    <div class="twoCol"><button class="settingSave" id="startLogin">SIGN IN</button><button class="settingSave" id="startSignup">CREATE ACCOUNT</button></div>
-    <p id="startAuthStatus" class="statusPill">Not signed in — local data stays on this device until you sign in.</p>
-    <button class="startupAdminLink" id="startAdmin">Admin Login</button>
-  </div>`;
-  document.body.appendChild(m);
+  if(cloudUser||adminUser){closeStartupAuth();return;}
+  const m=$('startupAuth');
+  if(!m)return;
+  m.style.display='grid';
   const status=$('startAuthStatus');
-  $('startLogin').onclick=async()=>{const e=$('startEmail').value.trim(),pw=$('startPassword').value;if(!e||!pw){status.textContent='Enter email and password';return}status.textContent='Signing in…';const ok=await cloudSignIn(e,pw);if(ok){status.textContent=`✓ Signed in as ${e}`;setTimeout(closeStartupAuth,350)}};
-  $('startSignup').onclick=async()=>{const e=$('startEmail').value.trim(),pw=$('startPassword').value;if(!e||!pw){status.textContent='Enter email and password';return}status.textContent='Creating account…';const ok=await cloudSignUp(e,pw);if(ok){status.textContent=`✓ Account created and signed in as ${e}`;setTimeout(closeStartupAuth,350)}};
-  $('startAdmin').onclick=()=>{closeStartupAuth();showAdminLogin()};
-  $('startPassword').onkeydown=e=>{if(e.key==='Enter')$('startLogin').click()};
+  if(status && !status.dataset.wired){
+    status.dataset.wired='1';
+    $('startLogin').onclick=async()=>{const e=$('startEmail').value.trim(),pw=$('startPassword').value;if(!e||!pw){status.textContent='Enter email and password';return}status.textContent='Signing in…';const ok=await cloudSignIn(e,pw);if(ok){status.textContent=`✓ Signed in as ${e}`;setTimeout(closeStartupAuth,350)}};
+    $('startSignup').onclick=async()=>{const e=$('startEmail').value.trim(),pw=$('startPassword').value;if(!e||!pw){status.textContent='Enter email and password';return}status.textContent='Creating account…';const ok=await cloudSignUp(e,pw);if(ok){status.textContent=`✓ Account created and signed in as ${e}`;setTimeout(closeStartupAuth,350)}};
+    $('startAdmin').onclick=()=>{closeStartupAuth();showAdminLogin()};
+    $('startPassword').onkeydown=e=>{if(e.key==='Enter')$('startLogin').click()};
+  }
+  if(status && status.textContent==='Checking sign-in status…')status.textContent='Not signed in — local data stays on this device until you sign in.';
 }
 function showAdminLogin(){document.querySelectorAll('main>section').forEach(x=>x.remove());const s=document.createElement('section');s.id='adminLogin';$('main').appendChild(s);$('pageTitle').textContent='Admin Login';$('dateLine').textContent='';s.innerHTML=`<div class="authWrap"><div class="authCard glass"><div class="eyebrow">RESTRICTED AREA</div><h2>Admin Login</h2><p class="mutedIntro">Administrator access uses Firebase Authentication plus an Admin allow-list. A normal student account cannot open this dashboard.</p><label>Admin email</label><input id="adminUser" type="email" autocomplete="username" placeholder="Admin email"><label>Password</label><input id="adminPass" type="password" autocomplete="current-password" placeholder="Password"><button class="primary wideAction" id="adminLoginBtn">LOGIN AS ADMIN</button><button class="backLink" id="adminCancel">← Back to Settings</button><p class="tinyNote">The account must also have a Firestore document at <b>admins/&lt;Firebase UID&gt;</b> with <b>role = admin</b>. This grants administrator privileges.</p></div></div>`;$('adminLoginBtn').onclick=async()=>{const e=$('adminUser').value.trim(),p=$('adminPass').value;if(!e||!p)return toast('Enter admin email and password');$('adminLoginBtn').disabled=true;$('adminLoginBtn').textContent='AUTHENTICATING…';adminAuthInProgress=true;try{await CloudAPI.adminSetPersistence();await CloudAPI.adminSignIn(e,p);const u=CloudAPI.adminCurrentUser();if(await CloudAPI.isAdmin(u?.uid)){adminSession=true;adminUser=u;show('admin');toast('✓ Admin login successful')}else{await CloudAPI.adminSignOut();toast('Authenticated, but this account is not an admin. Add its UID to the Firestore admins collection.')}}catch(err){toast(firebaseAuthMessage(err))}finally{adminAuthInProgress=false}$('adminLoginBtn').disabled=false;$('adminLoginBtn').textContent='LOGIN AS ADMIN'};$('adminPass').onkeydown=e=>{if(e.key==='Enter')$('adminLoginBtn').click()};$('adminCancel').onclick=()=>show('settings')}
 
@@ -338,7 +333,10 @@ document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>show(b.dataset.
 loadLocal();setTheme();resetAtMidnight();show('today');scheduleNextReminder();
 // Show the student login immediately for first-time/cleared-data launches.
 // If Firebase restores an existing student session, the auth callback below closes it.
-try{if(!localStorage.getItem(STUDENT_SESSION_HINT)&&!CloudAPI.currentUser()&&!CloudAPI.adminCurrentUser())showStartupAuth()}catch(_){if(!CloudAPI.currentUser()&&!CloudAPI.adminCurrentUser())showStartupAuth()}
+// The startup login overlay is present in index.html immediately, so AppGeyser/WebView
+// cannot briefly render the main app without the login gate. Firebase auth callbacks
+// close it automatically when a persisted student/admin session is restored.
+try{if(CloudAPI.currentUser()||CloudAPI.adminCurrentUser())closeStartupAuth();else showStartupAuth()}catch(_){showStartupAuth()}
 CloudAPI.onAuthStateChanged(async user=>{
   cloudUser=user||null;
   if(user){try{localStorage.setItem(STUDENT_SESSION_HINT,'1')}catch(_){} closeStartupAuth();}
