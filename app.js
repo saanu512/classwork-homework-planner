@@ -32,7 +32,11 @@ const OLD = [
 ["OBG","G.Medicine","General Surgery","Respiratory Medicine","Pediatrics","ENT"],["OBG","G.Medicine","General Surgery","Respiratory Medicine","Pediatrics","ENT"],["OBG","G.Medicine","General Surgery","Psychiatry","Pediatrics","ENT"],["OBG","G.Medicine","General Surgery","Psychiatry","Pediatrics","ENT"],["OBG","G.Medicine","General Surgery","Dermatology","Orthopaedics","EYE"],["OBG","G.Medicine","General Surgery","Dermatology","Orthopaedics","EYE"],["OBG","G.Medicine","General Surgery","Anaesthesiology (ICU)","Orthopaedics","EYE"],["OBG","G.Medicine","General Surgery","Anaesthesiology (ICU)","Orthopaedics","EYE"],
 ["Respiratory Medicine","Pediatrics","ENT","OBG","G.Medicine","General Surgery"],["Respiratory Medicine","Pediatrics","ENT","OBG","G.Medicine","General Surgery"],["Psychiatry","Pediatrics","ENT","OBG","G.Medicine","General Surgery"],["Psychiatry","Pediatrics","ENT","OBG","G.Medicine","General Surgery"],["Dermatology","Orthopaedics","EYE","OBG","G.Medicine","General Surgery"],["Dermatology","Orthopaedics","EYE","OBG","G.Medicine","General Surgery"],["Anaesthesiology (ICU)","Orthopaedics","EYE","OBG","G.Medicine","General Surgery"],["Anaesthesiology (ICU)","Orthopaedics","EYE","OBG","G.Medicine","General Surgery"],
 ["ENT","Respiratory Medicine","Pediatrics","General Surgery","OBG","G.Medicine"],["ENT","Respiratory Medicine","Pediatrics","General Surgery","OBG","G.Medicine"],["ENT","Psychiatry","Pediatrics","General Surgery","OBG","G.Medicine"],["ENT","Psychiatry","Pediatrics","General Surgery","OBG","G.Medicine"],["EYE","Dermatology","Orthopaedics","General Surgery","OBG","G.Medicine"],["EYE","Dermatology","Orthopaedics","General Surgery","OBG","G.Medicine"],["EYE","Anaesthesiology (ICU)","Orthopaedics","General Surgery","OBG","G.Medicine"],["EYE","Anaesthesiology (ICU)","Orthopaedics","General Surgery","OBG","G.Medicine"],
-["Pediatrics","ENT","Respiratory Medicine","G.Medicine","General Surgery","OBG"],["Pediatrics","ENT","Psychiatry","G.Medicine","General Surgery","OBG"],["Orthopaedics","EYE","Dermatology","G.Medicine","General Surgery","OBG"],["Orthopaedics","EYE","Anaesthesiology (ICU)","G.Medicine","General Surgery","OBG"]
+["Pediatrics","ENT","Respiratory Medicine","G.Medicine","General Surgery","OBG"],["Pediatrics","ENT","Psychiatry","G.Medicine","General Surgery","OBG"],["Orthopaedics","EYE","Dermatology","G.Medicine","General Surgery","OBG"],["Orthopaedics","EYE","Anaesthesiology (ICU)","G.Medicine","General Surgery","OBG"],
+["Orthopaedics","EYE","Dermatology","G.Medicine","General Surgery","OBG"],
+["Orthopaedics","EYE","Dermatology","G.Medicine","General Surgery","OBG"],
+["Orthopaedics","EYE","Anaesthesiology (ICU)","G.Medicine","General Surgery","OBG"],
+["Orthopaedics","EYE","Anaesthesiology (ICU)","G.Medicine","General Surgery","OBG"]
 ];
 const NEW = [["General Surgery","OBG","Radiodiagnosis","Emergency Medicine"],["General Surgery","OBG","Radiodiagnosis","Emergency Medicine"],["Emergency Medicine","Radiodiagnosis","OBG","General Surgery"],["Emergency Medicine","Radiodiagnosis","OBG","General Surgery"],["G.Medicine","ENT","Emergency Medicine","Radiodiagnosis"],["G.Medicine","ENT","Emergency Medicine","Radiodiagnosis"],["Radiodiagnosis","Emergency Medicine","ENT","G.Medicine"],["Radiodiagnosis","Emergency Medicine","ENT","G.Medicine"]];
 const APP_START_DATE = new Date(2026,8,7);
@@ -52,7 +56,7 @@ let today=startOfDay(new Date());
 let midnightTimer=null;
 const $=id=>document.getElementById(id); const clone=x=>JSON.parse(JSON.stringify(x));
 function startOfDay(d){const x=new Date(d);x.setHours(0,0,0,0);return x}
-function iso(d){const x=startOfDay(d);return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`}
+function iso(d){const x=startOfDay(d);const y=x.getFullYear(),m=String(x.getMonth()+1).padStart(2,'0'),day=String(x.getDate()).padStart(2,'0');return `${y}-${m}-${day}`}
 function fmt(d){return d.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function toast(text){const t=$('toast');t.textContent=text;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('show'),2200)}
@@ -62,7 +66,7 @@ function defaultSchedule(){return clone(WEEK)}
 function normalizeSchedule(s){const out=defaultSchedule();if(!s)return out;DAYS.forEach(day=>{if(Array.isArray(s[day]))out[day]=s[day].map(x=>[x[0],x[1],x[2]]).filter(x=>x[0]&&x[1]&&x[2])});return out}
 function scheduleForDate(d){let result=normalizeSchedule(D.schedule);const target=iso(d);const changes=(D.changes||[]).filter(x=>x&&x.date&&x.date<=target).sort((a,b)=>a.date.localeCompare(b.date));if(changes.length){const c=normalizeSchedule(changes.at(-1).schedule);if(DAYS.some(day=>c[day]?.length))result=c}return result}
 function clinical(d){let r=+D.profile.roll;if(!(r>=1&&r<=100))return'Clinical Posting';let m=startOfDay(d);m.setDate(m.getDate()-((m.getDay()+6)%7));let arr=d<SWITCH?OLD:NEW,st=d<SWITCH?START:SWITCH,w=Math.floor((m-st)/604800000),g=d<SWITCH?(r<=16?0:r<=32?1:r<=49?2:r<=66?3:r<=83?4:5):(r<=25?0:r<=50?1:r<=75?2:3);return arr[w]?.[g]||'Clinical Posting'}
-function displaySubject(s,d){return s==='Clinical Posting'?clinical(d):s}
+function displaySubject(s,d){if(s!=='Clinical Posting')return s;const dept=clinical(d);return dept==='Clinical Posting'?'Clinical Posting':`${dept} (Clinical Posting)`}
 function recKey(c,d=today){return iso(d)+'|'+c.time+'|'+c.subject+'|'+(c.scheduledSubject||'')}
 function legacyRecKey(c,d=today){return iso(d)+'|'+c.subject+'|'+(c.teacher||D.teachers[c.scheduledSubject]||'')}
 function recordForClass(c){return D.records[recKey(c)]||D.records[legacyRecKey(c)]||{}}
