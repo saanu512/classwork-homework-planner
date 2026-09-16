@@ -122,6 +122,9 @@ export const CloudAPI = {
   async saveUserData(uid,data){
     await setDoc(doc(db,'users',uid), {...cleanForCloud(data), uid, updatedAt: serverTimestamp()}, {merge:false});
   },
+  async adminSaveUserData(uid,data){
+    await setDoc(doc(adminDb,'users',uid), {...cleanForCloud(data), uid, updatedAt: serverTimestamp()}, {merge:false});
+  },
   async isAdmin(uid){
     if(!uid) return false;
     const snap = await getDoc(doc(adminDb,'admins',uid));

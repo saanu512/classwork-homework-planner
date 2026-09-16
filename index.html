@@ -28,8 +28,10 @@
 <div id="startupLoading" class="startupLoadingOverlay" style="display:grid"><div class="startupLoadingCard"><div class="stethoscopeSpinner">🩺</div><h2>Please wait</h2><p>Getting your login details…</p></div></div>
 <div id="startupAuth" class="startupAuthOverlay" style="display:none">
   <div class="startupAuthCard glass">
-    <div class="eyebrow">WELCOME</div><h2>Homework Reminder</h2>
-    <p class="mutedIntro">Sign in as a student to keep your classwork, homework and syllabus synchronized with the cloud.</p>
+    <div class="eyebrow">STUDENT LOGIN</div><h2>Homework Reminder</h2>
+    <p class="mutedIntro">Enter all four details. Email and password must be authenticated by Firebase.</p>
+    <label>Name</label><input id="startName" type="text" autocomplete="name" placeholder="Student name">
+    <label>Roll number</label><input id="startRoll" type="number" min="1" max="100" inputmode="numeric" placeholder="Roll number (1–100)">
     <label>Email</label><input id="startEmail" type="email" autocomplete="email" placeholder="Student email">
     <label>Password</label><input id="startPassword" type="password" autocomplete="current-password" placeholder="Password (6+ characters)">
     <div class="twoCol"><button class="settingSave" id="startLogin">SIGN IN</button><button class="settingSave" id="startSignup">CREATE ACCOUNT</button></div>

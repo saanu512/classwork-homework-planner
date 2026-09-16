@@ -750,3 +750,12 @@ html[data-theme="dark"] .classEntryWrap .defaultTeacher {
 html[data-theme="dark"] .classEntryWrap .cardSubject h2 {
   color:#f5f7fc !important;
 }
+
+.adminFilterGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0 14px;align-items:stretch}.adminFilterGrid select,.adminFilterGrid button{min-width:0}.adminFilterGrid .settingSave{width:100%}@media(min-width:700px){.adminFilterGrid{grid-template-columns:repeat(4,minmax(0,1fr))}}@media(max-width:420px){.adminFilterGrid{grid-template-columns:1fr}.adminFilterGrid .settingSave{grid-column:1}}
+/* Firebase admin date-range filtering and destructive actions */
+.adminDateRange{display:flex;flex-direction:column;gap:4px;min-width:0}
+.adminDateRange label{font-size:10px;font-weight:800;color:var(--muted);margin:0}
+.adminDateRange input{width:100%;min-width:0;box-sizing:border-box}
+.adminFilterHint{grid-column:1/-1;font-size:10px;line-height:1.45;color:var(--muted);padding:2px 2px 0}
+.adminDeleteFilterBtn{width:100%;font-weight:900;cursor:pointer}
+@media(max-width:420px){.adminFilterHint{grid-column:1}}
