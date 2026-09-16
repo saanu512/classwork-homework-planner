@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 import { initializeFirestore, doc, getDoc, setDoc, collection, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+import { getAI, getGenerativeModel, GoogleAIBackend } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-ai.js";
 
 export const firebaseConfig = {
   apiKey: "AIzaSyAQfUozDP7xyeZEl15DthoiAI_q05J2ZCM",
@@ -12,6 +13,9 @@ export const firebaseConfig = {
 };
 
 export const app = initializeApp(firebaseConfig);
+// Firebase AI Logic keeps Gemini authorization on the Firebase/Google side;
+// no Gemini Developer API key is embedded in this PWA.
+export const firebaseAI = getAI(app, { backend: new GoogleAIBackend(), useLimitedUseAppCheckTokens: true });
 export const auth = getAuth(app);
 // Persist the student Firebase session across app restarts.
 setPersistence(auth, browserLocalPersistence).catch(e => console.warn("Student auth persistence setup failed", e));
@@ -98,6 +102,17 @@ const sendPasswordReset = async email => {
     const err = new Error(code); err.code = code; throw err;
   }
   return data;
+};
+
+export const GeminiAPI = {
+  async generate(prompt, modelName = 'gemini-3.8-flash') {
+    const model = getGenerativeModel(firebaseAI, {
+      model: modelName,
+      generationConfig: { temperature: 0.25 }
+    });
+    const result = await model.generateContent(prompt);
+    return result?.response?.text?.() || 'No answer returned.';
+  }
 };
 
 export const CloudAPI = {
