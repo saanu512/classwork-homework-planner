@@ -271,7 +271,7 @@ function exportAdminCloudPDF(){
   w.document.close();
 }
 
-function loadAdminCloudData(el){
+async function loadAdminCloudData(el){
   try{
     cloudStudents=await CloudAPI.getAllStudents();
     const list=$('studentList'); if(!list)return;
@@ -356,15 +356,7 @@ function showStartupAuth(){
   if(!m)return;
   m.style.display='grid';
   const status=$('startAuthStatus');
-  if(status && !status.dataset.wired){
-    status.dataset.wired='1';
-    $('startLogin').onclick=async()=>{const e=$('startEmail').value.trim(),pw=$('startPassword').value;if(!e||!pw){status.textContent='Enter email and password';return}status.textContent='Signing in…';const ok=await cloudSignIn(e,pw);if(ok){status.textContent=`✓ Signed in as ${e}`;setTimeout(closeStartupAuth,350)}};
-    $('startSignup').onclick=async()=>{const e=$('startEmail').value.trim(),pw=$('startPassword').value;if(!e||!pw){status.textContent='Enter email and password';return}status.textContent='Creating account…';const ok=await cloudSignUp(e,pw);if(ok){status.textContent=`✓ Account created and signed in as ${e}`;setTimeout(closeStartupAuth,350)}};
-    $('startAdmin').onclick=()=>showAdminLogin(true);
-    $('startPassword').onkeydown=e=>{if(e.key==='Enter')$('startLogin').click()};
-    $('startForgot').onclick=()=>resetStudentPassword($('startEmail').value.trim());
-  }
-  if(status && status.textContent==='Checking sign-in status…')status.textContent='Not signed in — local data stays on this device until you sign in.';
+  if(status)status.textContent='Not signed in — sign in as a student or administrator to enter the app.';
 }
 function showAdminLogin(asPopup=false){
   if(asPopup){
@@ -402,6 +394,33 @@ function showAdminLoginBackToStudentGate(){
   $('dateLine').textContent='';
   showStartupAuth();
 }
+
+// Robust startup-auth bridge for AppGeyser/WebView. The HTML login controls can
+// bind through this bridge even if the module finishes loading asynchronously.
+window.__CWPAuth = {
+  studentLogin: (email,password) => cloudSignIn(email,password),
+  studentSignup: (email,password) => cloudSignUp(email,password),
+  studentForgot: email => resetStudentPassword(email),
+  openAdminPopup: () => showAdminLogin(true),
+  adminLogin: async (email,password) => {
+    adminAuthInProgress=true;
+    try{
+      await CloudAPI.adminSetPersistence();
+      await CloudAPI.adminSignIn(email,password);
+      const u=CloudAPI.adminCurrentUser();
+      if(await CloudAPI.isAdmin(u?.uid)){
+        adminSession=true; adminUser=u; closeStartupAuth();
+        document.getElementById('adminAuthPopup')?.remove();
+        show('admin'); toast('✓ Admin login successful'); return true;
+      }
+      await CloudAPI.adminSignOut();
+      toast('Authenticated, but this account is not an admin.'); return false;
+    }catch(e){ toast(firebaseAuthMessage(e)); return false; }
+    finally{ adminAuthInProgress=false; }
+  },
+  adminForgot: email => resetAdminPassword(email)
+};
+window.__CWPAuthReady = true;
 
 function renderSettings(el){el.innerHTML=`<div class="settingsGrid"><div class="settingCard"><div class="settingTitle"><span class="settingIcon">◉</span><div><h3>Student Profile</h3><p>Local profile used for records and future cloud sync.</p></div></div><input id="pname" value="${esc(D.profile.name)}" placeholder="Student name"><input id="pemail" value="${esc(D.profile.email)}" placeholder="Email"><input id="roll" type="number" min="1" max="100" value="${esc(D.profile.roll)}" placeholder="Roll number"><button class="settingSave" id="saveProfile">SAVE PROFILE</button></div><div class="settingCard"><div class="settingTitle"><span class="settingIcon">◐</span><div><h3>Theme</h3><p>Keep the v26-style adaptive appearance.</p></div></div><select id="theme"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></div><div class="settingCard"><div class="settingTitle"><span class="settingIcon">⏰</span><div><h3>Homework Reminder</h3><p>One-day-before reminder for saved homework.</p></div></div><label class="switchLine"><input id="oneDay" type="checkbox" ${D.settings.oneDayBefore?'checked':''}> One day before</label><button class="settingSave" id="reminderPage">MANAGE REMINDERS</button></div><div class="settingCard scheduleCard"><div class="settingTitle"><span class="settingIcon">▦</span><div><h3>Manage Schedule & Teachers</h3><p>Edit the preset timetable without changing historical daily records.</p></div></div><div class="scheduleToolbar"><div><label>Effective from</label><input id="effectiveDate" type="date" value="${iso(new Date())}"></div><button class="todayBtn" id="loadOriginal">Original</button></div><div id="scheduleEditor">${scheduleEditor(defaultSchedule())}</div><div class="scheduleExtraBox"><div><b>Copy schedule</b><small>Copy the current weekly schedule into a new effective-date version.</small></div><button class="addRow" id="copySchedule">COPY</button></div><button class="settingSave" id="tsave">SAVE SCHEDULE & TEACHERS</button></div><div class="settingCard"><div class="settingTitle"><span class="settingIcon">☁</span><div><h3>Firebase Cloud Account</h3><p>Sign in to sync your classwork, homework, syllabus, schedule and reminders across devices.</p></div></div>${cloudAccountMarkup()}<div class="twoCol"><button class="settingSave" id="exportData">EXPORT DATA</button><button class="settingSave" id="importData">IMPORT DATA</button></div><input id="importFile" type="file" accept="application/json" hidden></div><div class="settingCard"><div class="settingTitle"><span class="settingIcon">▣</span><div><h3>Administrator</h3><p>Restricted area. Login is required before the Admin Dashboard can be opened.</p></div></div><button class="settingSave" id="adminPage">ADMIN LOGIN</button></div></div>`;$('theme').value=D.theme;$('theme').onchange=()=>{D.theme=$('theme').value;setTheme();saveAll()};$('saveProfile').onclick=()=>{D.profile.name=$('pname').value.trim();D.profile.email=$('pemail').value.trim();D.profile.roll=$('roll').value;saveAll();toast('✓ Profile saved');show('today')};$('oneDay').onchange=e=>{D.settings.oneDayBefore=e.target.checked;saveAll()};$('reminderPage').onclick=()=>show('reminders');$('adminPage').onclick=()=>adminSession?show('admin'):showAdminLogin();$('loadOriginal').onclick=()=>{$('effectiveDate').value=iso(new Date());$('scheduleEditor').innerHTML=scheduleEditor(defaultSchedule());wireScheduleEditor()};$('effectiveDate').onchange=()=>{$('scheduleEditor').innerHTML=scheduleEditor(scheduleForDate(new Date($('effectiveDate').value+'T00:00:00')));wireScheduleEditor()};$('copySchedule').onclick=()=>{const date=$('effectiveDate').value;if(!date)return;D.changes=(D.changes||[]).filter(x=>x.date!==date);D.changes.push({date,schedule:collectSchedule()});D.changes.sort((a,b)=>a.date.localeCompare(b.date));saveAll();toast('✓ Schedule copied')};$('tsave').onclick=()=>{const date=$('effectiveDate').value,s=collectSchedule();if(!date||!Object.values(s).some(a=>a.length))return toast('Add at least one class');D.changes=(D.changes||[]).filter(x=>x.date!==date);D.changes.push({date,schedule:s});D.teachers=collectRowTeachers();saveAll();toast('✓ Schedule & teachers saved');show('today')};$('exportData').onclick=exportData;$('importData').onclick=()=>$('importFile').click();$('importFile').onchange=importData;
  if(cloudUser){$('cloudSyncNow').onclick=()=>syncCurrentUser('upload');$('cloudLogout').onclick=async()=>{try{clearTimeout(cloudSyncTimer);await syncCurrentUser('upload',true);await CloudAPI.signOut();try{localStorage.removeItem(STUDENT_SESSION_HINT)}catch(_){}toast('✓ Logged out of Firebase — your local data is kept on this device')}catch(e){toast('Could not log out')}}}
@@ -489,8 +508,41 @@ function exportData(){const blob=new Blob([JSON.stringify(D,null,2)],{type:'appl
 function importData(e){const f=e.target.files?.[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const x=JSON.parse(rd.result);D={...D,...x,profile:{...D.profile,...(x.profile||{})}};saveAll();setTheme();toast('✓ Data imported');show('today')}catch{toast('Invalid data file')}};rd.readAsText(f)}
 function confirmBox(title,text){return new Promise(resolve=>{const m=$('confirmModal');$('confirmTitle').textContent=title;$('confirmText').textContent=text;m.classList.add('show');const ok=()=>{cleanup();resolve(true)},no=()=>{cleanup();resolve(false)},cleanup=()=>{m.classList.remove('show');$('confirmYes').removeEventListener('click',ok);$('confirmNo').removeEventListener('click',no)};$('confirmYes').addEventListener('click',ok);$('confirmNo').addEventListener('click',no)})}
 function resetAtMidnight(){clearTimeout(midnightTimer);const now=new Date(),next=new Date(now);next.setHours(24,0,1,0);midnightTimer=setTimeout(()=>{today=startOfDay(new Date());show('today');resetAtMidnight()},next-now)}
+// Bind startup login controls independently of the Firebase auth-state callback.
+// This prevents AppGeyser/WebView timing from leaving the overlay buttons inert.
+function wireStartupAuthControls(){
+  const m=$('startupAuth'); if(!m)return;
+  const status=$('startAuthStatus');
+  const login=$('startLogin'), signup=$('startSignup'), forgot=$('startForgot'), admin=$('startAdmin'), pass=$('startPassword');
+  if(!login||!signup||!forgot||!admin)return;
+  if(m.dataset.controlsWired==='1')return;
+  m.dataset.controlsWired='1';
+  const run=async(kind)=>{
+    const email=$('startEmail')?.value.trim()||'', password=$('startPassword')?.value||'';
+    if(kind==='forgot'){
+      if(!email){status.textContent='Enter your student email first.';return;}
+      status.textContent='Sending password reset email…';
+      const ok=await window.__CWPAuth?.studentForgot(email); status.textContent=ok?'✓ Password reset email sent. Check your email.':'Password reset could not be sent.'; return;
+    }
+    if(!email||!password){status.textContent='Enter email and password.';return;}
+    login.disabled=true;signup.disabled=true;
+    status.textContent=kind==='login'?'Signing in…':'Creating account…';
+    const ok=kind==='login'
+      ? await window.__CWPAuth?.studentLogin(email,password)
+      : await window.__CWPAuth?.studentSignup(email,password);
+    if(ok){status.textContent=kind==='login'?`✓ Signed in as ${email}`:`✓ Account created and signed in as ${email}`;closeStartupAuth();}
+    else status.textContent='Authentication failed. Please check your details and try again.';
+    login.disabled=false;signup.disabled=false;
+  };
+  login.addEventListener('click',()=>run('login'));
+  signup.addEventListener('click',()=>run('signup'));
+  forgot.addEventListener('click',()=>run('forgot'));
+  admin.addEventListener('click',()=>window.__CWPAuth?.openAdminPopup());
+  pass.addEventListener('keydown',e=>{if(e.key==='Enter')run('login')});
+}
+
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>show(b.dataset.page));
-loadLocal();setTheme();resetAtMidnight();show('today');scheduleNextReminder();
+loadLocal();setTheme();resetAtMidnight();show('today');scheduleNextReminder();wireStartupAuthControls();
 // Show the student login immediately for first-time/cleared-data launches.
 // If Firebase restores an existing student session, the auth callback below closes it.
 // The startup login overlay is present in index.html immediately, so AppGeyser/WebView
