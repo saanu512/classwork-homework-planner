@@ -2,7 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/fireba
 import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 import { initializeFirestore, doc, getDoc, setDoc, collection, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 import { getAI, getGenerativeModel, GoogleAIBackend } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-ai.js";
-import { initializeAppCheck, ReCaptchaEnterpriseProvider, getToken } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app-check.js";
+import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app-check.js";
 
 export const firebaseConfig = {
   apiKey: "AIzaSyAQfUozDP7xyeZEl15DthoiAI_q05J2ZCM",
@@ -118,20 +118,26 @@ const sendPasswordReset = async email => {
 
 export const GeminiAPI = {
   async generate(prompt, modelName = 'gemini-3.8-flash') {
-    // Force an App Check token before the first AI request. This makes failures
-    // explicit instead of leaving the UI waiting indefinitely when App Check
-    // has not yet produced a valid token.
-    await getToken(appCheck, false);
+    // Firebase AI Logic handles App Check tokens internally. Do not make a
+    // separate getToken() call here; with limited-use tokens enabled, the SDK
+    // obtains the appropriate token for the AI request itself.
     const model = getGenerativeModel(firebaseAI, {
-      model: modelName,
-      generationConfig: { temperature: 0.25 }
+      model: modelName
+    }, {
+      // Use the SDK request timeout so Firebase can return its actual error
+      // instead of our old Promise.race masking it as a generic timeout.
+      timeout: 60000
     });
-    const request = model.generateContent(prompt);
-    const timeout = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('GEMINI_REQUEST_TIMEOUT')), 30000)
-    );
-    const result = await Promise.race([request, timeout]);
-    return result?.response?.text?.() || 'No answer returned.';
+    try {
+      const result = await model.generateContent(prompt);
+      return result?.response?.text?.() || 'No answer returned.';
+    } catch (e) {
+      const err = new Error(e?.message || 'Gemini request failed');
+      err.code = e?.code || '';
+      err.cause = e;
+      console.error('Gemini AI request failed:', e);
+      throw err;
+    }
   }
 };
 
