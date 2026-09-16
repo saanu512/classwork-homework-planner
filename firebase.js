@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 import { initializeFirestore, doc, getDoc, setDoc, collection, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
 export const firebaseConfig = {
@@ -13,6 +13,8 @@ export const firebaseConfig = {
 
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
+// Persist the student Firebase session across app restarts.
+setPersistence(auth, browserLocalPersistence).catch(e => console.warn("Student auth persistence setup failed", e));
 // Separate Firebase app/auth session for administrators. This keeps the admin
 // login completely independent from the student's Firebase session.
 export const adminApp = initializeApp(firebaseConfig, 'adminApp');
@@ -99,7 +101,7 @@ export const CloudAPI = {
     return snap.exists() ? decodeCloudData(snap.data()) : null;
   },
   async saveUserData(uid,data){
-    await setDoc(doc(db,'users',uid), {...cleanForCloud(data), uid, updatedAt: serverTimestamp()}, {merge:true});
+    await setDoc(doc(db,'users',uid), {...cleanForCloud(data), uid, updatedAt: serverTimestamp()}, {merge:false});
   },
   async isAdmin(uid){
     if(!uid) return false;

@@ -6,6 +6,8 @@ let cloudBusy=false;
 let cloudStudents=[];
 let suppressCloudQueue=false;
 let cloudSyncTimer=null;
+let cloudIntervalTimer=null;
+const CLOUD_SYNC_INTERVAL=15*60*1000;
 const SUBJECTS = [
   "General Medicine","General Surgery","OBG","Pediatrics","ENT","Psychiatry","EYE","Dermatology",
   "Orthopaedics","Respiratory Medicine","Radiodiagnosis","Emergency Medicine","Anaesthesiology",
@@ -42,7 +44,7 @@ let adminSession=false;
 let adminAuthInProgress=false;
 // Admin-only controls are never rendered in student screens. Admin session exists only in memory.
 
-let D={profile:{name:'',email:'',roll:''},teachers:{},records:{},extras:[],changes:[],theme:'system',schedule:null,reminders:[],syllabus:{},admin:{geminiKey:''},settings:{reminderEnabled:true,oneDayBefore:true,reminderLead:60},_savedAt:0};
+let D={profile:{name:'',email:'',roll:''},teachers:{},records:{},extras:[],changes:[],theme:'system',schedule:null,reminders:[],syllabus:{},admin:{geminiKey:''},settings:{reminderEnabled:true,oneDayBefore:true,reminderLead:60,lastSyncAt:0},_savedAt:0};
 let today=startOfDay(new Date());
 let midnightTimer=null;
 const $=id=>document.getElementById(id); const clone=x=>JSON.parse(JSON.stringify(x));
@@ -80,20 +82,21 @@ function mergeCloudIntoLocal(c){
   };
   D.schedule=normalizeSchedule(D.schedule); saveAll();
 }
-async function syncCurrentUser(direction='merge'){
+async function syncCurrentUser(direction='upload',quiet=false){
   if(!cloudUser||cloudBusy)return false;
   cloudBusy=true; const previousSuppress=suppressCloudQueue; suppressCloudQueue=true;
   try{
-    const remote=await CloudAPI.getUserData(cloudUser.uid);
-    if(!remote){
-      await CloudAPI.saveUserData(cloudUser.uid,cloudSafeData());
-      toast('✓ Local data uploaded to Firebase');
-    }else if(direction==='download'){
-      mergeCloudIntoLocal(remote); toast('✓ Cloud data loaded');
+    if(direction==='download'){
+      const remote=await CloudAPI.getUserData(cloudUser.uid);
+      if(remote){mergeCloudIntoLocal(remote); D.settings.lastSyncAt=Date.now(); localStorage.setItem(STORAGE,JSON.stringify(D)); if(!quiet)toast('✓ Cloud data loaded');}
+      else if(!quiet)toast('No cloud data found');
     }else{
-      mergeCloudIntoLocal(remote);
       await CloudAPI.saveUserData(cloudUser.uid,cloudSafeData());
-      toast('✓ Firebase synchronized');
+      D.settings.lastSyncAt=Date.now();
+      localStorage.setItem(STORAGE,JSON.stringify(D));
+      const status=$('cloudAccountStatus');
+      if(status)status.textContent=`Last synced: ${new Date(D.settings.lastSyncAt).toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'})}`;
+      if(!quiet)toast('✓ Firebase synchronized');
     }
     return true;
   }catch(e){
@@ -114,6 +117,14 @@ async function syncCurrentUser(direction='merge'){
   }
   finally{suppressCloudQueue=previousSuppress;cloudBusy=false}
 }
+function startAutomaticCloudSync(){
+  clearInterval(cloudIntervalTimer);
+  if(!cloudUser)return;
+  // Sync immediately when the app starts/reauthenticates, then every 15 minutes while active.
+  syncCurrentUser('upload',true);
+  cloudIntervalTimer=setInterval(()=>{if(document.visibilityState==='visible')syncCurrentUser('upload',true)},CLOUD_SYNC_INTERVAL);
+}
+function stopAutomaticCloudSync(){clearInterval(cloudIntervalTimer);cloudIntervalTimer=null}
 async function cloudSignIn(email,password){
   try{await CloudAPI.signIn(email,password);return true}catch(e){console.error(e);toast(firebaseAuthMessage(e));return false}
 }
@@ -125,7 +136,7 @@ function firebaseAuthMessage(e){
   return ({'auth/invalid-credential':'Invalid email or password.','auth/invalid-email':'Enter a valid email.','auth/email-already-in-use':'This email is already registered.','auth/weak-password':'Password must be at least 6 characters.','auth/too-many-requests':'Too many attempts. Try again later.'}[c])||'Authentication failed. Please try again.';
 }
 function cloudAccountMarkup(){
-  if(cloudUser)return `<div class="cloudAccount"><div><b>✓ Signed in</b><small>${esc(cloudUser.email||'')}</small></div><div class="twoCol"><button class="settingSave" id="cloudSyncNow">SYNC NOW</button><button class="settingSave" id="cloudLogout">LOG OUT</button></div><p class="statusPill" id="cloudAccountStatus">Firebase cloud account connected</p></div>`;
+  if(cloudUser){const ls=D.settings?.lastSyncAt?`Last synced: ${new Date(D.settings.lastSyncAt).toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'})}`:'Last synced: Not yet';return `<div class="cloudAccount"><div><b>✓ Signed in</b><small>${esc(cloudUser.email||'')}</small></div><div class="twoCol"><button class="settingSave" id="cloudSyncNow">SYNC NOW</button><button class="settingSave" id="cloudLogout">LOG OUT</button></div><p class="statusPill" id="cloudAccountStatus">${esc(ls)}</p></div>`;}
   return `<div class="cloudAccount"><label>Email</label><input id="cloudEmail" type="email" autocomplete="email" placeholder="Student email"><label>Password</label><input id="cloudPassword" type="password" autocomplete="current-password" placeholder="Password (6+ characters)"><div class="twoCol"><button class="settingSave" id="cloudLogin">LOGIN</button><button class="settingSave" id="cloudSignup">CREATE ACCOUNT</button></div><p class="statusPill">Not signed in — local data remains on this device</p></div>`;
 }
 async function loadAdminCloudData(el){
@@ -184,7 +195,7 @@ function renderAI(el){el.innerHTML=`<div class="sectionHead"><div><div class="ey
 function showAdminLogin(){document.querySelectorAll('main>section').forEach(x=>x.remove());const s=document.createElement('section');s.id='adminLogin';$('main').appendChild(s);$('pageTitle').textContent='Admin Login';$('dateLine').textContent='';s.innerHTML=`<div class="authWrap"><div class="authCard glass"><div class="eyebrow">RESTRICTED AREA</div><h2>Admin Login</h2><p class="mutedIntro">Administrator access uses Firebase Authentication plus an Admin allow-list. A normal student account cannot open this dashboard.</p><label>Admin email</label><input id="adminUser" type="email" autocomplete="username" placeholder="Admin email"><label>Password</label><input id="adminPass" type="password" autocomplete="current-password" placeholder="Password"><button class="primary wideAction" id="adminLoginBtn">LOGIN AS ADMIN</button><button class="backLink" id="adminCancel">← Back to Settings</button><p class="tinyNote">The account must also have a Firestore document at <b>admins/&lt;Firebase UID&gt;</b> with <b>role = admin</b>. This grants administrator privileges.</p></div></div>`;$('adminLoginBtn').onclick=async()=>{const e=$('adminUser').value.trim(),p=$('adminPass').value;if(!e||!p)return toast('Enter admin email and password');$('adminLoginBtn').disabled=true;$('adminLoginBtn').textContent='AUTHENTICATING…';adminAuthInProgress=true;try{await CloudAPI.adminSignIn(e,p);const u=CloudAPI.adminCurrentUser();if(await CloudAPI.isAdmin(u?.uid)){adminSession=true;adminUser=u;show('admin');toast('✓ Admin login successful')}else{await CloudAPI.adminSignOut();toast('Authenticated, but this account is not an admin. Add its UID to the Firestore admins collection.')}}catch(err){toast(firebaseAuthMessage(err))}finally{adminAuthInProgress=false}$('adminLoginBtn').disabled=false;$('adminLoginBtn').textContent='LOGIN AS ADMIN'};$('adminPass').onkeydown=e=>{if(e.key==='Enter')$('adminLoginBtn').click()};$('adminCancel').onclick=()=>show('settings')}
 
 function renderSettings(el){el.innerHTML=`<div class="settingsGrid"><div class="settingCard"><div class="settingTitle"><span class="settingIcon">◉</span><div><h3>Student Profile</h3><p>Local profile used for records and future cloud sync.</p></div></div><input id="pname" value="${esc(D.profile.name)}" placeholder="Student name"><input id="pemail" value="${esc(D.profile.email)}" placeholder="Email"><input id="roll" type="number" min="1" max="100" value="${esc(D.profile.roll)}" placeholder="Roll number"><button class="settingSave" id="saveProfile">SAVE PROFILE</button></div><div class="settingCard"><div class="settingTitle"><span class="settingIcon">◐</span><div><h3>Theme</h3><p>Keep the v26-style adaptive appearance.</p></div></div><select id="theme"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></div><div class="settingCard"><div class="settingTitle"><span class="settingIcon">⏰</span><div><h3>Homework Reminder</h3><p>One-day-before reminder for saved homework.</p></div></div><label class="switchLine"><input id="oneDay" type="checkbox" ${D.settings.oneDayBefore?'checked':''}> One day before</label><button class="settingSave" id="reminderPage">MANAGE REMINDERS</button></div><div class="settingCard scheduleCard"><div class="settingTitle"><span class="settingIcon">▦</span><div><h3>Manage Schedule & Teachers</h3><p>Edit the preset timetable without changing historical daily records.</p></div></div><div class="scheduleToolbar"><div><label>Effective from</label><input id="effectiveDate" type="date" value="${iso(new Date())}"></div><button class="todayBtn" id="loadOriginal">Original</button></div><div id="scheduleEditor">${scheduleEditor(defaultSchedule())}</div><div class="scheduleExtraBox"><div><b>Copy schedule</b><small>Copy the current weekly schedule into a new effective-date version.</small></div><button class="addRow" id="copySchedule">COPY</button></div><button class="settingSave" id="tsave">SAVE SCHEDULE & TEACHERS</button></div><div class="settingCard"><div class="settingTitle"><span class="settingIcon">☁</span><div><h3>Firebase Cloud Account</h3><p>Sign in to sync your classwork, homework, syllabus, schedule and reminders across devices.</p></div></div>${cloudAccountMarkup()}<div class="twoCol"><button class="settingSave" id="exportData">EXPORT DATA</button><button class="settingSave" id="importData">IMPORT DATA</button></div><input id="importFile" type="file" accept="application/json" hidden></div><div class="settingCard"><div class="settingTitle"><span class="settingIcon">▣</span><div><h3>Administrator</h3><p>Restricted area. Login is required before the Admin Dashboard can be opened.</p></div></div><button class="settingSave" id="adminPage">ADMIN LOGIN</button></div></div>`;$('theme').value=D.theme;$('theme').onchange=()=>{D.theme=$('theme').value;setTheme();saveAll()};$('saveProfile').onclick=()=>{D.profile.name=$('pname').value.trim();D.profile.email=$('pemail').value.trim();D.profile.roll=$('roll').value;saveAll();toast('✓ Profile saved');show('today')};$('oneDay').onchange=e=>{D.settings.oneDayBefore=e.target.checked;saveAll()};$('reminderPage').onclick=()=>show('reminders');$('adminPage').onclick=()=>adminSession?show('admin'):showAdminLogin();$('loadOriginal').onclick=()=>{$('effectiveDate').value=iso(new Date());$('scheduleEditor').innerHTML=scheduleEditor(defaultSchedule());wireScheduleEditor()};$('effectiveDate').onchange=()=>{$('scheduleEditor').innerHTML=scheduleEditor(scheduleForDate(new Date($('effectiveDate').value+'T00:00:00')));wireScheduleEditor()};$('copySchedule').onclick=()=>{const date=$('effectiveDate').value;if(!date)return;D.changes=(D.changes||[]).filter(x=>x.date!==date);D.changes.push({date,schedule:collectSchedule()});D.changes.sort((a,b)=>a.date.localeCompare(b.date));saveAll();toast('✓ Schedule copied')};$('tsave').onclick=()=>{const date=$('effectiveDate').value,s=collectSchedule();if(!date||!Object.values(s).some(a=>a.length))return toast('Add at least one class');D.changes=(D.changes||[]).filter(x=>x.date!==date);D.changes.push({date,schedule:s});D.teachers=collectRowTeachers();saveAll();toast('✓ Schedule & teachers saved');show('today')};$('exportData').onclick=exportData;$('importData').onclick=()=>$('importFile').click();$('importFile').onchange=importData;
- if(cloudUser){$('cloudSyncNow').onclick=()=>syncCurrentUser('merge');$('cloudLogout').onclick=async()=>{try{await CloudAPI.signOut();toast('✓ Logged out of Firebase')}catch(e){toast('Could not log out')}}}
+ if(cloudUser){$('cloudSyncNow').onclick=()=>syncCurrentUser('upload');$('cloudLogout').onclick=async()=>{try{await CloudAPI.signOut();toast('✓ Logged out of Firebase')}catch(e){toast('Could not log out')}}}
  else {$('cloudLogin').onclick=async()=>{const e=$('cloudEmail').value.trim(),p=$('cloudPassword').value;if(!e||!p)return toast('Enter email and password');await cloudSignIn(e,p)};$('cloudSignup').onclick=async()=>{const e=$('cloudEmail').value.trim(),p=$('cloudPassword').value;if(!e||!p)return toast('Enter email and password');await cloudSignUp(e,p)}}
  wireScheduleEditor()}
 function timeOptions(selected){return '<option value="">Time</option>'+Array.from({length:48},(_,i)=>{const h=Math.floor(i/2),m=i%2?30:0,v=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');return `<option value="${v}" ${v===selected?'selected':''}>${formatTime(v)}</option>`}).join('')}
@@ -251,7 +262,7 @@ function renderAdmin(el){
   $('publishAnnouncement').onclick=()=>{const text=$('announcementText').value.trim();if(!text)return toast('Write an announcement');D.admin.announcements=D.admin.announcements||[];D.admin.announcements.push({text,audience:$('announcementAudience').value,date:iso(new Date())});saveAll();renderAdmin(el);toast('✓ Announcement published')};
   $('adminScheduleCopy').onclick=()=>{const date=$('adminScheduleDate').value||iso(new Date());D.changes=(D.changes||[]).filter(x=>x.date!==date);D.changes.push({date,schedule:clone(scheduleForDate(new Date()))});saveAll();toast('✓ Schedule version saved')};
   $('adminScheduleOriginal').onclick=()=>{D.schedule=defaultSchedule();saveAll();toast('✓ Original schedule restored');renderAdmin(el)};
-  $('cloudTest').onclick=async()=>{if(adminUser){try{await CloudAPI.getAllStudents();toast('✓ Firebase admin connection is working')}catch(e){toast('Firebase admin connection failed — check Rules')}}else if(cloudUser){try{await CloudAPI.getUserData(cloudUser.uid);toast('✓ Firebase connection is working')}catch(e){toast('Firebase connection failed — check Rules')}}else toast('Sign in to a Firebase account first')};$('cloudBackup').onclick=()=>cloudUser?syncCurrentUser('merge'):exportData;$('cloudRestore').onclick=()=>cloudUser?syncCurrentUser('download'):toast('Sign in to a student Firebase account to restore cloud data');
+  $('cloudTest').onclick=async()=>{if(adminUser){try{await CloudAPI.getAllStudents();toast('✓ Firebase admin connection is working')}catch(e){toast('Firebase admin connection failed — check Rules')}}else if(cloudUser){try{await CloudAPI.getUserData(cloudUser.uid);toast('✓ Firebase connection is working')}catch(e){toast('Firebase connection failed — check Rules')}}else toast('Sign in to a Firebase account first')};$('cloudBackup').onclick=()=>cloudUser?syncCurrentUser('upload'):exportData;$('cloudRestore').onclick=()=>cloudUser?syncCurrentUser('download'):toast('Sign in to a student Firebase account to restore cloud data');
   $('adminExport').onclick=exportData;
   $('adminExportRecords').onclick=()=>{const rows=[['Subject','Date','Time','Chapter','Topic','Homework','Teacher']];records.forEach(([k,r])=>{const m=recordMeta(k);rows.push([m.subject,m.date,m.time,r.chapter||'',r.topic||'',r.homework||'',r.teacher||''])});const csv=rows.map(row=>row.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='classwork-planner-records.csv';a.click();toast('✓ CSV exported')};
   $('adminExportPdf').onclick=()=>{
@@ -274,7 +285,8 @@ function confirmBox(title,text){return new Promise(resolve=>{const m=$('confirmM
 function resetAtMidnight(){clearTimeout(midnightTimer);const now=new Date(),next=new Date(now);next.setHours(24,0,1,0);midnightTimer=setTimeout(()=>{today=startOfDay(new Date());show('today');resetAtMidnight()},next-now)}
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>show(b.dataset.page));
 loadLocal();setTheme();resetAtMidnight();show('today');scheduleNextReminder();
-CloudAPI.onAuthStateChanged(async user=>{cloudUser=user||null;if(user){D.profile.email=user.email||D.profile.email;saveAll();if(!adminSession&&!adminAuthInProgress)await syncCurrentUser('merge');}});
+CloudAPI.onAuthStateChanged(async user=>{cloudUser=user||null;if(user){D.profile.email=user.email||D.profile.email;saveAll();if(!adminSession&&!adminAuthInProgress){if($('settings'))show('settings');startAutomaticCloudSync();}}else{stopAutomaticCloudSync();if($('settings'))show('settings');}});
 CloudAPI.onAdminAuthStateChanged(user=>{adminUser=user||null;if(!user&&adminSession){adminSession=false;show('settings')}});
-window.addEventListener('online',()=>toast('Back online — local data remains available'));
+window.addEventListener('online',()=>{toast('Back online — syncing…');if(cloudUser)syncCurrentUser('upload',true)});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&cloudUser)syncCurrentUser('upload',true)});
 if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}
