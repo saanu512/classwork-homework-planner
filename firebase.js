@@ -2,7 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/fireba
 import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 import { initializeFirestore, doc, getDoc, setDoc, collection, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 import { getAI, getGenerativeModel, GoogleAIBackend } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-ai.js";
-import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app-check.js";
+import { initializeAppCheck, ReCaptchaEnterpriseProvider, getToken } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app-check.js";
 
 export const firebaseConfig = {
   apiKey: "AIzaSyAQfUozDP7xyeZEl15DthoiAI_q05J2ZCM",
@@ -118,11 +118,19 @@ const sendPasswordReset = async email => {
 
 export const GeminiAPI = {
   async generate(prompt, modelName = 'gemini-3.8-flash') {
+    // Force an App Check token before the first AI request. This makes failures
+    // explicit instead of leaving the UI waiting indefinitely when App Check
+    // has not yet produced a valid token.
+    await getToken(appCheck, false);
     const model = getGenerativeModel(firebaseAI, {
       model: modelName,
       generationConfig: { temperature: 0.25 }
     });
-    const result = await model.generateContent(prompt);
+    const request = model.generateContent(prompt);
+    const timeout = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('GEMINI_REQUEST_TIMEOUT')), 30000)
+    );
+    const result = await Promise.race([request, timeout]);
     return result?.response?.text?.() || 'No answer returned.';
   }
 };

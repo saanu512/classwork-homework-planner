@@ -1,4 +1,4 @@
-const CACHE='cwp-v40-gemini-ai-firebase-logic-fix1';
+const CACHE='cwp-v40-gemini-ai-firebase-logic-fix2';
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['./','./index.html','./style.css','./app.js','./firebase.js','./manifest.json']))));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))));
 self.addEventListener('fetch',e=>{
