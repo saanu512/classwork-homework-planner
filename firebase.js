@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
-import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 import { initializeFirestore, doc, getDoc, setDoc, collection, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
 export const firebaseConfig = {
@@ -86,19 +86,33 @@ const decodeCloudData = data => {
   return x;
 };
 
+const sendPasswordReset = async email => {
+  const res = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${encodeURIComponent(firebaseConfig.apiKey)}`, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({requestType:'PASSWORD_RESET', email})
+  });
+  const data = await res.json().catch(()=>({}));
+  if(!res.ok){
+    const code = data?.error?.message || 'PASSWORD_RESET_FAILED';
+    const err = new Error(code); err.code = code; throw err;
+  }
+  return data;
+};
+
 export const CloudAPI = {
   auth, db, adminAuth, adminDb,
   onAuthStateChanged: cb => onAuthStateChanged(auth, cb),
   onAdminAuthStateChanged: cb => onAuthStateChanged(adminAuth, cb),
   signIn: (email,password) => signInWithEmailAndPassword(auth,email,password),
   signUp: (email,password) => createUserWithEmailAndPassword(auth,email,password),
-  resetPassword: email => sendPasswordResetEmail(auth,email),
+  resetPassword: email => sendPasswordReset(email),
   setPersistence: () => setPersistence(auth, browserLocalPersistence),
   adminSetPersistence: () => setPersistence(adminAuth, browserLocalPersistence),
   signOut: () => signOut(auth),
   currentUser: () => auth.currentUser,
   adminSignIn: (email,password) => signInWithEmailAndPassword(adminAuth,email,password),
-  adminResetPassword: email => sendPasswordResetEmail(adminAuth,email),
+  adminResetPassword: email => sendPasswordReset(email),
   adminSignOut: () => signOut(adminAuth),
   adminCurrentUser: () => adminAuth.currentUser,
   async getUserData(uid){

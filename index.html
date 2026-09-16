@@ -33,24 +33,12 @@
     <label>Password</label><input id="startPassword" type="password" autocomplete="current-password" placeholder="Password (6+ characters)">
     <div class="twoCol"><button class="settingSave" id="startLogin">SIGN IN</button><button class="settingSave" id="startSignup">CREATE ACCOUNT</button></div>
     <button class="startupForgotLink" id="startForgot">Forgot password?</button>
-    <p id="startAuthStatus" class="statusPill">Not signed in — sign in as a student or administrator to enter the app.</p>
+    <p id="startAuthStatus" class="statusPill">Checking sign-in status…</p>
     <button class="startupAdminLink" id="startAdmin">Admin Login</button>
   </div>
 </div>
 <div id="toast" class="toast"></div>
 <div id="confirmModal" class="modal"><div class="modalBox"><h3 id="confirmTitle">Confirm</h3><p id="confirmText"></p><div class="modalActions"><button class="no" id="confirmNo">CANCEL</button><button class="yes" id="confirmYes">CONFIRM</button></div></div></div>
-<script type="module" src="app.js?v=20260916-auth-final"></script>
-<script>
-(function(){
-  function bind(){
-    var m=document.getElementById('startupAuth');
-    if(!m)return;
-    var s=document.getElementById('startAuthStatus');
-    if(s && s.textContent.indexOf('Checking')===0)s.textContent='Not signed in — sign in as a student or administrator to enter the app.';
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind); else bind();
-  var n=0,t=setInterval(function(){bind();if(++n>100)clearInterval(t)},100);
-})();
-</script>
+<script type="module" src="app.js"></script>
 </body>
 </html>

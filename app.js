@@ -168,109 +168,25 @@ function firebaseAuthMessage(e){
 async function resetStudentPassword(email){
   if(!email)return toast('Enter your student email first');
   try{await CloudAPI.resetPassword(email);toast('✓ Password reset email sent');return true}
-  catch(e){console.error(e);toast(firebaseAuthMessage(e));return false}
+  catch(e){console.error(e);toast(({
+    'EMAIL_NOT_FOUND':'No Firebase account was found for this email.',
+    'INVALID_EMAIL':'Enter a valid email address.',
+    'TOO_MANY_ATTEMPTS_TRY_LATER':'Too many attempts. Try again later.'
+  }[e?.code])||'Could not send password reset email.');return false}
 }
 async function resetAdminPassword(email){
   if(!email)return toast('Enter your admin email first');
   try{await CloudAPI.adminResetPassword(email);toast('✓ Password reset email sent');return true}
-  catch(e){console.error(e);toast(firebaseAuthMessage(e));return false}
+  catch(e){console.error(e);toast(({
+    'EMAIL_NOT_FOUND':'No Firebase account was found for this email.',
+    'INVALID_EMAIL':'Enter a valid email address.',
+    'TOO_MANY_ATTEMPTS_TRY_LATER':'Too many attempts. Try again later.'
+  }[e?.code])||'Could not send password reset email.');return false}
 }
 function cloudAccountMarkup(){
   if(cloudUser){const ls=D.settings?.lastSyncAt?`Last synced: ${new Date(D.settings.lastSyncAt).toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'})}`:'Last synced: Not yet';return `<div class="cloudAccount"><div><b>✓ Signed in</b><small>${esc(cloudUser.email||'')}</small></div><div class="twoCol"><button class="settingSave" id="cloudSyncNow">SYNC NOW</button><button class="settingSave" id="cloudLogout">LOG OUT</button></div><p class="statusPill" id="cloudAccountStatus">${esc(ls)}</p></div>`;}
   return `<div class="cloudAccount"><label>Email</label><input id="cloudEmail" type="email" autocomplete="email" placeholder="Student email"><label>Password</label><input id="cloudPassword" type="password" autocomplete="current-password" placeholder="Password (6+ characters)"><div class="twoCol"><button class="settingSave" id="cloudLogin">LOGIN</button><button class="settingSave" id="cloudSignup">CREATE ACCOUNT</button></div><button class="authForgotLink" id="cloudForgot">Forgot password?</button><p class="statusPill">Not signed in — local data remains on this device</p></div>`;
 }
-async 
-function cloudAdminRecords(){
-  const out=[];
-  (cloudStudents||[]).forEach(st=>{
-    const d=st||{};
-    const profile=d.profile||{};
-    Object.entries(d.records||{}).forEach(([k,r])=>{
-      const m=recordMeta(k);
-      out.push({studentId:st.id||d.uid||'',student:profile.name||d.name||'Unnamed student',email:profile.email||d.email||'',roll:profile.roll||d.roll||'',k,r:r||{},m});
-    });
-  });
-  return out;
-}
-function refreshAdminSubjectFilter(){
-  const sel=$('adminSubjectFilter'); if(!sel)return;
-  const current=sel.value;
-  const subjects=[...new Set(cloudAdminRecords().filter(x=>x.r.topic).map(x=>x.m.subject).filter(Boolean))].sort();
-  sel.innerHTML='<option value="">All subjects</option>'+subjects.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join('');
-  if(subjects.includes(current))sel.value=current;
-}
-function renderAdminCloudMonitoring(){
-  refreshAdminSubjectFilter();
-  const all=cloudAdminRecords();
-  const sf=$('adminSubjectFilter')?.value||'';
-  const df=$('adminDateFilter')?.value||'';
-  const cf=all.filter(x=>(!sf||x.m.subject===sf)&&(!df||x.m.date===df)&&!!x.r.topic);
-  const cl=$('adminClassworkList');
-  if(cl) cl.innerHTML=cf.slice().reverse().slice(0,200).map(x=>`<div class="adminRecord"><b>${esc(x.m.subject)}</b><span>${esc(x.m.date)} · ${esc(x.m.time)} · ${esc(x.student)}</span><p><strong>Chapter:</strong> ${esc(x.r.chapter||'—')} · <strong>Topic:</strong> ${esc(x.r.topic||'—')}</p><small>${esc(x.email)}${x.roll?' · Roll '+esc(x.roll):''} · Teacher: ${esc(x.r.teacher||'—')}</small></div>`).join('')||'<div class="empty glass">No classwork records match the selected filters.</div>';
-  const hf=$('adminHomeworkFilter')?.value||'';
-  const hdf=$('adminHomeworkDate')?.value||'';
-  const hh=all.filter(x=>(!hf||(hf==='pending'&&!x.r.completed)||(hf==='completed'&&!!x.r.completed))&&(!hdf||x.m.date===hdf)&&!!String(x.r.homework||'').trim());
-  const hl=$('adminHomeworkList');
-  if(hl) hl.innerHTML=hh.slice().reverse().slice(0,200).map(x=>`<div class="adminRecord"><b>${esc(x.m.subject)}</b><span>${esc(x.m.date)} · ${esc(x.m.time)} · ${esc(x.student)}</span><p>${esc(x.r.homework)}</p><small>${x.r.completed?'✓ Completed':'○ Pending'} · ${esc(x.email)}${x.roll?' · Roll '+esc(x.roll):''}</small></div>`).join('')||'<div class="empty glass">No homework records match the selected filters.</div>';
-}
-function cloudExportRows(){
-  return cloudAdminRecords().map(x=>[x.student,x.email,x.roll,x.m.subject,x.m.date,x.m.time,x.r.chapter||'',x.r.topic||'',x.r.homework||'',x.r.teacher||'',x.r.completed?'Completed':'Pending']);
-}
-function exportAdminCloudAll(){
-  const payload={exportedAt:new Date().toISOString(),students:cloudStudents||[]};
-  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}),a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);a.download='homework-reminder-cloud-students.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast('✓ Cloud student data exported');
-}
-function exportAdminCloudCSV(){
-  const rows=[['Student','Email','Roll','Subject','Date','Time','Chapter','Topic','Homework','Teacher','Homework Status'],...cloudExportRows()];
-  const csv=rows.map(row=>row.map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(',')).join('\n');
-  const blob=new Blob([csv],{type:'text/csv'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='homework-reminder-cloud-records.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast('✓ Cloud records CSV exported');
-}
-function exportAdminCloudPDF(){
-  const students=Array.isArray(cloudStudents)?cloudStudents:[];
-  const records=cloudAdminRecords();
-  const dayName=date=>{
-    if(!date)return '';
-    const d=new Date(date+'T00:00:00');
-    return Number.isNaN(d.getTime())?'':d.toLocaleDateString('en-IN',{weekday:'long'});
-  };
-  const escCell=v=>esc(v==null?'':String(v));
-  const studentName=st=>st?.profile?.name||st?.name||'Unnamed student';
-  const studentEmail=st=>st?.profile?.email||st?.email||'';
-  const studentRoll=st=>st?.profile?.roll||st?.roll||'';
-  const recRows=records.slice().sort((a,b)=>{
-    const aa=(a.student+'|'+a.m.date+'|'+a.m.time+'|'+a.m.subject).toLowerCase();
-    const bb=(b.student+'|'+b.m.date+'|'+b.m.time+'|'+b.m.subject).toLowerCase();
-    return aa.localeCompare(bb);
-  });
-  const totalTopics=records.filter(x=>String(x.r.topic||'').trim()).length;
-  const totalHomework=records.filter(x=>String(x.r.homework||'').trim()).length;
-  const completedHomework=records.filter(x=>String(x.r.homework||'').trim()&&x.r.completed).length;
-  const subjects=[...new Set(records.map(x=>x.m.subject).filter(Boolean))].sort();
-  const dates=[...new Set(records.map(x=>x.m.date).filter(Boolean))].sort();
-  const allRows=recRows.map(x=>`<tr><td>${escCell(x.student)}</td><td>${escCell(x.email)}</td><td>${escCell(x.roll)}</td><td>${escCell(x.m.date)}</td><td>${escCell(dayName(x.m.date))}</td><td>${escCell(x.m.time)}</td><td>${escCell(x.m.subject)}</td><td>${escCell(x.r.chapter||'')}</td><td>${escCell(x.r.topic||'')}</td><td>${escCell(x.r.teacher||'')}</td><td>${escCell(x.r.homework||'')}</td><td>${escCell(x.r.completed?'Completed':(x.r.homework?'Pending':''))}</td></tr>`).join('');
-
-  const studentSections=students.map(st=>{
-    const id=st.id||st.uid||'';
-    const rs=recRows.filter(x=>x.studentId===id || x.email===studentEmail(st));
-    const profile=st.profile||{};
-    const syllabus=st.syllabus||{};
-    const syllabusRows=Object.entries(syllabus).flatMap(([subject,items])=>(Array.isArray(items)?items:[]).map(x=>({subject,...(x||{})})));
-    const topics=rs.filter(x=>String(x.r.topic||'').trim()).length;
-    const hw=rs.filter(x=>String(x.r.homework||'').trim()).length;
-    const done=rs.filter(x=>String(x.r.homework||'').trim()&&x.r.completed).length;
-    const rows=rs.map(x=>`<tr><td>${escCell(x.m.date)}</td><td>${escCell(dayName(x.m.date))}</td><td>${escCell(x.m.time)}</td><td>${escCell(x.m.subject)}</td><td>${escCell(x.r.chapter||'')}</td><td>${escCell(x.r.topic||'')}</td><td>${escCell(x.r.teacher||'')}</td><td>${escCell(x.r.homework||'')}</td><td>${escCell(x.r.completed?'Completed':(x.r.homework?'Pending':''))}</td></tr>`).join('');
-    const syl=syllabusRows.map(x=>`<tr><td>${escCell(x.subject)}</td><td>${escCell(x.chapter||'')}</td><td>${escCell(x.topic||'')}</td><td>${escCell(x.date||'')}</td><td>${escCell(x.teacher||'')}</td></tr>`).join('');
-    return `<section class="studentSection"><h2>${escCell(studentName(st))}</h2><p><b>Email:</b> ${escCell(studentEmail(st))} &nbsp; <b>Roll:</b> ${escCell(studentRoll(st)||'—')}</p><div class="miniStats"><span>Records: <b>${rs.length}</b></span><span>Topics: <b>${topics}</b></span><span>Homework: <b>${hw}</b></span><span>Completed: <b>${done}</b></span></div><h3>Daily Classwork & Homework</h3>${rows?`<table><thead><tr><th>Date</th><th>Day</th><th>Time</th><th>Subject</th><th>Chapter</th><th>Topic</th><th>Teacher</th><th>Homework</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>`:'<p class="empty">No classwork/homework records.</p>'}<h3>Saved Syllabus / Topics</h3>${syl?`<table><thead><tr><th>Subject</th><th>Chapter</th><th>Topic</th><th>Date</th><th>Teacher</th></tr></thead><tbody>${syl}</tbody></table>`:'<p class="empty">No saved syllabus entries.</p>'}</section>`;
-  }).join('');
-
-  const w=window.open('','_blank');
-  if(!w){toast('Allow pop-ups for PDF export.');return;}
-  w.document.open();
-  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Homework Reminder — Complete Student Data</title><style>body{font-family:Arial,Helvetica,sans-serif;color:#111;margin:0;padding:24px;font-size:11px}h1{font-size:24px;margin:0 0 6px}h2{font-size:19px;margin:0 0 6px;border-bottom:2px solid #333;padding-bottom:5px}h3{font-size:14px;margin:18px 0 7px}.muted{color:#555}.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:18px 0}.box{border:1px solid #999;border-radius:6px;padding:8px}.box b{display:block;font-size:16px}.studentSection{page-break-before:always}.studentSection:first-of-type{page-break-before:auto}.miniStats{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0}.miniStats span{border:1px solid #bbb;border-radius:5px;padding:5px 8px}table{width:100%;border-collapse:collapse;margin:6px 0 14px;table-layout:auto}th,td{border:1px solid #777;padding:4px 5px;text-align:left;vertical-align:top;word-break:break-word}th{background:#eee;font-size:10px}.empty{color:#666;font-style:italic}.overall{page-break-before:always}.pageBreak{page-break-before:always}@media print{body{padding:10mm}thead{display:table-header-group}tr{break-inside:avoid}.summary{grid-template-columns:repeat(4,1fr)}}@page{size:A4 landscape;margin:10mm}</style></head><body><h1>Homework Reminder — Complete Cloud Data</h1><p class="muted">Comprehensive export · Generated ${escCell(new Date().toLocaleString('en-IN'))}</p><div class="summary"><div class="box">Students<b>${students.length}</b></div><div class="box">Classwork Topics<b>${totalTopics}</b></div><div class="box">Homework<b>${totalHomework}</b></div><div class="box">Completed Homework<b>${completedHomework}</b></div></div><p><b>Overall coverage:</b> ${subjects.length} subjects · ${dates.length} dates · ${records.length} total daily records.</p><section class="overall"><h2>Overall — All Students</h2><table><thead><tr><th>Student</th><th>Email</th><th>Roll</th><th>Date</th><th>Day</th><th>Time</th><th>Subject</th><th>Chapter</th><th>Topic</th><th>Teacher</th><th>Homework</th><th>Status</th></tr></thead><tbody>${allRows||'<tr><td colspan="12">No cloud classwork/homework records.</td></tr>'}</tbody></table></section>${studentSections||'<p class="empty">No cloud students found.</p>'}<script>window.onload=function(){setTimeout(function(){window.focus();window.print()},500)};window.onafterprint=function(){setTimeout(function(){window.close()},300)};<\/script></body></html>`);
-  w.document.close();
-}
-
 async function loadAdminCloudData(el){
   try{
     cloudStudents=await CloudAPI.getAllStudents();
@@ -278,17 +194,6 @@ async function loadAdminCloudData(el){
     list.innerHTML=cloudStudents.length?cloudStudents.map((st,i)=>`<div class="adminListRow"><div><b>${esc(st.profile?.name||st.name||'Unnamed student')}</b><small>${esc(st.profile?.email||st.email||'')} ${st.profile?.roll?' · Roll '+esc(st.profile.roll):''}</small></div><div class="adminRowActions"><button class="addRow" data-cloud-view="${i}">VIEW RECORDS</button></div></div>`).join(''):'<div class="empty glass">No student cloud records yet.</div>';
     list.querySelectorAll('[data-cloud-view]').forEach(b=>b.onclick=()=>showCloudStudentDetails(cloudStudents[Number(b.dataset.cloudView)]));
     const note=document.querySelector('#studentsPanel .adminNote'); if(note)note.textContent='Cloud-connected students. Select VIEW RECORDS to inspect saved classwork, homework and syllabus.';
-    renderAdminCloudMonitoring();
-    const ar=cloudAdminRecords();
-    const statEls=document.querySelectorAll('.adminStatsGrid .adminStat strong');
-    if(statEls.length>=4){
-      const hwc=ar.filter(x=>String(x.r.homework||'').trim());
-      const syc=ar.filter(x=>x.r.topic);
-      statEls[0].textContent=String(cloudStudents.length);
-      statEls[1].textContent=String(ar.filter(x=>x.r.topic).length);
-      statEls[2].textContent=String(hwc.length);
-      statEls[3].textContent=String(syc.length);
-    }
   }catch(e){console.error('Admin cloud read failed:',e);const note=document.querySelector('#studentsPanel .adminNote');if(note)note.textContent=`Unable to read cloud students (${e?.code||'unknown'}). Check the published Firestore Rules.`}
 }
 function showCloudStudentDetails(st){
@@ -356,12 +261,21 @@ function showStartupAuth(){
   if(!m)return;
   m.style.display='grid';
   const status=$('startAuthStatus');
-  if(status)status.textContent='Not signed in — sign in as a student or administrator to enter the app.';
+  if(status && !status.dataset.wired){
+    status.dataset.wired='1';
+    $('startLogin').onclick=async()=>{const e=$('startEmail').value.trim(),pw=$('startPassword').value;if(!e||!pw){status.textContent='Enter email and password';return}status.textContent='Signing in…';const ok=await cloudSignIn(e,pw);if(ok){status.textContent=`✓ Signed in as ${e}`;setTimeout(closeStartupAuth,350)}};
+    $('startSignup').onclick=async()=>{const e=$('startEmail').value.trim(),pw=$('startPassword').value;if(!e||!pw){status.textContent='Enter email and password';return}status.textContent='Creating account…';const ok=await cloudSignUp(e,pw);if(ok){status.textContent=`✓ Account created and signed in as ${e}`;setTimeout(closeStartupAuth,350)}};
+    $('startAdmin').onclick=()=>showAdminLogin(true);
+    $('startPassword').onkeydown=e=>{if(e.key==='Enter')$('startLogin').click()};
+    $('startForgot').onclick=()=>resetStudentPassword($('startEmail').value.trim());
+  }
+  if(status && status.textContent==='Checking sign-in status…')status.textContent='Not signed in — local data stays on this device until you sign in.';
 }
 function showAdminLogin(asPopup=false){
   if(asPopup){
     const existing=$('adminAuthPopup'); if(existing)existing.remove();
-    const m=document.createElement('div');m.id='adminAuthPopup';m.className='startupAuthOverlay adminAuthOverlay';m.style.display='grid';
+    const m=document.createElement('div');
+    m.id='adminAuthPopup'; m.className='startupAuthOverlay adminAuthOverlay'; m.style.display='grid';
     m.innerHTML=`<div class="startupAuthCard adminPopupCard">
       <div class="eyebrow">RESTRICTED AREA</div><h2>Admin Login</h2>
       <p class="mutedIntro">Administrator access uses Firebase Authentication plus an Admin allow-list.</p>
@@ -375,52 +289,24 @@ function showAdminLogin(asPopup=false){
     $('popupAdminLoginBtn').onclick=async()=>{
       const e=$('popupAdminUser').value.trim(),pw=$('popupAdminPass').value,status=$('popupAdminStatus');
       if(!e||!pw){status.textContent='Enter admin email and password';return}
-      $('popupAdminLoginBtn').disabled=true;status.textContent='Signing in…';adminAuthInProgress=true;
+      const btn=$('popupAdminLoginBtn');btn.disabled=true;status.textContent='Signing in…';adminAuthInProgress=true;
       try{await CloudAPI.adminSetPersistence();await CloudAPI.adminSignIn(e,pw);const u=CloudAPI.adminCurrentUser();
         if(await CloudAPI.isAdmin(u?.uid)){adminSession=true;adminUser=u;m.remove();closeStartupAuth();show('admin');toast('✓ Admin login successful')}
         else{await CloudAPI.adminSignOut();status.textContent='Authenticated, but this account is not an admin.'}
-      }catch(err){status.textContent=firebaseAuthMessage(err)}finally{adminAuthInProgress=false;$('popupAdminLoginBtn')?.removeAttribute('disabled')}
+      }catch(err){status.textContent=firebaseAuthMessage(err)}finally{adminAuthInProgress=false;btn.disabled=false}
     };
     $('popupAdminPass').onkeydown=e=>{if(e.key==='Enter')$('popupAdminLoginBtn').click()};
     $('popupAdminForgot').onclick=()=>resetAdminPassword($('popupAdminUser').value.trim());
     $('popupAdminBack').onclick=()=>{m.remove();showStartupAuth()};
     return;
   }
-  document.querySelectorAll('main>section').forEach(x=>x.remove());const s=document.createElement('section');s.id='adminLogin';$('main').appendChild(s);$('pageTitle').textContent='Admin Login';$('dateLine').textContent='';s.innerHTML=`<div class="authWrap"><div class="authCard glass"><div class="eyebrow">RESTRICTED AREA</div><h2>Admin Login</h2><p class="mutedIntro">Administrator access uses Firebase Authentication plus an Admin allow-list. A normal student account cannot open this dashboard.</p><label>Admin email</label><input id="adminUser" type="email" autocomplete="username" placeholder="Admin email"><label>Password</label><input id="adminPass" type="password" autocomplete="current-password" placeholder="Password"><button class="primary wideAction" id="adminLoginBtn">LOGIN AS ADMIN</button><button class="authForgotLink" id="adminForgot">Forgot password?</button><button class="backLink" id="adminCancel">← Back to Settings</button><p class="tinyNote">The account must also have a Firestore document at <b>admins/&lt;Firebase UID&gt;</b> with <b>role = admin</b>. This grants administrator privileges.</p></div></div>`;$('adminLoginBtn').onclick=async()=>{const e=$('adminUser').value.trim(),p=$('adminPass').value;if(!e||!p)return toast('Enter admin email and password');$('adminLoginBtn').disabled=true;$('adminLoginBtn').textContent='AUTHENTICATING…';adminAuthInProgress=true;try{await CloudAPI.adminSetPersistence();await CloudAPI.adminSignIn(e,p);const u=CloudAPI.adminCurrentUser();if(await CloudAPI.isAdmin(u?.uid)){adminSession=true;adminUser=u;show('admin');toast('✓ Admin login successful')}else{await CloudAPI.adminSignOut();toast('Authenticated, but this account is not an admin. Add its UID to the Firestore admins collection.')}}catch(err){toast(firebaseAuthMessage(err))}finally{adminAuthInProgress=false;$('adminLoginBtn').disabled=false;$('adminLoginBtn').textContent='LOGIN AS ADMIN'}};$('adminPass').onkeydown=e=>{if(e.key==='Enter')$('adminLoginBtn').click()};$('adminForgot').onclick=()=>resetAdminPassword($('adminUser').value.trim());$('adminCancel').onclick=()=>{show('settings')}
-}
+document.querySelectorAll('main>section').forEach(x=>x.remove());const s=document.createElement('section');s.id='adminLogin';$('main').appendChild(s);$('pageTitle').textContent='Admin Login';$('dateLine').textContent='';s.innerHTML=`<div class="authWrap"><div class="authCard glass"><div class="eyebrow">RESTRICTED AREA</div><h2>Admin Login</h2><p class="mutedIntro">Administrator access uses Firebase Authentication plus an Admin allow-list. A normal student account cannot open this dashboard.</p><label>Admin email</label><input id="adminUser" type="email" autocomplete="username" placeholder="Admin email"><label>Password</label><input id="adminPass" type="password" autocomplete="current-password" placeholder="Password"><button class="primary wideAction" id="adminLoginBtn">LOGIN AS ADMIN</button><button class="authForgotLink" id="adminForgot">Forgot password?</button><button class="backLink" id="adminCancel">← Back to Login</button><p class="tinyNote">The account must also have a Firestore document at <b>admins/&lt;Firebase UID&gt;</b> with <b>role = admin</b>. This grants administrator privileges.</p></div></div>`;$('adminLoginBtn').onclick=async()=>{const e=$('adminUser').value.trim(),p=$('adminPass').value;if(!e||!p)return toast('Enter admin email and password');$('adminLoginBtn').disabled=true;$('adminLoginBtn').textContent='AUTHENTICATING…';adminAuthInProgress=true;try{await CloudAPI.adminSetPersistence();await CloudAPI.adminSignIn(e,p);const u=CloudAPI.adminCurrentUser();if(await CloudAPI.isAdmin(u?.uid)){adminSession=true;adminUser=u;show('admin');toast('✓ Admin login successful')}else{await CloudAPI.adminSignOut();toast('Authenticated, but this account is not an admin. Add its UID to the Firestore admins collection.')}}catch(err){toast(firebaseAuthMessage(err))}finally{adminAuthInProgress=false}$('adminLoginBtn').disabled=false;$('adminLoginBtn').textContent='LOGIN AS ADMIN'};$('adminPass').onkeydown=e=>{if(e.key==='Enter')$('adminLoginBtn').click()};$('adminForgot').onclick=()=>resetAdminPassword($('adminUser').value.trim());$('adminCancel').onclick=()=>{showAdminLoginBackToStudentGate()}}
 function showAdminLoginBackToStudentGate(){
   document.querySelectorAll('main>section').forEach(x=>x.remove());
   $('pageTitle').textContent='Today';
   $('dateLine').textContent='';
   showStartupAuth();
 }
-
-// Robust startup-auth bridge for AppGeyser/WebView. The HTML login controls can
-// bind through this bridge even if the module finishes loading asynchronously.
-window.__CWPAuth = {
-  studentLogin: (email,password) => cloudSignIn(email,password),
-  studentSignup: (email,password) => cloudSignUp(email,password),
-  studentForgot: email => resetStudentPassword(email),
-  openAdminPopup: () => showAdminLogin(true),
-  adminLogin: async (email,password) => {
-    adminAuthInProgress=true;
-    try{
-      await CloudAPI.adminSetPersistence();
-      await CloudAPI.adminSignIn(email,password);
-      const u=CloudAPI.adminCurrentUser();
-      if(await CloudAPI.isAdmin(u?.uid)){
-        adminSession=true; adminUser=u; closeStartupAuth();
-        document.getElementById('adminAuthPopup')?.remove();
-        show('admin'); toast('✓ Admin login successful'); return true;
-      }
-      await CloudAPI.adminSignOut();
-      toast('Authenticated, but this account is not an admin.'); return false;
-    }catch(e){ toast(firebaseAuthMessage(e)); return false; }
-    finally{ adminAuthInProgress=false; }
-  },
-  adminForgot: email => resetAdminPassword(email)
-};
-window.__CWPAuthReady = true;
 
 function renderSettings(el){el.innerHTML=`<div class="settingsGrid"><div class="settingCard"><div class="settingTitle"><span class="settingIcon">◉</span><div><h3>Student Profile</h3><p>Local profile used for records and future cloud sync.</p></div></div><input id="pname" value="${esc(D.profile.name)}" placeholder="Student name"><input id="pemail" value="${esc(D.profile.email)}" placeholder="Email"><input id="roll" type="number" min="1" max="100" value="${esc(D.profile.roll)}" placeholder="Roll number"><button class="settingSave" id="saveProfile">SAVE PROFILE</button></div><div class="settingCard"><div class="settingTitle"><span class="settingIcon">◐</span><div><h3>Theme</h3><p>Keep the v26-style adaptive appearance.</p></div></div><select id="theme"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></div><div class="settingCard"><div class="settingTitle"><span class="settingIcon">⏰</span><div><h3>Homework Reminder</h3><p>One-day-before reminder for saved homework.</p></div></div><label class="switchLine"><input id="oneDay" type="checkbox" ${D.settings.oneDayBefore?'checked':''}> One day before</label><button class="settingSave" id="reminderPage">MANAGE REMINDERS</button></div><div class="settingCard scheduleCard"><div class="settingTitle"><span class="settingIcon">▦</span><div><h3>Manage Schedule & Teachers</h3><p>Edit the preset timetable without changing historical daily records.</p></div></div><div class="scheduleToolbar"><div><label>Effective from</label><input id="effectiveDate" type="date" value="${iso(new Date())}"></div><button class="todayBtn" id="loadOriginal">Original</button></div><div id="scheduleEditor">${scheduleEditor(defaultSchedule())}</div><div class="scheduleExtraBox"><div><b>Copy schedule</b><small>Copy the current weekly schedule into a new effective-date version.</small></div><button class="addRow" id="copySchedule">COPY</button></div><button class="settingSave" id="tsave">SAVE SCHEDULE & TEACHERS</button></div><div class="settingCard"><div class="settingTitle"><span class="settingIcon">☁</span><div><h3>Firebase Cloud Account</h3><p>Sign in to sync your classwork, homework, syllabus, schedule and reminders across devices.</p></div></div>${cloudAccountMarkup()}<div class="twoCol"><button class="settingSave" id="exportData">EXPORT DATA</button><button class="settingSave" id="importData">IMPORT DATA</button></div><input id="importFile" type="file" accept="application/json" hidden></div><div class="settingCard"><div class="settingTitle"><span class="settingIcon">▣</span><div><h3>Administrator</h3><p>Restricted area. Login is required before the Admin Dashboard can be opened.</p></div></div><button class="settingSave" id="adminPage">ADMIN LOGIN</button></div></div>`;$('theme').value=D.theme;$('theme').onchange=()=>{D.theme=$('theme').value;setTheme();saveAll()};$('saveProfile').onclick=()=>{D.profile.name=$('pname').value.trim();D.profile.email=$('pemail').value.trim();D.profile.roll=$('roll').value;saveAll();toast('✓ Profile saved');show('today')};$('oneDay').onchange=e=>{D.settings.oneDayBefore=e.target.checked;saveAll()};$('reminderPage').onclick=()=>show('reminders');$('adminPage').onclick=()=>adminSession?show('admin'):showAdminLogin();$('loadOriginal').onclick=()=>{$('effectiveDate').value=iso(new Date());$('scheduleEditor').innerHTML=scheduleEditor(defaultSchedule());wireScheduleEditor()};$('effectiveDate').onchange=()=>{$('scheduleEditor').innerHTML=scheduleEditor(scheduleForDate(new Date($('effectiveDate').value+'T00:00:00')));wireScheduleEditor()};$('copySchedule').onclick=()=>{const date=$('effectiveDate').value;if(!date)return;D.changes=(D.changes||[]).filter(x=>x.date!==date);D.changes.push({date,schedule:collectSchedule()});D.changes.sort((a,b)=>a.date.localeCompare(b.date));saveAll();toast('✓ Schedule copied')};$('tsave').onclick=()=>{const date=$('effectiveDate').value,s=collectSchedule();if(!date||!Object.values(s).some(a=>a.length))return toast('Add at least one class');D.changes=(D.changes||[]).filter(x=>x.date!==date);D.changes.push({date,schedule:s});D.teachers=collectRowTeachers();saveAll();toast('✓ Schedule & teachers saved');show('today')};$('exportData').onclick=exportData;$('importData').onclick=()=>$('importFile').click();$('importFile').onchange=importData;
  if(cloudUser){$('cloudSyncNow').onclick=()=>syncCurrentUser('upload');$('cloudLogout').onclick=async()=>{try{clearTimeout(cloudSyncTimer);await syncCurrentUser('upload',true);await CloudAPI.signOut();try{localStorage.removeItem(STUDENT_SESSION_HINT)}catch(_){}toast('✓ Logged out of Firebase — your local data is kept on this device')}catch(e){toast('Could not log out')}}}
@@ -460,8 +346,8 @@ function renderAdmin(el){
   <div class="adminGrid">
   ${adminPanel('Overview','⌂',`<div class="adminTwo"><div><b>Current student</b><p>${esc(D.profile.name||'Not set')} · ${esc(D.profile.email||'No email')}</p></div><div><b>Last saved</b><p>${D._savedAt?new Date(D._savedAt).toLocaleString():'Not available'}</p></div></div><div class="adminQuick"><button class="settingSave" data-scroll="studentsPanel">STUDENTS</button><button class="settingSave" data-scroll="syllabusPanel">SYLLABUS</button><button class="settingSave" data-scroll="schedulePanel">SCHEDULE</button><button class="settingSave" data-scroll="aiPanel">GEMINI AI</button></div>`,'overviewPanel')}
   ${adminPanel('Student Management','👨‍🎓',`<div class="adminToolbar"><input id="adminStudentSearch" placeholder="Search name or roll number"><button class="addRow" id="addStudent">＋ ADD LOCAL PROFILE</button></div><div id="studentList">Loading cloud students…</div><div id="studentCloudDetail" class="cloudStudentDetail"></div><p class="adminNote">When Firebase is connected, this area shows cloud student accounts and their saved classwork, homework and syllabus directly inside the app. Local profiles remain separate from cloud accounts.</p>`,'studentsPanel')}
-  ${adminPanel('Classwork Monitoring','📚',`<div class="filterBar"><select id="adminSubjectFilter"><option value="">All subjects</option>${SUBJECTS.map(s=>`<option>${esc(s)}</option>`).join('')}</select><input id="adminDateFilter" type="date"></div><div id="adminClassworkList"><div class="empty glass">Loading cloud classwork records…</div></div>`,'classworkPanel')}
-  ${adminPanel('Homework Monitoring','📝',`<div class="filterBar"><select id="adminHomeworkFilter"><option value="">All</option><option value="pending">Pending</option><option value="completed">Completed</option></select><input id="adminHomeworkDate" type="date"></div><div id="adminHomeworkList"><div class="empty glass">Loading cloud homework records…</div></div>`,'homeworkPanel')}
+  ${adminPanel('Classwork Monitoring','📚',`<div class="filterBar"><select id="adminSubjectFilter"><option value="">All subjects</option>${SUBJECTS.map(s=>`<option>${esc(s)}</option>`).join('')}</select><input id="adminDateFilter" type="date"></div><div id="adminClassworkList">${records.slice().reverse().slice(0,100).map(([k,r])=>{const m=recordMeta(k);return `<div class="adminRecord"><b>${esc(m.subject)}</b><span>${esc(m.date)} · ${esc(m.time)}</span><p><strong>Chapter:</strong> ${esc(r.chapter||'—')} · <strong>Topic:</strong> ${esc(r.topic||'—')}</p><small>Teacher: ${esc(r.teacher||'—')}</small></div>`}).join('')||'<div class="empty glass">No classwork records yet.</div>'}</div>`,'classworkPanel')}
+  ${adminPanel('Homework Monitoring','📝',`<div class="filterBar"><select id="adminHomeworkFilter"><option value="">All</option><option value="pending">Pending</option><option value="completed">Completed</option></select><input id="adminHomeworkDate" type="date"></div><div id="adminHomeworkList">${hw.slice().reverse().map(x=>`<div class="adminRecord"><b>${esc(x.m.subject)}</b><span>${esc(x.m.date)} · ${esc(x.m.time)}</span><p>${esc(x.r.homework)}</p><small>${x.r.completed?'✓ Completed':'○ Pending'} · Due/reminder data stored with record</small></div>`).join('')||'<div class="empty glass">No homework records yet.</div>'}</div>`,'homeworkPanel')}
   ${adminPanel('Syllabus Management','📖',`<div class="adminToolbar"><input id="adminSyllabusSubject" placeholder="Subject name"><input id="adminChapter" placeholder="Chapter"><input id="adminTopic" placeholder="Topic"><button class="addRow" id="addSyllabus">＋ ADD</button></div><div class="adminList">${syllabusSubjects.length?syllabusSubjects.map(s=>`<div class="adminRecord"><b>${esc(s)}</b><small>${topics[s].length} recorded topic(s)</small><p>${topics[s].slice(-5).map(t=>`${esc(t.chapter||'No chapter')}: ${esc(t.topic)}`).join(' · ')}</p></div>`).join(''):'<div class="empty glass">No syllabus records yet.</div>'}</div><div class="adminQuick"><button class="settingSave" id="publishSyllabus">PUBLISH SYLLABUS</button><button class="settingSave" id="restoreSyllabus">RESTORE FROM RECORDS</button></div>`,'syllabusPanel')}
   ${adminPanel('Teacher Management','👨‍🏫',`<div class="adminToolbar"><input id="adminTeacherSubject" placeholder="Subject"><input id="adminTeacherName" placeholder="Teacher name"><button class="addRow" id="addTeacher">＋ ADD / UPDATE</button></div><div class="adminList">${teacherList.length?teacherList.map(([s,t])=>`<div class="adminListRow"><div><b>${esc(s)}</b><small>${esc(t)}</small></div><button class="dangerBtn" data-delete-teacher="${esc(s)}">DELETE</button></div>`).join(''):'<div class="empty glass">No default teachers configured.</div>'}</div>`,'teachersPanel')}
   ${adminPanel('Master Schedule','🗓️',`<p class="adminNote">Admin controls for the official timetable, effective-date versions, clinical posting groups and special rotations.</p><div class="adminScheduleSummary">${DAYS.map(d=>`<div><b>${d}</b><span>${(scheduleForDate(new Date()) [d]||[]).length} classes</span></div>`).join('')}</div><div class="adminToolbar"><input id="adminScheduleDate" type="date" value="${iso(new Date())}"><button class="settingSave" id="adminScheduleCopy">COPY CURRENT SCHEDULE</button><button class="settingSave" id="adminScheduleOriginal">RESTORE ORIGINAL</button></div><p class="adminNote">Clinical Posting remains roll-group based. Schedule changes do not rewrite historical daily records.</p>`,'schedulePanel')}
@@ -486,18 +372,21 @@ function renderAdmin(el){
   $('addSyllabus').onclick=()=>{const s=$('adminSyllabusSubject').value.trim(),c=$('adminChapter').value.trim(),t=$('adminTopic').value.trim();if(!s||!t)return toast('Enter subject and topic');D.syllabus=D.syllabus||{};D.syllabus[s]=D.syllabus[s]||[];D.syllabus[s].push({chapter:c,topic:t,date:iso(new Date()),teacher:D.teachers[s]||''});saveAll();renderAdmin(el);toast('✓ Syllabus topic added')};
   $('publishSyllabus').onclick=()=>toast('✓ Syllabus marked as published locally');$('restoreSyllabus').onclick=()=>{D.syllabus=clone(topics);saveAll();toast('✓ Syllabus rebuilt from records');renderAdmin(el)};
   $('addStudent').onclick=()=>{D.admin.students=D.admin.students||[];D.admin.students.push({name:'New Student',email:'',roll:'',active:true});saveAll();renderAdmin(el);toast('✓ Local profile added')};
-  loadAdminCloudData(el).then(()=>renderAdminCloudMonitoring());
-  $('adminSubjectFilter').onchange=renderAdminCloudMonitoring;
-  $('adminDateFilter').onchange=renderAdminCloudMonitoring;
-  $('adminHomeworkFilter').onchange=renderAdminCloudMonitoring;
-  $('adminHomeworkDate').onchange=renderAdminCloudMonitoring;
+  loadAdminCloudData(el);
   $('publishAnnouncement').onclick=()=>{const text=$('announcementText').value.trim();if(!text)return toast('Write an announcement');D.admin.announcements=D.admin.announcements||[];D.admin.announcements.push({text,audience:$('announcementAudience').value,date:iso(new Date())});saveAll();renderAdmin(el);toast('✓ Announcement published')};
   $('adminScheduleCopy').onclick=()=>{const date=$('adminScheduleDate').value||iso(new Date());D.changes=(D.changes||[]).filter(x=>x.date!==date);D.changes.push({date,schedule:clone(scheduleForDate(new Date()))});saveAll();toast('✓ Schedule version saved')};
   $('adminScheduleOriginal').onclick=()=>{D.schedule=defaultSchedule();saveAll();toast('✓ Original schedule restored');renderAdmin(el)};
   $('cloudTest').onclick=async()=>{if(adminUser){try{await CloudAPI.getAllStudents();toast('✓ Firebase admin connection is working')}catch(e){toast('Firebase admin connection failed — check Rules')}}else if(cloudUser){try{await CloudAPI.getUserData(cloudUser.uid);toast('✓ Firebase connection is working')}catch(e){toast('Firebase connection failed — check Rules')}}else toast('Sign in to a Firebase account first')};$('cloudBackup').onclick=()=>cloudUser?syncCurrentUser('upload'):exportData;$('cloudRestore').onclick=()=>cloudUser?syncCurrentUser('download'):toast('Sign in to a student Firebase account to restore cloud data');
-  $('adminExport').onclick=exportAdminCloudPDF;
-  $('adminExportRecords').onclick=exportAdminCloudCSV;
-  $('adminExportPdf').onclick=exportAdminCloudPDF;
+  $('adminExport').onclick=exportData;
+  $('adminExportRecords').onclick=()=>{const rows=[['Subject','Date','Time','Chapter','Topic','Homework','Teacher']];records.forEach(([k,r])=>{const m=recordMeta(k);rows.push([m.subject,m.date,m.time,r.chapter||'',r.topic||'',r.homework||'',r.teacher||''])});const csv=rows.map(row=>row.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='classwork-planner-records.csv';a.click();toast('✓ CSV exported')};
+  $('adminExportPdf').onclick=()=>{
+    const rows=records.map(([k,r])=>{const m=recordMeta(k);return `<tr><td>${esc(m.subject)}</td><td>${esc(m.date)}</td><td>${esc(m.time)}</td><td>${esc(r.chapter||'')}</td><td>${esc(r.topic||'')}</td><td>${esc(r.homework||'')}</td><td>${esc(r.teacher||'')}</td></tr>`}).join('');
+    const w=window.open('','_blank');
+    if(!w){toast('Allow pop-ups for this app to print.');return;}
+    w.document.open();
+    w.document.write(`<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Classwork Planner Records</title><style>body{font-family:Arial,sans-serif;padding:24px;color:#111}h1{font-size:22px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #777;padding:7px;text-align:left}th{background:#eee}@media print{body{padding:0}table{font-size:10px}}</style></head><body><h1>Classwork Planner Records</h1><table><thead><tr><th>Subject</th><th>Date</th><th>Time</th><th>Chapter</th><th>Topic</th><th>Homework</th><th>Teacher</th></tr></thead><tbody>${rows||'<tr><td colspan="7">No records.</td></tr>'}</tbody></table><script>window.onload=function(){setTimeout(function(){window.focus();window.print();},300)};window.onafterprint=function(){setTimeout(function(){window.close()},200)};<\/script></body></html>`);
+    w.document.close();
+  };
 
   $('saveAppConfig').onclick=()=>{D.admin.app=D.admin.app||{};D.admin.app.minVersion=$('minVersion').value.trim();saveAll();toast('✓ App configuration saved')};
   $('saveAds').onclick=()=>{D.admin.ads=D.admin.ads||{};D.admin.ads.frequency=Number($('adFrequency').value)||5;saveAll();toast('✓ Ads configuration saved')};
@@ -508,41 +397,8 @@ function exportData(){const blob=new Blob([JSON.stringify(D,null,2)],{type:'appl
 function importData(e){const f=e.target.files?.[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const x=JSON.parse(rd.result);D={...D,...x,profile:{...D.profile,...(x.profile||{})}};saveAll();setTheme();toast('✓ Data imported');show('today')}catch{toast('Invalid data file')}};rd.readAsText(f)}
 function confirmBox(title,text){return new Promise(resolve=>{const m=$('confirmModal');$('confirmTitle').textContent=title;$('confirmText').textContent=text;m.classList.add('show');const ok=()=>{cleanup();resolve(true)},no=()=>{cleanup();resolve(false)},cleanup=()=>{m.classList.remove('show');$('confirmYes').removeEventListener('click',ok);$('confirmNo').removeEventListener('click',no)};$('confirmYes').addEventListener('click',ok);$('confirmNo').addEventListener('click',no)})}
 function resetAtMidnight(){clearTimeout(midnightTimer);const now=new Date(),next=new Date(now);next.setHours(24,0,1,0);midnightTimer=setTimeout(()=>{today=startOfDay(new Date());show('today');resetAtMidnight()},next-now)}
-// Bind startup login controls independently of the Firebase auth-state callback.
-// This prevents AppGeyser/WebView timing from leaving the overlay buttons inert.
-function wireStartupAuthControls(){
-  const m=$('startupAuth'); if(!m)return;
-  const status=$('startAuthStatus');
-  const login=$('startLogin'), signup=$('startSignup'), forgot=$('startForgot'), admin=$('startAdmin'), pass=$('startPassword');
-  if(!login||!signup||!forgot||!admin)return;
-  if(m.dataset.controlsWired==='1')return;
-  m.dataset.controlsWired='1';
-  const run=async(kind)=>{
-    const email=$('startEmail')?.value.trim()||'', password=$('startPassword')?.value||'';
-    if(kind==='forgot'){
-      if(!email){status.textContent='Enter your student email first.';return;}
-      status.textContent='Sending password reset email…';
-      const ok=await window.__CWPAuth?.studentForgot(email); status.textContent=ok?'✓ Password reset email sent. Check your email.':'Password reset could not be sent.'; return;
-    }
-    if(!email||!password){status.textContent='Enter email and password.';return;}
-    login.disabled=true;signup.disabled=true;
-    status.textContent=kind==='login'?'Signing in…':'Creating account…';
-    const ok=kind==='login'
-      ? await window.__CWPAuth?.studentLogin(email,password)
-      : await window.__CWPAuth?.studentSignup(email,password);
-    if(ok){status.textContent=kind==='login'?`✓ Signed in as ${email}`:`✓ Account created and signed in as ${email}`;closeStartupAuth();}
-    else status.textContent='Authentication failed. Please check your details and try again.';
-    login.disabled=false;signup.disabled=false;
-  };
-  login.addEventListener('click',()=>run('login'));
-  signup.addEventListener('click',()=>run('signup'));
-  forgot.addEventListener('click',()=>run('forgot'));
-  admin.addEventListener('click',()=>window.__CWPAuth?.openAdminPopup());
-  pass.addEventListener('keydown',e=>{if(e.key==='Enter')run('login')});
-}
-
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>show(b.dataset.page));
-loadLocal();setTheme();resetAtMidnight();show('today');scheduleNextReminder();wireStartupAuthControls();
+loadLocal();setTheme();resetAtMidnight();show('today');scheduleNextReminder();
 // Show the student login immediately for first-time/cleared-data launches.
 // If Firebase restores an existing student session, the auth callback below closes it.
 // The startup login overlay is present in index.html immediately, so AppGeyser/WebView
