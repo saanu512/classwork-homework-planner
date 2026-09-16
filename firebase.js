@@ -2,6 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/fireba
 import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 import { initializeFirestore, doc, getDoc, setDoc, collection, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 import { getAI, getGenerativeModel, GoogleAIBackend } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-ai.js";
+import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app-check.js";
 
 export const firebaseConfig = {
   apiKey: "AIzaSyAQfUozDP7xyeZEl15DthoiAI_q05J2ZCM",
@@ -13,8 +14,19 @@ export const firebaseConfig = {
 };
 
 export const app = initializeApp(firebaseConfig);
+
+// Firebase AI Logic is protected by Firebase App Check. The reCAPTCHA Enterprise
+// site key is public client configuration (not a secret API key). App Check must
+// be initialized before Firebase services are used, and tokens must auto-refresh
+// so Gemini requests continue working after the App Check TTL expires.
+export const appCheck = initializeAppCheck(app, {
+  provider: new ReCaptchaEnterpriseProvider("6Lfv4r4tAAAAAIhg3alkHwgcJIJ2ht-pz01OTBxE"),
+  isTokenAutoRefreshEnabled: true
+});
+
 // Firebase AI Logic keeps Gemini authorization on the Firebase/Google side;
-// no Gemini Developer API key is embedded in this PWA.
+// no Gemini Developer API key is embedded in this PWA. Limited-use App Check
+// tokens are enabled for replay-protected AI requests.
 export const firebaseAI = getAI(app, { backend: new GoogleAIBackend(), useLimitedUseAppCheckTokens: true });
 export const auth = getAuth(app);
 // Persist the student Firebase session across app restarts.
