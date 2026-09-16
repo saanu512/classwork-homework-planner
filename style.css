@@ -703,3 +703,50 @@ input,select,textarea{
 :root[data-theme="dark"] .startupLoadingOverlay{background:#0a0f18 !important}
 :root[data-theme="dark"] .startupLoadingCard h2{color:#f5f7fc !important}
 :root[data-theme="dark"] .startupLoadingCard p{color:#aeb8ca !important}
+
+
+/* v40 final dark-theme fix: opaque dark Today cards and fields.
+   This intentionally overrides the older light-glass card declarations. */
+html[data-theme="dark"] .classEntryWrap .classCard {
+  background:#171d29 !important;
+  background-image:none !important;
+  color:#f5f7fc !important;
+  border-color:rgba(255,255,255,.11) !important;
+  box-shadow:0 9px 0 rgba(0,0,0,.30),0 18px 38px rgba(0,0,0,.36),inset 0 1px 0 rgba(255,255,255,.06) !important;
+  opacity:1 !important;
+  filter:none !important;
+}
+html[data-theme="dark"] .classEntryWrap .classCard::before,
+html[data-theme="dark"] .classEntryWrap .classCard::after {
+  opacity:.35 !important;
+}
+html[data-theme="dark"] .classEntryWrap .cardMiddle {
+  background:#202838 !important;
+  border-color:rgba(255,255,255,.10) !important;
+}
+html[data-theme="dark"] .classEntryWrap .cardTopic,
+html[data-theme="dark"] .classEntryWrap .cardHomework,
+html[data-theme="dark"] .classEntryWrap .cardChapterInput,
+html[data-theme="dark"] .classEntryWrap .cardTeacherInput {
+  background:#202838 !important;
+  background-image:none !important;
+  color:#f5f7fc !important;
+  border-color:rgba(255,255,255,.12) !important;
+  box-shadow:inset 0 2px 7px rgba(0,0,0,.30) !important;
+  opacity:1 !important;
+  filter:none !important;
+}
+html[data-theme="dark"] .classEntryWrap .cardTopic::placeholder,
+html[data-theme="dark"] .classEntryWrap .cardHomework::placeholder,
+html[data-theme="dark"] .classEntryWrap .cardChapterInput::placeholder,
+html[data-theme="dark"] .classEntryWrap .cardTeacherInput::placeholder {
+  color:#aeb8ca !important;
+  opacity:1 !important;
+}
+html[data-theme="dark"] .classEntryWrap .cardFieldLabel,
+html[data-theme="dark"] .classEntryWrap .defaultTeacher {
+  color:#aeb8ca !important;
+}
+html[data-theme="dark"] .classEntryWrap .cardSubject h2 {
+  color:#f5f7fc !important;
+}
