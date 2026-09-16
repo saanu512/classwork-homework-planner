@@ -52,7 +52,7 @@ let today=startOfDay(new Date());
 let midnightTimer=null;
 const $=id=>document.getElementById(id); const clone=x=>JSON.parse(JSON.stringify(x));
 function startOfDay(d){const x=new Date(d);x.setHours(0,0,0,0);return x}
-function iso(d){const x=startOfDay(d);return x.toISOString().slice(0,10)}
+function iso(d){const x=startOfDay(d);return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`}
 function fmt(d){return d.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function toast(text){const t=$('toast');t.textContent=text;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('show'),2200)}
