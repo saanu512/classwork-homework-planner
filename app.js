@@ -337,6 +337,7 @@ function show(page){
   $('pageTitle').textContent={today:'Today',homework:'Homework',syllabus:'Syllabus',ai:'Gemini AI',settings:'Settings',admin:'Admin Dashboard',adminLogin:'Admin Login',reminders:'Reminders'}[page]||page;
   $('dateLine').textContent=page==='today'?fmt(today):'';
   ({today:renderToday,homework:renderHomework,syllabus:renderSyllabus,ai:renderAI,settings:renderSettings,admin:renderAdmin,reminders:renderReminders}[page]||(()=>{}))(s);
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));
 }
 function navBar(){return `<nav><button data-page="today">⌂<br>Today</button><button data-page="homework">✓<br>Homework</button><button data-page="syllabus">◈<br>Syllabus</button><button data-page="ai">✦<br>Gemini AI</button><button data-page="settings">⚙<br>Settings</button></nav>`}
 function calendarBar(){return `<div class="calendarbar"><button class="iconBtn" id="prev">‹</button><button class="datePicker" id="datePicker"><span class="calendarIcon">▣</span><span>${esc(fmt(today))}</span></button><button class="iconBtn" id="next">›</button><button class="todayBtn" id="jumpToday">Today</button><input id="hiddenDate" type="date" value="${iso(today)}"></div>`}

@@ -578,3 +578,128 @@ input,select,textarea{
 @keyframes cwpStethoscopeSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 :root[data-theme=dark] .startupLoadingOverlay{background:var(--bg,#0d1118);}
 :root[data-theme=dark] .startupLoadingCard h2{color:#f4f6fb;}
+
+
+/* v40 dark-theme readability correction: keep the existing light theme and layout,
+   but give dark mode a coherent dark glass surface with high-contrast content. */
+:root[data-theme="dark"] body{
+  background:radial-gradient(circle at 10% -5%,rgba(125,108,255,.12),transparent 30%),
+             radial-gradient(circle at 100% 0,rgba(56,190,255,.07),transparent 26%),#0a0f18;
+  color:#f5f7fc;
+}
+:root[data-theme="dark"] header{background:linear-gradient(#0a0f18 72%,transparent)}
+:root[data-theme="dark"] .classCard,
+:root[data-theme="dark"] .formCard,
+:root[data-theme="dark"] .miniCard,
+:root[data-theme="dark"] .settingCard,
+:root[data-theme="dark"] .adminPanel,
+:root[data-theme="dark"] .adminStat,
+:root[data-theme="dark"] .adminListRow,
+:root[data-theme="dark"] .adminRecord,
+:root[data-theme="dark"] .statusPill,
+:root[data-theme="dark"] .scheduleExtraBox,
+:root[data-theme="dark"] .panel{
+  background:#151b27 !important;
+  color:#f5f7fc !important;
+  border-color:rgba(255,255,255,.10) !important;
+  box-shadow:0 12px 30px rgba(0,0,0,.30) !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+:root[data-theme="dark"] .classCard{
+  background:linear-gradient(145deg,#1a2230,#141a25) !important;
+}
+:root[data-theme="dark"] .classCard:before{background:linear-gradient(135deg,rgba(139,125,255,.16),rgba(139,125,255,.02))}
+:root[data-theme="dark"] .classCard:after{background:rgba(139,125,255,.035)}
+:root[data-theme="dark"] .classCard h2,
+:root[data-theme="dark"] .teacherName,
+:root[data-theme="dark"] .infoValue,
+:root[data-theme="dark"] .hasValue,
+:root[data-theme="dark"] .detailHero h2,
+:root[data-theme="dark"] .settingCard h3,
+:root[data-theme="dark"] .miniCard p,
+:root[data-theme="dark"] .adminPanelHead h3,
+:root[data-theme="dark"] .adminStat strong,
+:root[data-theme="dark"] .adminListRow b,
+:root[data-theme="dark"] .adminRecord>b,
+:root[data-theme="dark"] .scheduleDayHead,
+:root[data-theme="dark"] .scheduleDay{
+  color:#f5f7fc !important;
+}
+:root[data-theme="dark"] .cardLabel,
+:root[data-theme="dark"] .infoLabel,
+:root[data-theme="dark"] .eyebrow,
+:root[data-theme="dark"] .small,
+:root[data-theme="dark"] .dayHint,
+:root[data-theme="dark"] .detailHero p,
+:root[data-theme="dark"] .settingCard p,
+:root[data-theme="dark"] .teacherDefault span,
+:root[data-theme="dark"] .syllItem,
+:root[data-theme="dark"] .adminNote,
+:root[data-theme="dark"] .adminStat span,
+:root[data-theme="dark"] .adminStat small,
+:root[data-theme="dark"] .adminListRow small,
+:root[data-theme="dark"] .adminRecord small,
+:root[data-theme="dark"] .adminRecord>span,
+:root[data-theme="dark"] .adminTwo p,
+:root[data-theme="dark"] .scheduleHeader,
+:root[data-theme="dark"] .timePill,
+:root[data-theme="dark"] .extraPill,
+:root[data-theme="dark"] .indicator,
+:root[data-theme="dark"] .mutedValue{
+  color:#aeb8ca !important;
+}
+:root[data-theme="dark"] .timePill,
+:root[data-theme="dark"] .extraPill,
+:root[data-theme="dark"] .indicator,
+:root[data-theme="dark"] .cardInfoGrid,
+:root[data-theme="dark"] .infoBlock,
+:root[data-theme="dark"] .scheduleRow,
+:root[data-theme="dark"] .adminTwo>div,
+:root[data-theme="dark"] .adminTwo>label,
+:root[data-theme="dark"] .adminScheduleSummary div,
+:root[data-theme="dark"] .adminSwitch{
+  background:#202838 !important;
+  border-color:rgba(255,255,255,.10) !important;
+}
+:root[data-theme="dark"] input,
+:root[data-theme="dark"] select,
+:root[data-theme="dark"] textarea{
+  background:#202838 !important;
+  color:#f5f7fc !important;
+  border-color:rgba(255,255,255,.13) !important;
+  box-shadow:inset 0 2px 6px rgba(0,0,0,.24) !important;
+}
+:root[data-theme="dark"] input::placeholder,
+:root[data-theme="dark"] textarea::placeholder{color:#aeb8ca !important;opacity:1}
+:root[data-theme="dark"] .cardTopic,
+:root[data-theme="dark"] .cardHomework{background:#202838 !important;color:#f5f7fc !important}
+:root[data-theme="dark"] nav{
+  background:rgba(21,27,39,.96) !important;
+  border-color:rgba(255,255,255,.11) !important;
+  box-shadow:0 12px 30px rgba(0,0,0,.40) !important;
+  backdrop-filter:blur(18px);
+}
+:root[data-theme="dark"] nav button{color:#aeb8ca}
+:root[data-theme="dark"] nav button.active,
+:root[data-theme="dark"] nav button:focus{
+  background:linear-gradient(145deg,#8b7dff,#aa8fff) !important;
+  color:#fff !important;
+  box-shadow:inset 0 2px 1px rgba(255,255,255,.22),0 7px 16px rgba(139,125,255,.28) !important;
+}
+:root[data-theme="dark"] .iconBtn,
+:root[data-theme="dark"] .todayBtn,
+:root[data-theme="dark"] .datePicker,
+:root[data-theme="dark"] #sync{
+  background:#151b27 !important;
+  color:#f5f7fc !important;
+  border-color:rgba(255,255,255,.10) !important;
+}
+:root[data-theme="dark"] .todayBtn{color:#fff !important;background:linear-gradient(135deg,#8b7dff,#aa8fff) !important;border-color:transparent !important}
+:root[data-theme="dark"] .chip{background:#202838 !important;color:#f5f7fc !important}
+:root[data-theme="dark"] .subjectIcon,
+:root[data-theme="dark"] .settingIcon,
+:root[data-theme="dark"] .adminPanelIcon{background:rgba(139,125,255,.16) !important;color:#aa9dff !important}
+:root[data-theme="dark"] .startupLoadingOverlay{background:#0a0f18 !important}
+:root[data-theme="dark"] .startupLoadingCard h2{color:#f5f7fc !important}
+:root[data-theme="dark"] .startupLoadingCard p{color:#aeb8ca !important}
