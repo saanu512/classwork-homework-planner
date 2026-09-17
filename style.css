@@ -1610,3 +1610,181 @@ select.selectPressed{transform:translateY(2px);border-color:rgba(99,91,255,.65)!
   :root[data-theme="light3d"] .adminFilterGrid .adminDeleteFilterBtn,
   :root[data-theme="dark3d"] .adminFilterGrid .adminDeleteFilterBtn{font-size:8px!important;padding:7px 2px!important}
 }
+
+/* FINAL GLOBAL ACTION SYSTEM — based on the user's approved 3rd screenshot.
+   Action groups use the full available card width; navigation remains separate. */
+:root[data-theme="light3d"],
+:root[data-theme="dark3d"]{
+  --action-radius:15px;
+}
+
+/* Shared 3D button surface for all ordinary action buttons. */
+:root[data-theme="light3d"] button:not(nav button),
+:root[data-theme="dark3d"] button:not(nav button){
+  border-radius:15px!important;
+  font-weight:800!important;
+  line-height:1.15!important;
+  min-height:42px;
+  box-sizing:border-box!important;
+  white-space:nowrap!important;
+  box-shadow:0 5px 0 rgba(70,58,170,.24),0 10px 18px rgba(35,35,65,.14),inset 0 2px 2px rgba(255,255,255,.30)!important;
+}
+:root[data-theme="light3d"] button:not(nav button):active,
+:root[data-theme="dark3d"] button:not(nav button):active{
+  transform:translateY(3px)!important;
+  box-shadow:0 1px 0 rgba(70,58,170,.24),0 4px 8px rgba(35,35,65,.12),inset 0 2px 3px rgba(0,0,0,.12)!important;
+}
+
+/* Three-button student/action rows: equal widths, one complete row. */
+:root[data-theme="light3d"] .adminListRow:has(.adminRowActions),
+:root[data-theme="dark3d"] .adminListRow:has(.adminRowActions){
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:10px!important;
+}
+:root[data-theme="light3d"] .adminRowActions,
+:root[data-theme="dark3d"] .adminRowActions{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  width:100%!important;
+  min-width:0!important;
+  gap:7px!important;
+  align-items:stretch!important;
+}
+:root[data-theme="light3d"] .adminRowActions>button,
+:root[data-theme="dark3d"] .adminRowActions>button{
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  min-height:42px!important;
+  height:auto!important;
+  padding:9px 5px!important;
+  font-size:clamp(9px,2.2vw,12px)!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+
+/* Three/four-button quick-action groups fill the complete row. */
+:root[data-theme="light3d"] .adminQuick:has(>button),
+:root[data-theme="dark3d"] .adminQuick:has(>button){
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  width:100%!important;
+  gap:8px!important;
+  align-items:stretch!important;
+}
+:root[data-theme="light3d"] .adminQuick>button,
+:root[data-theme="dark3d"] .adminQuick>button{
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+}
+
+/* Two-button groups: both buttons share one complete row. */
+:root[data-theme="light3d"] .twoCol:has(>button),
+:root[data-theme="dark3d"] .twoCol:has(>button){
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  width:100%!important;
+  gap:8px!important;
+  align-items:stretch!important;
+}
+:root[data-theme="light3d"] .twoCol:has(>button)>button,
+:root[data-theme="dark3d"] .twoCol:has(>button)>button{
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+}
+
+/* Admin filter: exactly the approved 2-column arrangement, with both
+   export/delete actions forced onto the same final row. */
+:root[data-theme="light3d"] .adminFilterGrid,
+:root[data-theme="dark3d"] .adminFilterGrid{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:9px!important;
+  align-items:stretch!important;
+}
+:root[data-theme="light3d"] .adminFilterGrid>.settingSave,
+:root[data-theme="dark3d"] .adminFilterGrid>.settingSave{
+  grid-column:1!important;
+  grid-row:auto!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  min-height:44px!important;
+  margin:0!important;
+}
+:root[data-theme="light3d"] .adminFilterGrid>.adminDeleteFilterBtn,
+:root[data-theme="dark3d"] .adminFilterGrid>.adminDeleteFilterBtn{
+  grid-column:2!important;
+  grid-row:auto!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  min-height:44px!important;
+  margin:0!important;
+}
+:root[data-theme="light3d"] .adminFilterHint,
+:root[data-theme="dark3d"] .adminFilterHint{grid-column:1/-1!important}
+
+/* Admin toolbar action buttons fill their row, while inputs/selects retain
+   their own fields. */
+:root[data-theme="light3d"] .adminToolbar:has(>button),
+:root[data-theme="dark3d"] .adminToolbar:has(>button){
+  display:flex!important;
+  flex-wrap:nowrap!important;
+  width:100%!important;
+  gap:8px!important;
+  align-items:stretch!important;
+}
+:root[data-theme="light3d"] .adminToolbar>button,
+:root[data-theme="dark3d"] .adminToolbar>button{
+  flex:1 1 0!important;
+  width:auto!important;
+  min-width:0!important;
+  max-width:none!important;
+}
+
+/* Schedule/editor rows that contain one or more action buttons. */
+:root[data-theme="light3d"] .scheduleExtraBox:has(>button),
+:root[data-theme="dark3d"] .scheduleExtraBox:has(>button){
+  align-items:center!important;
+}
+
+/* Standalone primary/setting buttons stay appropriately sized; grouped
+   containers above are responsible for filling the row. */
+:root[data-theme="light3d"] .wideAction,
+:root[data-theme="dark3d"] .wideAction{
+  width:100%!important;
+}
+
+/* Keep nav as a dedicated five-item navigation bar, not an action group. */
+:root[data-theme="light3d"] nav,
+:root[data-theme="dark3d"] nav{
+  display:grid!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  gap:5px!important;
+}
+:root[data-theme="light3d"] nav button,
+:root[data-theme="dark3d"] nav button{
+  width:100%!important;
+  min-width:0!important;
+  min-height:58px!important;
+  flex:none!important;
+}
+
+/* On narrow phones, preserve the approved one-row action groups by shrinking
+   text/padding rather than stacking them. */
+@media(max-width:430px){
+  :root[data-theme="light3d"] .adminRowActions,
+  :root[data-theme="dark3d"] .adminRowActions{gap:5px!important}
+  :root[data-theme="light3d"] .adminRowActions>button,
+  :root[data-theme="dark3d"] .adminRowActions>button{font-size:8px!important;padding:8px 3px!important}
+  :root[data-theme="light3d"] .adminFilterGrid,
+  :root[data-theme="dark3d"] .adminFilterGrid{gap:7px!important}
+  :root[data-theme="light3d"] .adminFilterGrid>.settingSave,
+  :root[data-theme="dark3d"] .adminFilterGrid>.settingSave,
+  :root[data-theme="light3d"] .adminFilterGrid>.adminDeleteFilterBtn,
+  :root[data-theme="dark3d"] .adminFilterGrid>.adminDeleteFilterBtn{font-size:8px!important;padding:8px 3px!important}
+}
