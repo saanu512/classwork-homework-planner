@@ -9,6 +9,8 @@ let cloudSyncTimer=null;
 let cloudIntervalTimer=null;
 const CLOUD_SYNC_INTERVAL=60*1000;
 const CLOUD_SAVE_DEBOUNCE=300;
+const CLOUD_LOGIN_TIMEOUT=12000;
+const CLOUD_READ_TIMEOUT=10000;
 const SUBJECTS = [
   "General Medicine","General Surgery","OBG","Pediatrics","ENT","Psychiatry","EYE","Dermatology",
   "Orthopaedics","Respiratory Medicine","Radiodiagnosis","Emergency Medicine","Anaesthesiology",
@@ -45,7 +47,27 @@ const START = new Date(2026,8,7), SWITCH = new Date(2027,7,9);
 
 
 const STORAGE='cwp-local-v30';
+const LOCAL_BACKUP='cwp-local-v30-backup';
 const STUDENT_SESSION_HINT='cwp-student-session-present';
+const USER_STORAGE_PREFIX='cwp-local-v30-user-';
+const USER_BACKUP_PREFIX='cwp-local-v30-user-backup-';
+function userStorageKey(uid){return USER_STORAGE_PREFIX+String(uid||'').replace(/[^a-zA-Z0-9_-]/g,'_')}
+function userBackupKey(uid){return USER_BACKUP_PREFIX+String(uid||'').replace(/[^a-zA-Z0-9_-]/g,'_')}
+function persistLocalStorage(){try{const serialized=JSON.stringify(D);localStorage.setItem(STORAGE,serialized);localStorage.setItem(LOCAL_BACKUP,serialized);if(cloudUser?.uid){localStorage.setItem(userStorageKey(cloudUser.uid),serialized);localStorage.setItem(userBackupKey(cloudUser.uid),serialized)}return true}catch(e){return false}}
+function freshStudentData(){return {profile:{name:'',email:'',roll:''},teachers:{},records:{},extras:[],changes:[],theme:D.theme||'system',schedule:null,reminders:[],syllabus:{},admin:{},settings:{reminderEnabled:true,oneDayBefore:true,reminderLead:60,lastSyncAt:0},_savedAt:0}}
+function switchToUserLocal(uid,email){
+  if(!uid)return;
+  let loaded=null;
+  try{const raw=localStorage.getItem(userStorageKey(uid));if(raw)loaded=JSON.parse(raw)||null}catch(e){}
+  if(!loaded){try{const raw=localStorage.getItem(userBackupKey(uid));if(raw)loaded=JSON.parse(raw)||null}catch(e){}}
+  if(loaded){applyLocalObject(loaded);persistLocalStorage();return}
+  const currentEmail=String(D.profile?.email||'').trim().toLowerCase();
+  const targetEmail=String(email||'').trim().toLowerCase();
+  const hasLocalRecords=Object.keys(D.records||{}).length || (D.extras||[]).length || Object.keys(D.syllabus||{}).length || (D.changes||[]).length;
+  if(currentEmail && targetEmail && currentEmail!==targetEmail)D=freshStudentData();
+  D.profile.email=email||D.profile.email;
+  persistLocalStorage();
+}
 // Administrator access is controlled by Firebase Authentication + Firestore admin allow-list.
 let adminSession=false;
 let adminAuthInProgress=false;
@@ -68,8 +90,9 @@ function iso(d){const x=startOfDay(d);const y=x.getFullYear(),m=String(x.getMont
 function fmt(d){return d.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function toast(text){const t=$('toast');t.textContent=text;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('show'),2200)}
-function saveAll(){try{D._savedAt=Date.now();localStorage.setItem(STORAGE,JSON.stringify(D));if(cloudUser&&!suppressCloudQueue){clearTimeout(cloudSyncTimer);cloudSyncTimer=setTimeout(()=>syncCurrentUser('upload',true),CLOUD_SAVE_DEBOUNCE)}return true}catch(e){toast('Device storage is unavailable');return false}}
-function loadLocal(){try{const raw=localStorage.getItem(STORAGE);if(raw){const L=JSON.parse(raw)||{};D={...D,...L,profile:{...D.profile,...(L.profile||{})},records:{...D.records,...(L.records||{})},teachers:{...D.teachers,...(L.teachers||{})},admin:{...D.admin,...(L.admin||{})},settings:{...D.settings,...(L.settings||{})},extras:Array.isArray(L.extras)?L.extras:[],changes:Array.isArray(L.changes)?L.changes:[],reminders:Array.isArray(L.reminders)?L.reminders:[],syllabus:L.syllabus||{}};if(D.admin&&'geminiKey' in D.admin)delete D.admin.geminiKey}}catch(e){console.warn(e)} D.schedule=normalizeSchedule(D.schedule)}
+function saveAll(){try{D._savedAt=Date.now();D._dataUpdatedAt=D._savedAt;if(!persistLocalStorage())throw new Error('storage');if(cloudUser&&!suppressCloudQueue){clearTimeout(cloudSyncTimer);cloudSyncTimer=setTimeout(()=>syncCurrentUser('upload',true),CLOUD_SAVE_DEBOUNCE)}return true}catch(e){toast('Device storage is unavailable');return false}}
+function applyLocalObject(L){if(!L||typeof L!=='object')return false;D={...D,...L,profile:{...D.profile,...(L.profile||{})},records:{...D.records,...(L.records||{})},teachers:{...D.teachers,...(L.teachers||{})},admin:{...D.admin,...(L.admin||{})},settings:{...D.settings,...(L.settings||{})},extras:Array.isArray(L.extras)?L.extras:[],changes:Array.isArray(L.changes)?L.changes:[],reminders:Array.isArray(L.reminders)?L.reminders:[],syllabus:L.syllabus||{}};if(D.admin&&'geminiKey' in D.admin)delete D.admin.geminiKey;return true}
+function loadLocal(){let loaded=null;try{const raw=localStorage.getItem(STORAGE);if(raw)loaded=JSON.parse(raw)||null}catch(e){console.warn('Current local data could not be read',e)}if(!loaded){try{const backup=localStorage.getItem(LOCAL_BACKUP);if(backup)loaded=JSON.parse(backup)||null}catch(e){console.warn('Local backup could not be read',e)}}if(!loaded){try{const candidates=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&/^cwp-local-v\d+$/.test(k)&&k!==STORAGE){try{const x=JSON.parse(localStorage.getItem(k));if(x)candidates.push([Number(k.match(/v(\d+)$/)?.[1]||0),x])}catch(_){} }}candidates.sort((a,b)=>b[0]-a[0]);if(candidates[0])loaded=candidates[0][1]}catch(e){console.warn('Legacy local-data migration failed',e)}}if(loaded)applyLocalObject(loaded);if(!D._dataUpdatedAt&&D._savedAt)D._dataUpdatedAt=D._savedAt;D.schedule=normalizeSchedule(D.schedule);try{if(loaded)localStorage.setItem(STORAGE,JSON.stringify(D));if(loaded)localStorage.setItem(LOCAL_BACKUP,JSON.stringify(D))}catch(_){} }
 function defaultSchedule(){return clone(WEEK)}
 function normalizeSchedule(s){const out=defaultSchedule();if(!s)return out;DAYS.forEach(day=>{if(Array.isArray(s[day]))out[day]=s[day].map(x=>[x[0],x[1],x[2]]).filter(x=>x[0]&&x[1]&&x[2])});return out}
 function scheduleForDate(d){let result=normalizeSchedule(D.schedule);const target=iso(d);const changes=(D.changes||[]).filter(x=>x&&x.date&&x.date<=target).sort((a,b)=>a.date.localeCompare(b.date));if(changes.length){const c=normalizeSchedule(changes.at(-1).schedule);if(DAYS.some(day=>c[day]?.length))result=c}return result}
@@ -104,8 +127,6 @@ function cloudSafeData(){
 }
 function mergeCloudIntoLocal(c){
   if(!c)return;
-  // Cloud is authoritative when restoring an existing account.
-  // Replace collections so deleted/edited records do not reappear.
   D={...D,...c,
     profile:{...D.profile,...(c.profile||{})},
     teachers:{...(c.teachers||{})},
@@ -117,20 +138,37 @@ function mergeCloudIntoLocal(c){
     settings:{...D.settings,...(c.settings||{})}
   };
   D.schedule=normalizeSchedule(D.schedule);
-  localStorage.setItem(STORAGE,JSON.stringify(D));
+  persistLocalStorage()
 }
+function dataStamp(v){
+  if(typeof v==='number')return v;
+  if(v&&typeof v.toMillis==='function')return v.toMillis();
+  if(v&&typeof v.seconds==='number')return v.seconds*1000+Math.floor((v.nanoseconds||0)/1e6);
+  return Number(v)||0;
+}
+async function withTimeout(promise,ms,label='Firebase request'){let timer;try{return await Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>{const e=new Error(label+' timed out');e.code='timeout';reject(e)},ms)})])}finally{clearTimeout(timer)}}
 async function syncCurrentUser(direction='upload',quiet=false){
   if(!cloudUser||cloudBusy)return false;
   cloudBusy=true; const previousSuppress=suppressCloudQueue; suppressCloudQueue=true;
   try{
+    const remote=await withTimeout(CloudAPI.getUserData(cloudUser.uid),10000,'Cloud read');
     if(direction==='download'){
-      const remote=await CloudAPI.getUserData(cloudUser.uid);
-      if(remote){mergeCloudIntoLocal(remote); D.settings.lastSyncAt=Date.now(); localStorage.setItem(STORAGE,JSON.stringify(D)); if(!quiet)toast('✓ Cloud data loaded');}
+      if(remote){mergeCloudIntoLocal(remote); D.settings.lastSyncAt=Date.now(); persistLocalStorage(); if(!quiet)toast('✓ Cloud data loaded');}
       else if(!quiet)toast('No cloud data found');
     }else{
-      await CloudAPI.saveUserData(cloudUser.uid,cloudSafeData());
+      // Never overwrite newer cloud data with an older local copy. If cloud is
+      // newer, restore it; if local is newer, upload it. This protects data
+      // during app updates/restarts and when a phone was offline.
+      const localStamp=Number(D._dataUpdatedAt||D._savedAt||0);
+      const remoteStamp=dataStamp(remote?(remote._dataUpdatedAt||remote.updatedAt):0);
+      if(remote && remoteStamp>localStamp){
+        mergeCloudIntoLocal(remote);
+      }else{
+        if(!D._dataUpdatedAt)D._dataUpdatedAt=Date.now();
+        await withTimeout(CloudAPI.saveUserData(cloudUser.uid,cloudSafeData()),10000,'Cloud save');
+      }
       D.settings.lastSyncAt=Date.now();
-      localStorage.setItem(STORAGE,JSON.stringify(D));
+      persistLocalStorage()
       const status=$('cloudAccountStatus');
       if(status)status.textContent=`Last synced: ${new Date(D.settings.lastSyncAt).toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'})}`;
       if(!quiet)toast('✓ Firebase synchronized');
@@ -145,7 +183,8 @@ async function syncCurrentUser(direction='upload',quiet=false){
       'unavailable':'Firebase is temporarily unavailable or offline.',
       'unauthenticated':'Firebase session expired. Please sign in again.',
       'invalid-argument':'Firebase rejected the data. The app has sanitized unsupported values; try SYNC NOW again.',
-      'resource-exhausted':'Firebase quota/resource limit reached.'
+      'resource-exhausted':'Firebase quota/resource limit reached.',
+      'timeout':'Firebase sign-in is taking too long. Check your internet connection and try again.'
     })[code] || `Firebase error: ${code}`;
     const status=$('cloudAccountStatus');
     if(status)status.textContent=detail;
@@ -157,42 +196,81 @@ async function syncCurrentUser(direction='upload',quiet=false){
 function startAutomaticCloudSync(){
   clearInterval(cloudIntervalTimer);
   if(!cloudUser)return;
-  // Sync immediately when the app starts/reauthenticates, then every 15 minutes while active.
+  // Reconcile immediately when the app starts/reauthenticates, then every minute while active.
   syncCurrentUser('upload',true);
   cloudIntervalTimer=setInterval(()=>{if(document.visibilityState==='visible')syncCurrentUser('upload',true)},CLOUD_SYNC_INTERVAL);
 }
 function stopAutomaticCloudSync(){clearInterval(cloudIntervalTimer);cloudIntervalTimer=null}
 async function cloudSignIn(email,password,name='',roll=''){
+  adminAuthInProgress=false;
   try{
+    // Authentication is the gate. Never make login depend on Firestore being
+    // available, and never let a missing/deleted users/{uid} document block sign-in.
     await CloudAPI.setPersistence();
-    const cred=await CloudAPI.signIn(email,password);
+    const cred=await withTimeout(CloudAPI.signIn(email,password),CLOUD_LOGIN_TIMEOUT,'Firebase sign-in');
     cloudUser=cred.user||CloudAPI.currentUser();
     try{localStorage.setItem(STUDENT_SESSION_HINT,'1')}catch(_){}
+
+    // Select this student's private local backup before touching cloud data.
+    // This prevents another student's local data or an empty new app install
+    // from overwriting the student's cloud record after an update.
+    switchToUserLocal(cloudUser?.uid,cloudUser?.email||email);
     D.profile.email=cloudUser?.email||D.profile.email;
-    saveAll();
-    if($('settings'))show('settings');
-    toast(`✓ Signed in as ${cloudUser?.email||email}`);
-    await syncCurrentUser('download',true);
     if(name.trim())D.profile.name=name.trim();
     if(String(roll).trim())D.profile.roll=String(roll).trim();
-    saveAll();
-    await syncCurrentUser('upload',true);
+    persistLocalStorage();
+
+    // Login succeeds immediately. Cloud reconciliation is deliberately
+    // background-only so a slow/offline Firestore service can never leave the
+    // login button stuck on "Signing in…".
+    if($('settings'))show('settings');
+    closeStartupAuth();
+    toast(`✓ Signed in as ${cloudUser?.email||email}`);
+    reconcileAfterLogin().catch(e=>console.warn('Background cloud reconciliation failed:',e));
     startAutomaticCloudSync();
     return true;
   }catch(e){console.error(e);toast(firebaseAuthMessage(e));return false}
 }
+
+async function reconcileAfterLogin(){
+  if(!cloudUser||cloudBusy)return false;
+  cloudBusy=true; const previousSuppress=suppressCloudQueue; suppressCloudQueue=true;
+  try{
+    const remote=await withTimeout(CloudAPI.getUserData(cloudUser.uid),CLOUD_READ_TIMEOUT,'Cloud read');
+    const localStamp=Number(D._dataUpdatedAt||D._savedAt||0);
+    const remoteStamp=dataStamp(remote?(remote._dataUpdatedAt||remote.updatedAt):0);
+    if(remote){
+      // If this device has no meaningful local records, restore the cloud copy.
+      // Otherwise use the newer timestamp and merge collections without losing
+      // local records. Never treat a missing users document as an auth failure.
+      const hasLocalData=Object.keys(D.records||{}).length || (D.extras||[]).length || Object.keys(D.syllabus||{}).length || (D.changes||[]).length;
+      if(!hasLocalData || remoteStamp>localStamp){
+        mergeCloudIntoLocal(remote);
+      }
+      await withTimeout(CloudAPI.saveUserData(cloudUser.uid,cloudSafeData()),CLOUD_READ_TIMEOUT,'Cloud save');
+    }else{
+      // The admin may have deleted this student's educational document. Recreate
+      // it from the local student copy; this does NOT touch Firebase Auth.
+      await withTimeout(CloudAPI.saveUserData(cloudUser.uid,cloudSafeData()),CLOUD_READ_TIMEOUT,'Cloud save');
+    }
+    D.settings.lastSyncAt=Date.now();
+    persistLocalStorage();
+    return true;
+  }finally{suppressCloudQueue=previousSuppress;cloudBusy=false}
+}
 async function cloudSignUp(email,password){
   try{
     await CloudAPI.setPersistence();
-    const cred=await CloudAPI.signUp(email,password);
+    const cred=await withTimeout(CloudAPI.signUp(email,password),15000,'Firebase account creation');
     cloudUser=cred.user||CloudAPI.currentUser();
     try{localStorage.setItem(STUDENT_SESSION_HINT,'1')}catch(_){}
-    // New accounts must never inherit another account's cloud-owned records.
-    D={...D,profile:{...D.profile,email:cloudUser?.email||email},teachers:{},records:{},extras:[],changes:[],reminders:[],syllabus:{}};
+    D=freshStudentData();
+    D.profile.email=cloudUser?.email||email;
+    switchToUserLocal(cloudUser?.uid,cloudUser?.email||email);
     saveAll();
     if($('settings'))show('settings');
     toast(`✓ Account created and signed in as ${cloudUser?.email||email}`);
-    await syncCurrentUser('upload',true);
+    syncCurrentUser('upload',true).catch(e=>console.warn('Background cloud upload failed',e));
     startAutomaticCloudSync();
     return true;
   }catch(e){console.error(e);toast(firebaseAuthMessage(e));return false}
@@ -343,7 +421,7 @@ Student accounts, passwords and profiles will NOT be deleted.`;
       });
       next.syllabus=syllabus;
       next.extras=(Array.isArray(st.extras)?st.extras:[]).filter(ex=>{if(extraMatchesFilter(ex,st,filters)){deletedExtras++;changed=true;return false}return true});
-      if(changed){await CloudAPI.adminSaveUserData(st.id||st.uid,next);changedStudents++;}
+      if(changed){next._dataUpdatedAt=Date.now();await CloudAPI.adminSaveUserData(st.id||st.uid,next);changedStudents++;}
     }
     cloudStudents=await CloudAPI.getAllStudents();
     refreshAdminCloudPanels();
@@ -579,7 +657,7 @@ function showStartupAuth(){
   const status=$('startAuthStatus');
   if(status && !status.dataset.wired){
     status.dataset.wired='1';
-    $('startLogin').onclick=async()=>{const n=$('startName').value.trim(),r=$('startRoll').value.trim(),e=$('startEmail').value.trim(),pw=$('startPassword').value;if(!n||!r||!e||!pw){status.textContent='Enter name, roll number, email and password';return}if(!/^\d+$/.test(r)||+r<1||+r>100){status.textContent='Enter a valid roll number (1–100)';return}status.textContent='Signing in…';const ok=await cloudSignIn(e,pw,n,r);if(ok){status.textContent=`✓ Signed in as ${e}`;setTimeout(closeStartupAuth,350)}};
+    $('startLogin').onclick=async()=>{const n=$('startName').value.trim(),r=$('startRoll').value.trim(),e=$('startEmail').value.trim(),pw=$('startPassword').value;if(!n||!r||!e||!pw){status.textContent='Enter name, roll number, email and password';return}if(!/^\d+$/.test(r)||+r<1||+r>100){status.textContent='Enter a valid roll number (1–100)';return}status.textContent='Signing in…';const ok=await cloudSignIn(e,pw,n,r);if(ok){status.textContent=`✓ Signed in as ${e}`;setTimeout(closeStartupAuth,150)}else{status.textContent='Sign-in failed. Please check your email and password.'}};
     $('startSignup').onclick=async()=>{const n=$('startName').value.trim(),r=$('startRoll').value.trim(),e=$('startEmail').value.trim(),pw=$('startPassword').value;if(!n||!r||!e||!pw){status.textContent='Enter name, roll number, email and password';return}if(!/^\d+$/.test(r)||+r<1||+r>100){status.textContent='Enter a valid roll number (1–100)';return}status.textContent='Creating account…';const ok=await cloudSignUp(e,pw);if(ok){D.profile.name=n;D.profile.roll=r;saveAll();await syncCurrentUser('upload',true);status.textContent=`✓ Account created and signed in as ${e}`;setTimeout(closeStartupAuth,350)}};
     $('startAdmin').onclick=()=>showAdminLogin(true);
     $('startPassword').onkeydown=e=>{if(e.key==='Enter')$('startLogin').click()};
@@ -606,8 +684,8 @@ function showAdminLogin(asPopup=false){
       const e=$('popupAdminUser').value.trim(),pw=$('popupAdminPass').value,status=$('popupAdminStatus');
       if(!e||!pw){status.textContent='Enter admin email and password';return}
       const btn=$('popupAdminLoginBtn');btn.disabled=true;status.textContent='Signing in…';adminAuthInProgress=true;
-      try{await CloudAPI.adminSetPersistence();await CloudAPI.adminSignIn(e,pw);const u=CloudAPI.adminCurrentUser();
-        if(await CloudAPI.isAdmin(u?.uid)){adminSession=true;adminUser=u;m.remove();closeStartupAuth();show('admin');toast('✓ Admin login successful')}
+      try{await CloudAPI.adminSetPersistence();await withTimeout(CloudAPI.adminSignIn(e,pw),15000,'Firebase admin sign-in');const u=CloudAPI.adminCurrentUser();
+        if(await withTimeout(CloudAPI.isAdmin(u?.uid),10000,'Admin verification')){adminSession=true;adminUser=u;m.remove();closeStartupAuth();show('admin');toast('✓ Admin login successful')}
         else{await CloudAPI.adminSignOut();status.textContent='Authenticated, but this account is not an admin.'}
       }catch(err){status.textContent=firebaseAuthMessage(err)}finally{adminAuthInProgress=false;btn.disabled=false}
     };
@@ -616,7 +694,7 @@ function showAdminLogin(asPopup=false){
     $('popupAdminBack').onclick=()=>{m.remove();showStartupAuth()};
     return;
   }
-document.querySelectorAll('main>section').forEach(x=>x.remove());const s=document.createElement('section');s.id='adminLogin';$('main').appendChild(s);$('pageTitle').textContent='Admin Login';$('dateLine').textContent='';s.innerHTML=`<div class="authWrap"><div class="authCard glass"><div class="eyebrow">RESTRICTED AREA</div><h2>Admin Login</h2><p class="mutedIntro">Administrator access uses Firebase Authentication plus an Admin allow-list. A normal student account cannot open this dashboard.</p><label>Admin email</label><input id="adminUser" type="email" autocomplete="username" placeholder="Admin email"><label>Password</label><input id="adminPass" type="password" autocomplete="current-password" placeholder="Password"><button class="primary wideAction" id="adminLoginBtn">LOGIN AS ADMIN</button><button class="authForgotLink" id="adminForgot">Forgot password?</button><button class="backLink" id="adminCancel">← Back to Login</button><p class="tinyNote">The account must also have a Firestore document at <b>admins/&lt;Firebase UID&gt;</b> with <b>role = admin</b>. This grants administrator privileges.</p></div></div>`;$('adminLoginBtn').onclick=async()=>{const e=$('adminUser').value.trim(),p=$('adminPass').value;if(!e||!p)return toast('Enter admin email and password');$('adminLoginBtn').disabled=true;$('adminLoginBtn').textContent='AUTHENTICATING…';adminAuthInProgress=true;try{await CloudAPI.adminSetPersistence();await CloudAPI.adminSignIn(e,p);const u=CloudAPI.adminCurrentUser();if(await CloudAPI.isAdmin(u?.uid)){adminSession=true;adminUser=u;show('admin');toast('✓ Admin login successful')}else{await CloudAPI.adminSignOut();toast('Authenticated, but this account is not an admin. Add its UID to the Firestore admins collection.')}}catch(err){toast(firebaseAuthMessage(err))}finally{adminAuthInProgress=false}$('adminLoginBtn').disabled=false;$('adminLoginBtn').textContent='LOGIN AS ADMIN'};$('adminPass').onkeydown=e=>{if(e.key==='Enter')$('adminLoginBtn').click()};$('adminForgot').onclick=()=>resetAdminPassword($('adminUser').value.trim());$('adminCancel').onclick=()=>{showAdminLoginBackToStudentGate()}}
+document.querySelectorAll('main>section').forEach(x=>x.remove());const s=document.createElement('section');s.id='adminLogin';$('main').appendChild(s);$('pageTitle').textContent='Admin Login';$('dateLine').textContent='';s.innerHTML=`<div class="authWrap"><div class="authCard glass"><div class="eyebrow">RESTRICTED AREA</div><h2>Admin Login</h2><p class="mutedIntro">Administrator access uses Firebase Authentication plus an Admin allow-list. A normal student account cannot open this dashboard.</p><label>Admin email</label><input id="adminUser" type="email" autocomplete="username" placeholder="Admin email"><label>Password</label><input id="adminPass" type="password" autocomplete="current-password" placeholder="Password"><button class="primary wideAction" id="adminLoginBtn">LOGIN AS ADMIN</button><button class="authForgotLink" id="adminForgot">Forgot password?</button><button class="backLink" id="adminCancel">← Back to Login</button><p class="tinyNote">The account must also have a Firestore document at <b>admins/&lt;Firebase UID&gt;</b> with <b>role = admin</b>. This grants administrator privileges.</p></div></div>`;$('adminLoginBtn').onclick=async()=>{const e=$('adminUser').value.trim(),p=$('adminPass').value;if(!e||!p)return toast('Enter admin email and password');$('adminLoginBtn').disabled=true;$('adminLoginBtn').textContent='AUTHENTICATING…';adminAuthInProgress=true;try{await CloudAPI.adminSetPersistence();await CloudAPI.adminSignIn(e,p);const u=CloudAPI.adminCurrentUser();if(await withTimeout(CloudAPI.isAdmin(u?.uid),10000,'Admin verification')){adminSession=true;adminUser=u;show('admin');toast('✓ Admin login successful')}else{await CloudAPI.adminSignOut();toast('Authenticated, but this account is not an admin. Add its UID to the Firestore admins collection.')}}catch(err){toast(firebaseAuthMessage(err))}finally{adminAuthInProgress=false}$('adminLoginBtn').disabled=false;$('adminLoginBtn').textContent='LOGIN AS ADMIN'};$('adminPass').onkeydown=e=>{if(e.key==='Enter')$('adminLoginBtn').click()};$('adminForgot').onclick=()=>resetAdminPassword($('adminUser').value.trim());$('adminCancel').onclick=()=>{showAdminLoginBackToStudentGate()}}
 function showAdminLoginBackToStudentGate(){
   document.querySelectorAll('main>section').forEach(x=>x.remove());
   $('pageTitle').textContent='Today';
@@ -715,17 +793,14 @@ loadLocal();setTheme();resetAtMidnight();show('today');scheduleNextReminder();
 CloudAPI.onAuthStateChanged(async user=>{
   cloudUser=user||null;
   studentAuthResolved=true;
-  if(user){try{localStorage.setItem(STUDENT_SESSION_HINT,'1')}catch(_){} closeStartupAuth();}
+  if(user){try{localStorage.setItem(STUDENT_SESSION_HINT,'1')}catch(_){} switchToUserLocal(user.uid,user.email); closeStartupAuth();}
   if(user){
     D.profile.email=user.email||D.profile.email;
-    saveAll();
     if(!adminSession&&!adminAuthInProgress){
       show('today');
-      // Restore cloud before uploads after an app restart.
-      try{await CloudAPI.setPersistence();await syncCurrentUser('download',true);}
-      catch(e){console.warn('Initial cloud restore failed',e)}
+      // Authentication is complete; never make the user wait for Firestore reconciliation.
+      syncCurrentUser('upload',true).catch(e=>console.warn('Initial cloud reconciliation failed',e));
       startAutomaticCloudSync();
-      show('today');
     }
   }else{
     stopAutomaticCloudSync();

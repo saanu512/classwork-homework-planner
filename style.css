@@ -765,3 +765,39 @@ html[data-theme="dark"] .classEntryWrap .cardSubject h2 {
 @media(max-width:420px){.adminFilterHint{grid-column:1}}
 
 .aiAnswer{margin-top:14px;background:var(--surface2);overflow:auto;max-height:48vh}.aiAnswer .eyebrow{margin-bottom:8px}.aiAnswerText{font-size:13px;line-height:1.6;word-break:break-word;color:var(--text)}
+
+/* v40.1 — mobile viewport access fix
+   Keep zoom disabled, but never trap dashboard controls outside the viewport. */
+html,body{max-width:100%;overflow-x:hidden}
+*,*::before,*::after{box-sizing:border-box}
+.app{width:100%;max-width:900px;min-width:0;overflow-x:hidden}
+main,main>section,.adminGrid,.adminPanel,.adminPanelBody{min-width:0;max-width:100%}
+.adminPanel{overflow-x:auto;overflow-y:visible;-webkit-overflow-scrolling:touch}
+.adminListRow{min-width:0;flex-wrap:wrap}
+.adminListRow>div:first-child{min-width:0;flex:1 1 160px}
+.adminRowActions{min-width:0;max-width:100%;flex:1 1 100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.adminRowActions button{width:100%!important;min-width:0!important;max-width:100%;white-space:normal;overflow-wrap:anywhere}
+.adminToolbar{min-width:0;width:100%}
+.adminToolbar input,.adminToolbar select{min-width:0!important;max-width:100%;width:100%}
+.adminFilterGrid{min-width:0;width:100%;max-width:100%}
+.adminFilterGrid>*{min-width:0!important;max-width:100%}
+.adminFilterGrid input,.adminFilterGrid select,.adminFilterGrid button{width:100%;min-width:0;max-width:100%}
+.adminDateRange{min-width:0;max-width:100%}
+.adminDateRange input{width:100%;min-width:0;max-width:100%}
+@media(max-width:620px){
+  .adminPanel{padding:12px}
+  .adminListRow{align-items:flex-start}
+  .adminListRow>div:first-child{flex-basis:100%}
+  .adminRowActions{grid-template-columns:1fr 1fr 1fr;width:100%;}
+  .adminRowActions button{font-size:9px!important;padding:8px 5px!important}
+  .adminToolbar{display:grid;grid-template-columns:1fr;gap:7px}
+  .adminToolbar .settingSave,.adminToolbar .addRow{width:100%!important}
+}
+@media(max-width:430px){
+  main{padding-left:10px!important;padding-right:10px!important}
+  .adminPanel{padding:10px}
+  .adminRowActions{grid-template-columns:1fr 1fr 1fr;gap:5px}
+  .adminRowActions button{font-size:8px!important;padding:7px 3px!important}
+  .adminFilterGrid{grid-template-columns:1fr!important}
+  .adminFilterGrid .settingSave{grid-column:auto!important}
+}
