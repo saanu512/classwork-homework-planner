@@ -1155,3 +1155,348 @@ select.selectPressed{transform:translateY(2px);border-color:rgba(99,91,255,.65)!
   :root[data-theme="light3d"] .wideAction,
   :root[data-theme="dark3d"] .wideAction{font-size:10px;padding:6px 9px;min-height:32px}
 }
+
+/* v40.4 — final compact 3D controls + true-black Dark 3D correction */
+:root[data-theme="light3d"],:root[data-theme="dark3d"]{--buttonText:#fff}
+
+/* Compact physical buttons: never stretch just because the parent card is wide. */
+:root[data-theme="light3d"] button:not(.backLink),
+:root[data-theme="dark3d"] button:not(.backLink){
+  width:max-content!important;
+  min-width:0!important;
+  max-width:100%;
+  min-height:32px!important;
+  padding:6px 10px!important;
+  font-size:10px!important;
+  line-height:1.05!important;
+  border-radius:10px!important;
+  flex:0 0 auto;
+}
+
+/* Keep action groups on one line whenever their compact labels fit. */
+:root[data-theme="light3d"] .adminRowActions,
+:root[data-theme="dark3d"] .adminRowActions{
+  display:flex!important;
+  flex-wrap:nowrap!important;
+  align-items:center;
+  justify-content:flex-end;
+  gap:6px;
+  width:auto!important;
+  min-width:0!important;
+}
+:root[data-theme="light3d"] .adminRowActions button,
+:root[data-theme="dark3d"] .adminRowActions button{
+  width:max-content!important;
+  min-width:0!important;
+  min-height:30px!important;
+  padding:6px 8px!important;
+  font-size:8.5px!important;
+  flex:0 0 auto!important;
+}
+
+/* Filter actions stay compact too. */
+:root[data-theme="light3d"] .adminFilterGrid .settingSave,
+:root[data-theme="dark3d"] .adminFilterGrid .settingSave,
+:root[data-theme="light3d"] .adminFilterGrid .dangerBtn,
+:root[data-theme="dark3d"] .adminFilterGrid .dangerBtn{
+  width:max-content!important;
+  min-width:0!important;
+  max-width:100%;
+  min-height:32px!important;
+  padding:7px 10px!important;
+  font-size:9px!important;
+}
+
+/* Schedule/announcement action buttons: compact and side-by-side when possible. */
+:root[data-theme="light3d"] .adminToolbar .settingSave,
+:root[data-theme="dark3d"] .adminToolbar .settingSave,
+:root[data-theme="light3d"] .adminToolbar .addRow,
+:root[data-theme="dark3d"] .adminToolbar .addRow{
+  width:max-content!important;
+  min-width:0!important;
+  flex:0 0 auto!important;
+}
+:root[data-theme="light3d"] .adminQuick,
+:root[data-theme="dark3d"] .adminQuick{display:flex!important;flex-wrap:wrap!important;gap:7px;align-items:center}
+
+/* True black Dark 3D: no grey/white translucent card wash. */
+:root[data-theme="dark3d"] body,
+:root[data-theme="dark3d"] main,
+:root[data-theme="dark3d"] .app{background:#000!important;color:#f7f7f7}
+:root[data-theme="dark3d"] .classCard,
+:root[data-theme="dark3d"] .formCard,
+:root[data-theme="dark3d"] .miniCard,
+:root[data-theme="dark3d"] .settingCard,
+:root[data-theme="dark3d"] .adminPanel,
+:root[data-theme="dark3d"] .subjectTile,
+:root[data-theme="dark3d"] .topicRecord,
+:root[data-theme="dark3d"] .scheduleCard,
+:root[data-theme="dark3d"] .authCard,
+:root[data-theme="dark3d"] .adminListRow,
+:root[data-theme="dark3d"] .adminRecord,
+:root[data-theme="dark3d"] .adminStat,
+:root[data-theme="dark3d"] .adminTwo>div,
+:root[data-theme="dark3d"] .adminTwo>label,
+:root[data-theme="dark3d"] .analyticsBars>div,
+:root[data-theme="dark3d"] .glass{
+  background:#0b0b0b!important;
+  color:#f7f7f7!important;
+  border-color:rgba(255,255,255,.14)!important;
+  box-shadow:12px 14px 30px rgba(0,0,0,.95),inset 1px 1px 0 rgba(255,255,255,.055),inset -3px -3px 7px rgba(0,0,0,.9)!important;
+}
+:root[data-theme="dark3d"] .classCard{background:#0b0b0b!important}
+:root[data-theme="dark3d"] .classCard:before{background:linear-gradient(135deg,rgba(139,125,255,.12),rgba(139,125,255,.025))!important}
+:root[data-theme="dark3d"] .classCard:after{background:rgba(139,125,255,.035)!important}
+:root[data-theme="dark3d"] .infoBlock,
+:root[data-theme="dark3d"] .cardInfoGrid,
+:root[data-theme="dark3d"] .cardMiddle,
+:root[data-theme="dark3d"] .scheduleExtraBox,
+:root[data-theme="dark3d"] .scheduleDay,
+:root[data-theme="dark3d"] .adminScheduleSummary div{
+  background:#111!important;
+  color:#f7f7f7!important;
+  border-color:rgba(255,255,255,.12)!important;
+}
+:root[data-theme="dark3d"] .cardHalf textarea,
+:root[data-theme="dark3d"] .cardTeacherInput{
+  background:#111!important;
+  color:#fff!important;
+  border-color:rgba(255,255,255,.12)!important;
+  box-shadow:inset 4px 4px 9px rgba(0,0,0,.92),inset -2px -2px 5px rgba(255,255,255,.035)!important;
+}
+:root[data-theme="dark3d"] input,
+:root[data-theme="dark3d"] select,
+:root[data-theme="dark3d"] textarea{
+  background:#101010!important;
+  color:#f7f7f7!important;
+  border-color:rgba(255,255,255,.14)!important;
+}
+:root[data-theme="dark3d"] input::placeholder,
+:root[data-theme="dark3d"] textarea::placeholder{color:#a8a8a8!important;opacity:1}
+:root[data-theme="dark3d"] .cardLabel,
+:root[data-theme="dark3d"] .infoLabel,
+:root[data-theme="dark3d"] .cardFieldLabel,
+:root[data-theme="dark3d"] label,
+:root[data-theme="dark3d"] .mutedIntro,
+:root[data-theme="dark3d"] .settingCard p,
+:root[data-theme="dark3d"] .adminNote,
+:root[data-theme="dark3d"] .adminListRow small,
+:root[data-theme="dark3d"] .topicRecord p,
+:root[data-theme="dark3d"] .topicRecord small,
+:root[data-theme="dark3d"] .status,
+:root[data-theme="dark3d"] .statusPill,
+:root[data-theme="dark3d"] .scheduleExtraBox small{
+  color:#bcbcbc!important;
+}
+:root[data-theme="dark3d"] .classCard h2,
+:root[data-theme="dark3d"] .teacherName,
+:root[data-theme="dark3d"] .settingCard h3,
+:root[data-theme="dark3d"] .adminPanelHead h3,
+:root[data-theme="dark3d"] .adminListRow b,
+:root[data-theme="dark3d"] .adminRecord>b,
+:root[data-theme="dark3d"] .topicRecord h3,
+:root[data-theme="dark3d"] .scheduleDayHead,
+:root[data-theme="dark3d"] .infoValue.hasValue{
+  color:#fff!important;
+}
+
+/* Dark 3D controls remain dimensional without becoming grey. */
+:root[data-theme="dark3d"] button:not(.backLink){
+  color:#fff!important;
+  background:#151515!important;
+  border-color:rgba(255,255,255,.14)!important;
+  box-shadow:6px 7px 13px rgba(0,0,0,.95),inset 0 2px 1px rgba(255,255,255,.10),inset 0 -4px 7px rgba(0,0,0,.75)!important;
+}
+:root[data-theme="dark3d"] .primary,
+:root[data-theme="dark3d"] .wideAction,
+:root[data-theme="dark3d"] .settingSave,
+:root[data-theme="dark3d"] .extraBtn,
+:root[data-theme="dark3d"] .cardSaveBtn,
+:root[data-theme="dark3d"] .accountSync,
+:root[data-theme="dark3d"] .accountLogout{
+  background:linear-gradient(145deg,#9b84ff,#7658ed)!important;
+  color:#fff!important;
+  box-shadow:7px 8px 14px rgba(0,0,0,.96),inset 0 2px 1px rgba(255,255,255,.24),inset 0 -4px 7px rgba(0,0,0,.42)!important;
+}
+:root[data-theme="dark3d"] .dangerBtn,
+:root[data-theme="dark3d"] .cardDeleteBtn{
+  background:#210f12!important;
+  color:#ff8b98!important;
+  border-color:rgba(255,90,110,.25)!important;
+  box-shadow:6px 7px 13px rgba(0,0,0,.95),inset 0 2px 1px rgba(255,255,255,.06),inset 0 -4px 7px rgba(0,0,0,.8)!important;
+}
+
+/* Light 3D cards/buttons keep readable dark text on bright surfaces. */
+:root[data-theme="light3d"] .classCard,
+:root[data-theme="light3d"] .formCard,
+:root[data-theme="light3d"] .miniCard,
+:root[data-theme="light3d"] .settingCard,
+:root[data-theme="light3d"] .adminPanel,
+:root[data-theme="light3d"] .adminListRow,
+:root[data-theme="light3d"] .adminRecord{color:#111827}
+
+/* On narrow phones, keep the three student actions together whenever physically possible. */
+@media(max-width:560px){
+  :root[data-theme="light3d"] .adminListRow,
+  :root[data-theme="dark3d"] .adminListRow{gap:7px}
+  :root[data-theme="light3d"] .adminListRow>div:first-child,
+  :root[data-theme="dark3d"] .adminListRow>div:first-child{flex:1 1 100%;}
+  :root[data-theme="light3d"] .adminRowActions,
+  :root[data-theme="dark3d"] .adminRowActions{width:100%!important;justify-content:space-between!important}
+  :root[data-theme="light3d"] .adminRowActions button,
+  :root[data-theme="dark3d"] .adminRowActions button{font-size:8px!important;padding:6px 7px!important}
+  :root[data-theme="light3d"] .adminToolbar .settingSave,
+  :root[data-theme="dark3d"] .adminToolbar .settingSave,
+  :root[data-theme="light3d"] .adminToolbar .addRow,
+  :root[data-theme="dark3d"] .adminToolbar .addRow{width:max-content!important}
+}
+@media(max-width:360px){
+  :root[data-theme="light3d"] .adminRowActions button,
+  :root[data-theme="dark3d"] .adminRowActions button{font-size:7.5px!important;padding:5px 6px!important}
+}
+
+/* v40.5 — GLOBAL compact physical 3D buttons
+   Applies to every button in Light 3D and Dark 3D, not just selected areas. */
+:root[data-theme="light3d"] button:not(nav button),
+:root[data-theme="dark3d"] button:not(nav button){
+  box-sizing:border-box;
+  width:max-content!important;
+  min-width:0!important;
+  max-width:100%;
+  min-height:32px!important;
+  height:auto!important;
+  padding:6px 10px!important;
+  margin-left:0;
+  margin-right:0;
+  font-size:10px!important;
+  line-height:1.1!important;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  flex:0 0 auto;
+  border-radius:11px!important;
+  position:relative;
+  transform:translateZ(0);
+  transition:transform .12s ease,box-shadow .12s ease,filter .12s ease;
+}
+
+/* Every ordinary 3D button gets a raised physical surface. */
+:root[data-theme="light3d"] button:not(nav button){
+  border:1px solid rgba(100,100,120,.20)!important;
+  box-shadow:5px 6px 11px rgba(45,52,76,.20),
+             inset 0 2px 1px rgba(255,255,255,.70),
+             inset 0 -3px 5px rgba(0,0,0,.12)!important;
+}
+:root[data-theme="dark3d"] button:not(nav button){
+  border:1px solid rgba(255,255,255,.14)!important;
+  box-shadow:6px 7px 13px rgba(0,0,0,.96),
+             inset 0 2px 1px rgba(255,255,255,.10),
+             inset 0 -4px 7px rgba(0,0,0,.78)!important;
+}
+
+/* Make action groups use the available horizontal space without making
+   individual buttons artificially wide. If all buttons fit, they stay on one line. */
+:root[data-theme="light3d"] .cardActions,
+:root[data-theme="dark3d"] .cardActions,
+:root[data-theme="light3d"] .adminRowActions,
+:root[data-theme="dark3d"] .adminRowActions,
+:root[data-theme="light3d"] .adminQuick,
+:root[data-theme="dark3d"] .adminQuick,
+:root[data-theme="light3d"] .adminToolbar,
+:root[data-theme="dark3d"] .adminToolbar,
+:root[data-theme="light3d"] .modalActions,
+:root[data-theme="dark3d"] .modalActions,
+:root[data-theme="light3d"] .panel .actions,
+:root[data-theme="dark3d"] .panel .actions,
+:root[data-theme="light3d"] .pdfPrintToolbar,
+:root[data-theme="dark3d"] .pdfPrintToolbar{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  align-items:center;
+  gap:7px!important;
+}
+
+:root[data-theme="light3d"] .cardActions,
+:root[data-theme="dark3d"] .cardActions{justify-content:center!important}
+:root[data-theme="light3d"] .adminRowActions,
+:root[data-theme="dark3d"] .adminRowActions{justify-content:flex-start!important;width:auto!important}
+
+/* Never force the highlighted student action buttons to full width. */
+:root[data-theme="light3d"] .adminRowActions button,
+:root[data-theme="dark3d"] .adminRowActions button{
+  width:max-content!important;
+  min-width:0!important;
+  flex:0 0 auto!important;
+  padding:6px 9px!important;
+  font-size:8.5px!important;
+}
+
+/* Filter/action buttons are compact too; filters themselves remain full-width. */
+:root[data-theme="light3d"] .adminFilterGrid button,
+:root[data-theme="dark3d"] .adminFilterGrid button{
+  width:max-content!important;
+  min-width:0!important;
+  flex:0 0 auto!important;
+}
+
+/* Common text-action classes must not inherit old full-width rules. */
+:root[data-theme="light3d"] .primary,
+:root[data-theme="dark3d"] .primary,
+:root[data-theme="light3d"] .wideAction,
+:root[data-theme="dark3d"] .wideAction,
+:root[data-theme="light3d"] .settingSave,
+:root[data-theme="dark3d"] .settingSave,
+:root[data-theme="light3d"] .extraBtn,
+:root[data-theme="dark3d"] .extraBtn,
+:root[data-theme="light3d"] .addRow,
+:root[data-theme="dark3d"] .addRow,
+:root[data-theme="light3d"] .dangerBtn,
+:root[data-theme="dark3d"] .dangerBtn,
+:root[data-theme="light3d"] .logoutBtn,
+:root[data-theme="dark3d"] .logoutBtn,
+:root[data-theme="light3d"] .cardSaveBtn,
+:root[data-theme="dark3d"] .cardSaveBtn,
+:root[data-theme="light3d"] .cardDeleteBtn,
+:root[data-theme="dark3d"] .cardDeleteBtn{
+  width:max-content!important;
+  min-width:0!important;
+  flex:0 0 auto!important;
+}
+
+/* Buttons press down like physical controls. */
+:root[data-theme="light3d"] button:not(nav button):hover,
+:root[data-theme="dark3d"] button:not(nav button):hover{transform:translateY(-2px)!important}
+:root[data-theme="light3d"] button:not(nav button):active,
+:root[data-theme="dark3d"] button:not(nav button):active{
+  transform:translateY(3px)!important;
+}
+
+/* Preserve the five navigation tabs as equal-width navigation controls. */
+:root[data-theme="light3d"] nav,
+:root[data-theme="dark3d"] nav{display:flex!important}
+:root[data-theme="light3d"] nav button,
+:root[data-theme="dark3d"] nav button{
+  width:auto!important;
+  min-width:0!important;
+  flex:1 1 0!important;
+  white-space:normal!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+}
+
+/* On narrow screens, groups still remain one line whenever their compact
+   labels physically fit; otherwise they wrap cleanly instead of overflowing. */
+@media(max-width:560px){
+  :root[data-theme="light3d"] .adminRowActions,
+  :root[data-theme="dark3d"] .adminRowActions{
+    width:100%!important;
+    flex-wrap:nowrap!important;
+    justify-content:flex-start!important;
+    gap:5px!important;
+  }
+  :root[data-theme="light3d"] .adminRowActions button,
+  :root[data-theme="dark3d"] .adminRowActions button{
+    font-size:8px!important;
+    padding:6px 7px!important;
+  }
+}
