@@ -1,10 +1,6 @@
 import { CloudAPI, GeminiAPI } from "./firebase.js";
 
 let cloudUser=null;
-// Holds name/roll entered in the student login popup until Firebase auth state
-// finishes restoring the same user-local data. This prevents the auth callback
-// from replacing freshly entered profile details with an older local copy.
-let pendingLoginProfile=null;
 let adminUser=null;
 let cloudBusy=false;
 let cloudStudents=[];
@@ -207,7 +203,6 @@ function startAutomaticCloudSync(){
 function stopAutomaticCloudSync(){clearInterval(cloudIntervalTimer);cloudIntervalTimer=null}
 async function cloudSignIn(email,password,name='',roll=''){
   adminAuthInProgress=false;
-  pendingLoginProfile={name:String(name||'').trim(),roll:String(roll||'').trim()};
   try{
     // Authentication is the gate. Never make login depend on Firestore being
     // available, and never let a missing/deleted users/{uid} document block sign-in.
@@ -221,10 +216,8 @@ async function cloudSignIn(email,password,name='',roll=''){
     // from overwriting the student's cloud record after an update.
     switchToUserLocal(cloudUser?.uid,cloudUser?.email||email);
     D.profile.email=cloudUser?.email||D.profile.email;
-    const loginName=pendingLoginProfile?.name||name.trim();
-    const loginRoll=pendingLoginProfile?.roll||String(roll).trim();
-    if(loginName)D.profile.name=loginName;
-    if(loginRoll)D.profile.roll=loginRoll;
+    if(name.trim())D.profile.name=name.trim();
+    if(String(roll).trim())D.profile.roll=String(roll).trim();
     persistLocalStorage();
 
     // Login succeeds immediately. Cloud reconciliation is deliberately
@@ -235,9 +228,8 @@ async function cloudSignIn(email,password,name='',roll=''){
     toast(`✓ Signed in as ${cloudUser?.email||email}`);
     reconcileAfterLogin().catch(e=>console.warn('Background cloud reconciliation failed:',e));
     startAutomaticCloudSync();
-    pendingLoginProfile=null;
     return true;
-  }catch(e){pendingLoginProfile=null;console.error(e);toast(firebaseAuthMessage(e));return false}
+  }catch(e){console.error(e);toast(firebaseAuthMessage(e));return false}
 }
 
 async function reconcileAfterLogin(){
@@ -621,7 +613,7 @@ function show(page){
   ({today:renderToday,homework:renderHomework,syllabus:renderSyllabus,ai:renderAI,settings:renderSettings,admin:renderAdmin,reminders:renderReminders}[page]||(()=>{}))(s);
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));
 }
-function navBar(){return `<nav><button data-page="today">⌂<br>Today</button><button data-page="homework">✓<br>Homework</button><button data-page="syllabus">◈<br>Syllabus</button><button data-page="ai">✦<br>Gemini AI</button><button data-page="settings">⚙<br>Settings</button></nav>`}
+function navBar(){return `<nav><button data-page="today"><span class="navIcon">⌂</span><span class="navLabel">Today</span></button><button data-page="homework"><span class="navIcon">✓</span><span class="navLabel">Homework</span></button><button data-page="syllabus"><span class="navIcon">◈</span><span class="navLabel">Syllabus</span></button><button data-page="ai"><span class="navIcon">✦</span><span class="navLabel">Gemini AI</span></button><button data-page="settings"><span class="navIcon">⚙</span><span class="navLabel">Settings</span></button></nav>`}
 function calendarBar(){return `<div class="calendarbar"><button class="iconBtn" id="prev">‹</button><button class="datePicker" id="datePicker"><span class="calendarIcon">▣</span><span>${esc(fmt(today))}</span></button><button class="iconBtn" id="next">›</button><button class="todayBtn" id="jumpToday">Today</button><input id="hiddenDate" type="date" value="${iso(today)}"></div>`}
 function classCardMarkup(c,i){const r=recordForClass(c),teacher=r.teacher||c.teacher||D.teachers[c.scheduledSubject]||D.teachers[c.subject]||'';return `<div class="classEntryWrap" data-i="${i}"><article class="classCard ${c.extra?'extraCard':''}"><div class="cardTopRow"><span class="timePill">${esc(c.time)}</span><div class="cardSubject"><h2>${esc(c.subject)}</h2><input class="cardTeacherInput teacherUnderSubject" value="${esc(teacher)}" placeholder="Teacher name"><small class="defaultTeacher subjectDefaultTeacher">Default teacher: ${esc(c.teacher||'Not set')}</small></div>${c.extra?'<span class="extraPill">EXTRA</span>':''}</div><div class="cardChapter"><label class="cardFieldLabel">CHAPTER</label><input class="cardChapterInput" value="${esc(r.chapter||'')}" placeholder="Chapter (optional)"></div><div class="cardMiddle"><div class="cardHalf"><label class="cardFieldLabel">TOPIC TAUGHT</label><textarea class="cardTopic" placeholder="What was taught today?">${esc(r.topic||'')}</textarea></div><div class="cardHalf"><label class="cardFieldLabel">HOMEWORK</label><textarea class="cardHomework" placeholder="Homework / assignment">${esc(r.homework||'')}</textarea></div></div><div class="cardActions"><button class="cardSaveBtn">SAVE</button>${c.extra?'<button class="cardDeleteBtn">DELETE</button>':''}</div></article></div>`}
 function renderToday(el){
@@ -643,7 +635,7 @@ function recordMeta(k){const p=k.split('|');return{date:p[0]||'',time:p[1]||'',s
 function homeworkEntries(){return Object.entries(D.records).filter(([k,r])=>r.homework&&r.homework.trim()).map(([k,r])=>({k,r,m:recordMeta(k)}))}
 function renderHomework(el){const entries=homeworkEntries(),subjects=['All subjects',...SUBJECTS],dates=['All dates',...new Set(entries.map(x=>x.m.date).sort().reverse())];el.innerHTML=`<div class="sectionHead"><div><div class="eyebrow">WORK TO COMPLETE</div><h2>Homework</h2><p class="mutedIntro">Pending and completed homework, with due-date reminders.</p></div></div><div class="filterBar"><select id="hwSubject">${subjects.map(x=>`<option>${esc(x)}</option>`).join('')}</select><select id="hwDate">${dates.map(x=>`<option>${esc(x)}</option>`).join('')}</select></div><div id="hwList"></div>`;const draw=()=>{const sf=$('hwSubject').value,df=$('hwDate').value,f=entries.filter(x=>(sf==='All subjects'||x.m.subject===sf)&&(df==='All dates'||x.m.date===df)),p=f.filter(x=>!x.r.completed),d=f.filter(x=>x.r.completed),card=x=>`<div class="miniCard"><div class="miniTitle"><b>${esc(x.m.subject)}</b><span>${esc(x.m.date)} • ${esc(x.m.time)}</span></div><div class="small">${esc(x.r.teacher||D.teachers[x.m.scheduled]||'Teacher not set')}</div><p>${esc(x.r.homework)}</p><button class="chip" data-k="${esc(x.k)}">${x.r.completed?'Mark pending':'✓ Mark completed'}</button></div>`;$('hwList').innerHTML=`<h3 class="subhead">Pending <span>${p.length}</span></h3>${p.length?p.map(card).join(''):'<div class="empty glass">No pending homework.</div>'}<h3 class="subhead">Completed <span>${d.length}</span></h3>${d.length?d.map(card).join(''):'<div class="empty glass">No completed homework.</div>'}`;$('hwList').querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{D.records[b.dataset.k].completed=!D.records[b.dataset.k].completed;saveAll();draw()})};$('hwSubject').onchange=draw;$('hwDate').onchange=draw;draw()}
 function syllabusData(){const out={};Object.entries(D.records).forEach(([k,r])=>{const m=recordMeta(k);if(r.topic){(out[m.subject]??=[]).push({date:m.date,time:m.time,teacher:r.teacher||D.teachers[m.scheduled]||'Teacher not set',topic:r.topic,chapter:r.chapter||''})}});Object.keys(out).forEach(s=>{const seen=new Set();out[s]=out[s].filter(x=>{const q=x.date+'|'+x.time+'|'+x.topic;if(seen.has(q))return false;seen.add(q);return true}).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time))});return out}
-function renderSyllabus(el){const data=syllabusData();el.innerHTML=`<div class="sectionHead"><div><div class="eyebrow">LEARNING MAP</div><h2>Syllabus</h2><p class="mutedIntro">Subject-wise topics taught and progress from your daily records.</p></div><button class="primary exportBtn" id="exportAll">EXPORT PDF</button></div><div class="subjectGrid">${SUBJECTS.map(s=>{const n=(data[s]||[]).length;return `<button class="subjectTile" data-subject="${esc(s)}"><b>${esc(s)}</b><span>${n} topic${n===1?'':'s'}</span></button>`}).join('')}</div>`;el.querySelectorAll('[data-subject]').forEach(b=>b.onclick=()=>renderSyllabusDetail(b.dataset.subject));$('exportAll').onclick=()=>exportSyllabusPDF()}
+function renderSyllabus(el){const data=syllabusData();el.innerHTML=`<div class="sectionHead"><div><div class="eyebrow">LEARNING MAP</div><h2>Syllabus</h2><p class="mutedIntro">Subject-wise topics taught and progress from your daily records.</p></div><button class="primary exportBtn" id="exportAll">EXPORT PDF</button></div><div class="subjectGrid">${SUBJECTS.map(s=>{const n=(data[s]||[]).length;return `<div class="subjectTile" data-subject="${esc(s)}" role="button" tabindex="0"><b>${esc(s)}</b><span>${n} topic${n===1?'':'s'}</span></div>`}).join('')}</div>`;el.querySelectorAll('[data-subject]').forEach(b=>{b.onclick=()=>renderSyllabusDetail(b.dataset.subject);b.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();renderSyllabusDetail(b.dataset.subject)}}});$('exportAll').onclick=()=>exportSyllabusPDF()}
 function renderSyllabusDetail(subject){const el=$('syllabus'),data=syllabusData()[subject]||[];$('pageTitle').textContent=subject;$('dateLine').textContent='Saved topics';el.innerHTML=`<button class="backLink" id="syllBack">‹ All subjects</button><div class="sectionHead"><div><div class="eyebrow">${esc(subject)}</div><h2>Topics</h2></div><button class="primary exportBtn" id="exportTopics">EXPORT PDF</button></div>${data.length?`<div class="topicList">${data.map(x=>`<div class="topicRecord"><div class="topicDate"><b>${esc(x.date)}</b><span>${esc(x.time)}</span></div><div><h3>${esc(x.topic)}</h3>${x.chapter?`<p>Chapter: ${esc(x.chapter)}</p>`:''}<small>Teacher: ${esc(x.teacher)}</small></div></div>`).join('')}</div>`:'<div class="empty glass">No saved topics yet.</div>'}`;$('syllBack').onclick=()=>show('syllabus');$('exportTopics').onclick=()=>exportSyllabusPDF(subject)}
 function exportSyllabusPDF(subject){
   const data=syllabusData();
@@ -827,17 +819,7 @@ loadLocal();setTheme();resetAtMidnight();show('today');scheduleNextReminder();
 CloudAPI.onAuthStateChanged(async user=>{
   cloudUser=user||null;
   studentAuthResolved=true;
-  if(user){
-    try{localStorage.setItem(STUDENT_SESSION_HINT,'1')}catch(_){}
-    switchToUserLocal(user.uid,user.email);
-    if(pendingLoginProfile){
-      if(pendingLoginProfile.name)D.profile.name=pendingLoginProfile.name;
-      if(pendingLoginProfile.roll)D.profile.roll=pendingLoginProfile.roll;
-      D.profile.email=user.email||D.profile.email;
-      persistLocalStorage();
-    }
-    closeStartupAuth();
-  }
+  if(user){try{localStorage.setItem(STUDENT_SESSION_HINT,'1')}catch(_){} switchToUserLocal(user.uid,user.email); closeStartupAuth();}
   if(user){
     D.profile.email=user.email||D.profile.email;
     if(!adminSession&&!adminAuthInProgress){
