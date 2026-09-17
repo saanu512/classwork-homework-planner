@@ -3482,236 +3482,164 @@ button.wideAction{
   transform:translateY(3px) !important;filter:brightness(.97) !important;
 }
 
+/* ================================================================
+   FINAL THEME PARITY + NAVIGATION READABILITY + SYLLABUS CARDS
+   ================================================================ */
 
-/* =========================================================
-   FINAL NAVIGATION READABILITY PASS — ALL THEMES
-   Larger, clearly visible icons + labels. Five equal tabs.
-   Each theme has its own visual treatment.
-   ========================================================= */
-nav > button{
-  flex:1 1 0 !important;
-  width:100% !important;
-  min-width:0 !important;
-  max-width:none !important;
-  height:64px !important;
-  min-height:64px !important;
-  max-height:64px !important;
-  padding:5px 2px !important;
-  box-sizing:border-box !important;
-  display:flex !important;
-  flex-direction:column !important;
-  align-items:center !important;
-  justify-content:center !important;
-  gap:2px !important;
-  line-height:1 !important;
-  white-space:normal !important;
-  overflow:hidden !important;
-  margin:0 !important;
-}
-nav > button .navIcon{
-  display:block !important;
-  font-size:22px !important;
-  line-height:22px !important;
-  height:23px !important;
-  font-weight:900 !important;
-  flex:0 0 23px !important;
-}
-nav > button .navLabel{
-  display:block !important;
-  font-size:12px !important;
-  line-height:14px !important;
-  font-weight:850 !important;
-  letter-spacing:.1px !important;
-  white-space:nowrap !important;
-  overflow:hidden !important;
-  text-overflow:clip !important;
-  max-width:100% !important;
-}
+/* Navigation is its own component — never style it like an action button. */
+nav .navIcon,
+nav .navLabel{display:block;line-height:1;text-align:center}
+nav .navIcon{font-size:18px;font-weight:900;margin-bottom:5px;line-height:1.05}
+nav .navLabel{font-size:12px;font-weight:900;line-height:1.1;white-space:nowrap}
+nav > button{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:0!important}
 
-/* LIGHT — clean flat pill tabs */
+/* LIGHT — flat, readable navigation with a distinct active treatment. */
 :root[data-theme="light"] nav{
-  gap:5px !important;
-  padding:6px !important;
-  border-radius:22px !important;
-  background:rgba(255,255,255,.86) !important;
-  border:1px solid rgba(130,120,190,.20) !important;
-  box-shadow:0 10px 28px rgba(60,55,100,.12) !important;
+  display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  gap:6px!important;padding:6px!important;overflow:hidden!important;
+  border-radius:24px!important;background:rgba(255,255,255,.88)!important;
+  box-shadow:0 10px 30px rgba(35,42,65,.13)!important;
 }
-:root[data-theme="light"] nav > button{
-  border-radius:16px !important;
-  background:transparent !important;
-  color:var(--muted) !important;
-  border:1px solid transparent !important;
-  box-shadow:none !important;
-  transform:none !important;
+:root[data-theme="light"] nav>button,
+:root[data-theme="light"] nav>button:hover,
+:root[data-theme="light"] nav>button:focus,
+:root[data-theme="light"] nav>button:active,
+:root[data-theme="light"] nav>button.active{
+  width:100%!important;height:66px!important;min-height:66px!important;max-height:66px!important;
+  padding:7px 2px!important;border-radius:16px!important;border:1px solid transparent!important;
+  box-shadow:none!important;transform:none!important;background:transparent!important;color:var(--muted)!important;
 }
-:root[data-theme="light"] nav > button.active,
-:root[data-theme="light"] nav > button:focus{
-  background:linear-gradient(145deg,var(--accent),var(--accent2)) !important;
-  color:#fff !important;
-  border-color:rgba(255,255,255,.35) !important;
-  box-shadow:0 5px 12px rgba(99,91,255,.20) !important;
-  transform:none !important;
-}
+:root[data-theme="light"] nav>button.active{background:rgba(99,91,255,.11)!important;color:var(--accent)!important;border-color:rgba(99,91,255,.16)!important}
+:root[data-theme="light"] nav>button:active{background:rgba(99,91,255,.16)!important;transform:translateY(1px)!important}
 
-/* DARK — dark flat tabs with a crisp active capsule */
-:root[data-theme="dark"] nav{
-  gap:5px !important;
-  padding:6px !important;
-  border-radius:22px !important;
-  background:#151b27 !important;
-  border:1px solid rgba(255,255,255,.11) !important;
-  box-shadow:0 12px 30px rgba(0,0,0,.42) !important;
-}
-:root[data-theme="dark"] nav > button{
-  border-radius:16px !important;
-  background:transparent !important;
-  color:#aeb8ca !important;
-  border:1px solid transparent !important;
-  box-shadow:none !important;
-  transform:none !important;
-}
-:root[data-theme="dark"] nav > button.active,
-:root[data-theme="dark"] nav > button:focus{
-  background:linear-gradient(145deg,#8b7dff,#aa8fff) !important;
-  color:#fff !important;
-  border-color:rgba(255,255,255,.18) !important;
-  box-shadow:0 6px 14px rgba(139,125,255,.30) !important;
-  transform:none !important;
-}
-
-/* LIGHT 3D — physical tray, only active tab is raised */
+/* LIGHT 3D — only selected tab is physically raised. */
 :root[data-theme="light3d"] nav{
-  gap:5px !important;
-  padding:6px !important;
-  border-radius:22px !important;
-  background:var(--surface) !important;
-  border:1px solid var(--line) !important;
-  box-shadow:10px 12px 25px rgba(31,38,55,.25),inset 1px 1px 0 rgba(255,255,255,.70),inset -2px -2px 5px rgba(0,0,0,.10) !important;
+  display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  gap:5px!important;padding:6px!important;overflow:hidden!important;
+  border-radius:24px!important;background:rgba(242,244,250,.94)!important;
+  box-shadow:0 12px 28px rgba(40,48,75,.16),inset 0 1px 0 rgba(255,255,255,.9)!important;
 }
-:root[data-theme="light3d"] nav > button{
-  border-radius:16px !important;
-  background:transparent !important;
-  color:var(--muted) !important;
-  border:1px solid transparent !important;
-  box-shadow:none !important;
-  transform:none !important;
+:root[data-theme="light3d"] nav>button,
+:root[data-theme="light3d"] nav>button:hover,
+:root[data-theme="light3d"] nav>button:focus,
+:root[data-theme="light3d"] nav>button:active,
+:root[data-theme="light3d"] nav>button.active{
+  width:100%!important;height:68px!important;min-height:68px!important;max-height:68px!important;
+  padding:7px 2px!important;border-radius:18px!important;border:1px solid transparent!important;
+  box-shadow:none!important;transform:none!important;background:transparent!important;color:#697080!important;
 }
-:root[data-theme="light3d"] nav > button.active,
-:root[data-theme="light3d"] nav > button:focus{
-  background:linear-gradient(145deg,var(--accent),var(--accent2)) !important;
-  color:#fff !important;
-  border-color:rgba(255,255,255,.30) !important;
-  box-shadow:5px 6px 11px rgba(45,52,76,.30),inset 0 2px 2px rgba(255,255,255,.42),inset 0 -3px 5px rgba(0,0,0,.20) !important;
-  transform:translateY(-2px) !important;
+:root[data-theme="light3d"] nav>button.active{
+  background:linear-gradient(145deg,var(--accent2),var(--accent))!important;color:#fff!important;
+  border-color:rgba(255,255,255,.42)!important;
+  box-shadow:5px 6px 12px rgba(55,60,100,.30),inset 0 2px 2px rgba(255,255,255,.42),inset 0 -4px 6px rgba(40,30,120,.18)!important;
+  transform:translateY(-2px)!important;
 }
-:root[data-theme="light3d"] nav > button:active{
-  transform:translateY(2px) !important;
-}
+:root[data-theme="light3d"] nav>button:not(.active):active{background:rgba(99,91,255,.07)!important;transform:none!important}
 
-/* DARK 3D — black physical tray, only active tab is raised */
+/* DARK — same geometry/behavior as Light, but dark surfaces and BLACK normal buttons. */
+:root[data-theme="dark"] button:not(nav button):not(.backLink):not(.dangerBtn):not(.adminDeleteFilterBtn):not(.logoutBtn):not(.accountLogout):not(.cardDeleteBtn),
+:root[data-theme="dark"] .settingSave,
+:root[data-theme="dark"] .primary,
+:root[data-theme="dark"] .wideAction{
+  background:#050608!important;color:#fff!important;border-color:rgba(255,255,255,.14)!important;
+  box-shadow:none!important;transform:none!important;
+}
+:root[data-theme="dark"] button:not(nav button):not(.backLink):not(.dangerBtn):not(.adminDeleteFilterBtn):not(.logoutBtn):not(.accountLogout):not(.cardDeleteBtn):active{
+  transform:translateY(1px) scale(.985)!important;box-shadow:inset 0 2px 4px rgba(255,255,255,.08)!important;filter:brightness(.92)!important;
+}
+:root[data-theme="dark"] nav{
+  display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:5px!important;padding:6px!important;overflow:hidden!important;
+  border-radius:24px!important;background:rgba(14,17,24,.96)!important;box-shadow:0 12px 30px rgba(0,0,0,.48)!important;
+}
+:root[data-theme="dark"] nav>button,
+:root[data-theme="dark"] nav>button:hover,
+:root[data-theme="dark"] nav>button:focus,
+:root[data-theme="dark"] nav>button:active,
+:root[data-theme="dark"] nav>button.active{
+  width:100%!important;height:66px!important;min-height:66px!important;max-height:66px!important;padding:7px 2px!important;border-radius:16px!important;
+  border:1px solid transparent!important;background:transparent!important;color:#9da5b5!important;box-shadow:none!important;transform:none!important;
+}
+:root[data-theme="dark"] nav>button.active{background:#050608!important;color:#fff!important;border-color:rgba(255,255,255,.12)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 4px 10px rgba(0,0,0,.34)!important}
+:root[data-theme="dark"] nav>button:active{background:#0b0d12!important;transform:translateY(1px)!important}
+
+/* DARK 3D — black normal buttons, red destructive controls, raised active navigation. */
+:root[data-theme="dark3d"] button:not(nav button):not(.backLink):not(.dangerBtn):not(.adminDeleteFilterBtn):not(.logoutBtn):not(.accountLogout):not(.cardDeleteBtn){
+  background:#050608!important;color:#fff!important;border-color:rgba(255,255,255,.12)!important;
+  box-shadow:6px 7px 13px rgba(0,0,0,.82),inset 0 2px 1px rgba(255,255,255,.10),inset 0 -3px 5px rgba(0,0,0,.60)!important;
+  transform:translateY(-1px)!important;
+}
+:root[data-theme="dark3d"] button:not(nav button):not(.backLink):not(.dangerBtn):not(.adminDeleteFilterBtn):not(.logoutBtn):not(.accountLogout):not(.cardDeleteBtn):active{
+  transform:translateY(2px)!important;box-shadow:2px 3px 6px rgba(0,0,0,.82),inset 0 2px 3px rgba(255,255,255,.07)!important;filter:brightness(.92)!important;
+}
 :root[data-theme="dark3d"] nav{
-  gap:5px !important;
-  padding:6px !important;
-  border-radius:22px !important;
-  background:#080808 !important;
-  border:1px solid rgba(255,255,255,.09) !important;
-  box-shadow:11px 13px 27px rgba(0,0,0,.98),inset 1px 1px 0 rgba(255,255,255,.045),inset -2px -2px 6px rgba(0,0,0,.85) !important;
+  display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:5px!important;padding:6px!important;overflow:hidden!important;
+  border-radius:24px!important;background:#0b0d12!important;box-shadow:0 14px 34px rgba(0,0,0,.72),inset 0 1px 0 rgba(255,255,255,.04)!important;
 }
-:root[data-theme="dark3d"] nav > button{
-  border-radius:16px !important;
-  background:transparent !important;
-  color:#aeb8ca !important;
-  border:1px solid transparent !important;
-  box-shadow:none !important;
-  transform:none !important;
+:root[data-theme="dark3d"] nav>button,
+:root[data-theme="dark3d"] nav>button:hover,
+:root[data-theme="dark3d"] nav>button:focus,
+:root[data-theme="dark3d"] nav>button:active,
+:root[data-theme="dark3d"] nav>button.active{
+  width:100%!important;height:68px!important;min-height:68px!important;max-height:68px!important;padding:7px 2px!important;border-radius:18px!important;
+  border:1px solid transparent!important;background:transparent!important;color:#9da5b5!important;box-shadow:none!important;transform:none!important;
 }
-:root[data-theme="dark3d"] nav > button.active,
-:root[data-theme="dark3d"] nav > button:focus{
-  background:linear-gradient(145deg,var(--accent2),var(--accent)) !important;
-  color:#fff !important;
-  border-color:rgba(255,255,255,.18) !important;
-  box-shadow:6px 7px 13px rgba(0,0,0,.92),inset 0 2px 2px rgba(255,255,255,.18),inset 0 -4px 6px rgba(0,0,0,.45) !important;
-  transform:translateY(-2px) !important;
+:root[data-theme="dark3d"] nav>button.active{
+  background:#050608!important;color:#fff!important;border-color:rgba(255,255,255,.14)!important;
+  box-shadow:5px 6px 12px rgba(0,0,0,.78),inset 0 2px 2px rgba(255,255,255,.09),inset 0 -4px 6px rgba(0,0,0,.62)!important;
+  transform:translateY(-2px)!important;
 }
-:root[data-theme="dark3d"] nav > button:active{
-  transform:translateY(2px) !important;
-}
+:root[data-theme="dark3d"] nav>button:not(.active):active{background:#10131a!important;transform:none!important}
 
-@media(max-width:430px){
-  nav > button{
-    height:64px !important;
-    min-height:64px !important;
-    max-height:64px !important;
-    padding:4px 1px !important;
-  }
-  nav > button .navIcon{
-    font-size:21px !important;
-    line-height:21px !important;
-    height:22px !important;
-    flex-basis:22px !important;
-  }
-  nav > button .navLabel{
-    font-size:11.5px !important;
-    line-height:14px !important;
-  }
-}
-
-/* =========================================================
-   FINAL DARK BUTTON COLOR PASS
-   Dark = blue flat buttons
-   Dark 3D = purple raised 3D buttons
-   Destructive controls stay red.
-   ========================================================= */
-
-/* DARK — replace black/near-black ordinary button faces with blue.
-   Geometry, wrapping and click behavior are preserved. */
-:root[data-theme="dark"] button:not(nav button):not(.backLink):not(.dangerBtn):not(.adminDeleteFilterBtn):not(.logoutBtn):not(.accountLogout):not(.cardDeleteBtn):not(.removeRow){
-  background:linear-gradient(145deg,#2878f0,#3f9cff) !important;
-  color:#fff !important;
-  border-color:rgba(110,180,255,.28) !important;
-  box-shadow:none !important;
-}
-
-/* Keep the flat Dark-theme tap/click effect. */
-:root[data-theme="dark"] button:not(nav button):not(.backLink):not(.dangerBtn):not(.adminDeleteFilterBtn):not(.logoutBtn):not(.accountLogout):not(.cardDeleteBtn):not(.removeRow):active{
-  background:linear-gradient(145deg,#236bd8,#358be8) !important;
-  transform:translateY(1px) scale(.985) !important;
-  box-shadow:inset 0 2px 4px rgba(0,0,0,.22) !important;
-  filter:brightness(.97) !important;
-}
-
-/* DARK 3D — replace black/near-black ordinary button faces with purple,
-   while preserving the compact 3D geometry and physical depth. */
-:root[data-theme="dark3d"] button:not(nav button):not(.backLink):not(.dangerBtn):not(.adminDeleteFilterBtn):not(.logoutBtn):not(.accountLogout):not(.cardDeleteBtn):not(.removeRow){
-  background:linear-gradient(145deg,#9b84ff,#7658ed) !important;
-  color:#fff !important;
-  border-color:rgba(255,255,255,.18) !important;
-  box-shadow:7px 8px 15px rgba(0,0,0,.92),inset 0 2px 1px rgba(255,255,255,.22),inset 0 -4px 7px rgba(0,0,0,.40) !important;
-}
-
-/* Dark 3D tap/press effect remains enabled. */
-:root[data-theme="dark3d"] button:not(nav button):not(.backLink):not(.dangerBtn):not(.adminDeleteFilterBtn):not(.logoutBtn):not(.accountLogout):not(.cardDeleteBtn):not(.removeRow):active{
-  background:linear-gradient(145deg,#8d76ee,#6c50d9) !important;
-  transform:translateY(3px) !important;
-  box-shadow:2px 3px 7px rgba(0,0,0,.90),inset 0 2px 3px rgba(0,0,0,.18),inset 0 -1px 2px rgba(255,255,255,.25) !important;
-}
-
-/* Destructive controls remain red in both dark editions. */
+/* Destructive controls stay RED in both dark themes, including logout. */
 :root[data-theme="dark"] button.dangerBtn,
 :root[data-theme="dark"] button.adminDeleteFilterBtn,
 :root[data-theme="dark"] button.logoutBtn,
 :root[data-theme="dark"] button.accountLogout,
 :root[data-theme="dark"] button.cardDeleteBtn,
-:root[data-theme="dark"] button.removeRow{
-  color:#fff !important;
-}
 :root[data-theme="dark3d"] button.dangerBtn,
 :root[data-theme="dark3d"] button.adminDeleteFilterBtn,
 :root[data-theme="dark3d"] button.logoutBtn,
 :root[data-theme="dark3d"] button.accountLogout,
-:root[data-theme="dark3d"] button.cardDeleteBtn,
-:root[data-theme="dark3d"] button.removeRow{
-  background:linear-gradient(145deg,#e85b6b,#b92f43) !important;
-  color:#fff !important;
+:root[data-theme="dark3d"] button.cardDeleteBtn{
+  background:linear-gradient(145deg,#f05a67,#cf3048)!important;color:#fff!important;
+}
+
+/* Syllabus subject entries are CARDS, not action buttons. */
+.subjectTile{
+  cursor:pointer;user-select:none;outline:none;min-width:0;overflow:hidden;
+  transition:transform .14s ease,box-shadow .14s ease,border-color .14s ease,filter .14s ease;
+}
+.subjectTile:focus-visible{outline:3px solid rgba(99,91,255,.28);outline-offset:2px}
+:root[data-theme="light"] .subjectTile{
+  background:rgba(255,255,255,.88)!important;color:var(--text)!important;border:1px solid var(--line)!important;
+  box-shadow:0 5px 16px rgba(46,54,85,.08)!important;
+}
+:root[data-theme="light"] .subjectTile:active{transform:translateY(2px)!important;box-shadow:0 2px 7px rgba(46,54,85,.10)!important}
+:root[data-theme="light3d"] .subjectTile{
+  background:linear-gradient(145deg,#fff,#eef1f8)!important;color:var(--text)!important;border:1px solid rgba(255,255,255,.86)!important;
+  box-shadow:7px 8px 14px rgba(46,54,85,.16),inset 1px 1px 0 rgba(255,255,255,.90),inset -2px -2px 0 rgba(0,0,0,.06)!important;
+  transform:translateY(-1px)!important;
+}
+:root[data-theme="light3d"] .subjectTile:active{transform:translateY(2px)!important;box-shadow:2px 3px 7px rgba(46,54,85,.14),inset 2px 2px 5px rgba(0,0,0,.08)!important}
+:root[data-theme="dark"] .subjectTile{
+  background:#151922!important;color:var(--text)!important;border:1px solid var(--line)!important;box-shadow:0 6px 18px rgba(0,0,0,.28)!important;
+}
+:root[data-theme="dark"] .subjectTile:active{transform:translateY(2px)!important;box-shadow:0 2px 8px rgba(0,0,0,.35)!important}
+:root[data-theme="dark3d"] .subjectTile{
+  background:#101319!important;color:var(--text)!important;border:1px solid rgba(255,255,255,.08)!important;
+  box-shadow:7px 8px 15px rgba(0,0,0,.72),inset 1px 1px 0 rgba(255,255,255,.045),inset -2px -2px 0 rgba(0,0,0,.55)!important;
+  transform:translateY(-1px)!important;
+}
+:root[data-theme="dark3d"] .subjectTile:active{transform:translateY(2px)!important;box-shadow:2px 3px 7px rgba(0,0,0,.72),inset 2px 2px 6px rgba(0,0,0,.55)!important}
+.subjectTile b{display:block;font-size:16px!important;line-height:1.2!important;word-break:break-word;color:inherit!important}
+.subjectTile span{display:block;font-size:12px!important;line-height:1.2!important;color:var(--muted)!important}
+
+/* Keep mobile navigation readable without changing tab equality. */
+@media(max-width:430px){
+  nav .navIcon{font-size:18px!important;margin-bottom:5px!important}
+  nav .navLabel{font-size:11px!important}
+  :root[data-theme="light"] nav>button{height:64px!important;min-height:64px!important;max-height:64px!important}
+  :root[data-theme="light3d"] nav>button,
+  :root[data-theme="dark3d"] nav>button{height:66px!important;min-height:66px!important;max-height:66px!important}
+  :root[data-theme="dark"] nav>button{height:64px!important;min-height:64px!important;max-height:64px!important}
 }
