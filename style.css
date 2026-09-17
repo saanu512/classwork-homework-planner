@@ -2638,3 +2638,277 @@ button.wideAction{
     padding:4px 1px !important;
   }
 }
+
+/* ================================================================
+   CWP v40 — LIGHT + LIGHT 3D FINAL BUTTON/TEXT LAYOUT LAYER
+   Light 3D geometry is the reference. Long labels wrap instead of
+   overflowing or being truncated. Navigation is intentionally excluded.
+   ================================================================ */
+
+:root[data-theme="light"] button:not(nav button):not(.backLink),
+:root[data-theme="light3d"] button:not(nav button):not(.backLink){
+  box-sizing:border-box !important;
+  min-width:0 !important;
+  max-width:100% !important;
+  min-height:32px !important;
+  height:auto !important;
+  padding:6px 10px !important;
+  border-radius:10px !important;
+  font-size:10px !important;
+  font-weight:800 !important;
+  line-height:1.08 !important;
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  overflow-wrap:break-word !important;
+  word-break:normal !important;
+  text-align:center !important;
+  vertical-align:middle !important;
+}
+
+/* Light uses the Light-3D physical button face/design. */
+:root[data-theme="light"] button:not(nav button):not(.backLink):not(.dangerBtn):not(.adminDeleteFilterBtn):not(.logoutBtn):not(.accountLogout):not(.cardDeleteBtn),
+:root[data-theme="light3d"] button:not(nav button):not(.backLink):not(.dangerBtn):not(.adminDeleteFilterBtn):not(.logoutBtn):not(.accountLogout):not(.cardDeleteBtn){
+  border:1px solid rgba(255,255,255,.28) !important;
+  background:linear-gradient(135deg,var(--accent),var(--accent2)) !important;
+  color:#fff !important;
+  box-shadow:6px 7px 13px rgba(38,46,65,.20),
+             inset 0 2px 1px rgba(255,255,255,.55),
+             inset 0 -3px 5px rgba(0,0,0,.16) !important;
+  transform:translateY(-1px);
+}
+
+/* Red controls retain the same geometry/typography, only the color changes. */
+:root[data-theme="light"] button.dangerBtn,
+:root[data-theme="light"] button.adminDeleteFilterBtn,
+:root[data-theme="light"] button.logoutBtn,
+:root[data-theme="light"] button.accountLogout,
+:root[data-theme="light"] button.cardDeleteBtn,
+:root[data-theme="light3d"] button.dangerBtn,
+:root[data-theme="light3d"] button.adminDeleteFilterBtn,
+:root[data-theme="light3d"] button.logoutBtn,
+:root[data-theme="light3d"] button.accountLogout,
+:root[data-theme="light3d"] button.cardDeleteBtn{
+  box-sizing:border-box !important;
+  min-width:0 !important;
+  max-width:100% !important;
+  min-height:32px !important;
+  height:auto !important;
+  padding:6px 10px !important;
+  border-radius:10px !important;
+  font-size:10px !important;
+  font-weight:800 !important;
+  line-height:1.08 !important;
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  overflow-wrap:break-word !important;
+  text-align:center !important;
+}
+
+/* Three-button action groups: always fit inside the card. */
+:root[data-theme="light"] #cloudTest,
+:root[data-theme="light"] #cloudBackup,
+:root[data-theme="light"] #cloudRestore,
+:root[data-theme="light3d"] #cloudTest,
+:root[data-theme="light3d"] #cloudBackup,
+:root[data-theme="light3d"] #cloudRestore,
+:root[data-theme="light"] #adminExport,
+:root[data-theme="light"] #adminExportRecords,
+:root[data-theme="light"] #adminExportPdf,
+:root[data-theme="light3d"] #adminExport,
+:root[data-theme="light3d"] #adminExportRecords,
+:root[data-theme="light3d"] #adminExportPdf{
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+  min-height:32px !important;
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  overflow-wrap:break-word !important;
+}
+
+:root[data-theme="light"] #cloudTest,
+:root[data-theme="light"] #cloudBackup,
+:root[data-theme="light"] #cloudRestore,
+:root[data-theme="light3d"] #cloudTest,
+:root[data-theme="light3d"] #cloudBackup,
+:root[data-theme="light3d"] #cloudRestore{
+  flex:1 1 0 !important;
+}
+
+:root[data-theme="light"] .adminQuick,
+:root[data-theme="light3d"] .adminQuick{
+  width:100% !important;
+  min-width:0 !important;
+  display:grid !important;
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  gap:8px !important;
+  box-sizing:border-box !important;
+}
+:root[data-theme="light"] .adminQuick > button,
+:root[data-theme="light3d"] .adminQuick > button{
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+  justify-self:stretch !important;
+}
+
+/* Cloud & Synchronization: exactly three equal columns, no side scrolling. */
+:root[data-theme="light"] .adminToolbar:has(#cloudTest),
+:root[data-theme="light3d"] .adminToolbar:has(#cloudTest){
+  width:100% !important;
+  min-width:0 !important;
+  display:grid !important;
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  gap:8px !important;
+  box-sizing:border-box !important;
+}
+:root[data-theme="light"] .adminToolbar:has(#cloudTest) > button,
+:root[data-theme="light3d"] .adminToolbar:has(#cloudTest) > button{
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+  justify-self:stretch !important;
+}
+
+/* Master Schedule: date gets its own row; the two action buttons share the next row. */
+:root[data-theme="light"] .adminToolbar:has(#adminScheduleCopy),
+:root[data-theme="light3d"] .adminToolbar:has(#adminScheduleCopy){
+  width:100% !important;
+  min-width:0 !important;
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  gap:8px !important;
+  box-sizing:border-box !important;
+}
+:root[data-theme="light"] .adminToolbar:has(#adminScheduleCopy) #adminScheduleDate,
+:root[data-theme="light3d"] .adminToolbar:has(#adminScheduleCopy) #adminScheduleDate{
+  grid-column:1 / -1 !important;
+  width:100% !important;
+}
+:root[data-theme="light"] .adminToolbar:has(#adminScheduleCopy) > button,
+:root[data-theme="light3d"] .adminToolbar:has(#adminScheduleCopy) > button{
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+}
+
+/* Two-button filter/export groups: equal columns and full use of card width. */
+:root[data-theme="light"] .adminFilterGrid .settingSave,
+:root[data-theme="light"] .adminFilterGrid .adminDeleteFilterBtn,
+:root[data-theme="light3d"] .adminFilterGrid .settingSave,
+:root[data-theme="light3d"] .adminFilterGrid .adminDeleteFilterBtn{
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+  justify-self:stretch !important;
+}
+
+/* Two-column controls remain inside their parent and never create page overflow. */
+:root[data-theme="light"] .twoCol,
+:root[data-theme="light3d"] .twoCol{
+  min-width:0 !important;
+  width:100% !important;
+  box-sizing:border-box !important;
+}
+:root[data-theme="light"] .twoCol > button,
+:root[data-theme="light3d"] .twoCol > button{
+  min-width:0 !important;
+  max-width:100% !important;
+  width:100% !important;
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  overflow-wrap:break-word !important;
+}
+
+/* Syllabus Management publish/restore pair. */
+:root[data-theme="light"] #publishSyllabus,
+:root[data-theme="light"] #restoreSyllabus,
+:root[data-theme="light3d"] #publishSyllabus,
+:root[data-theme="light3d"] #restoreSyllabus{
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+}
+
+/* No horizontal page overflow from action controls in these two themes. */
+:root[data-theme="light"] main,
+:root[data-theme="light3d"] main,
+:root[data-theme="light"] .settingCard,
+:root[data-theme="light3d"] .settingCard,
+:root[data-theme="light"] .adminPanel,
+:root[data-theme="light3d"] .adminPanel{
+  min-width:0 !important;
+  max-width:100% !important;
+}
+
+/* Light 3D navigation: five equal tabs; only the selected tab is raised. */
+:root[data-theme="light3d"] nav{
+  display:grid !important;
+  grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+  width:calc(100% - 24px) !important;
+  max-width:620px !important;
+  gap:5px !important;
+  padding:6px !important;
+  box-sizing:border-box !important;
+  overflow:hidden !important;
+}
+:root[data-theme="light3d"] nav > button,
+:root[data-theme="light3d"] nav > button:hover,
+:root[data-theme="light3d"] nav > button:focus,
+:root[data-theme="light3d"] nav > button:active,
+:root[data-theme="light3d"] nav > button.active{
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+  height:48px !important;
+  min-height:48px !important;
+  max-height:48px !important;
+  margin:0 !important;
+  padding:4px 2px !important;
+  box-sizing:border-box !important;
+  border-radius:14px !important;
+  transform:none !important;
+  box-shadow:none !important;
+  background:transparent !important;
+  border:1px solid transparent !important;
+  color:var(--muted) !important;
+  overflow:hidden !important;
+}
+:root[data-theme="light3d"] nav > button.active{
+  background:linear-gradient(145deg,var(--accent),var(--accent2)) !important;
+  color:#fff !important;
+  border-color:rgba(255,255,255,.38) !important;
+  box-shadow:5px 6px 12px rgba(55,60,100,.30),
+             inset 0 2px 2px rgba(255,255,255,.42),
+             inset 0 -4px 6px rgba(40,30,120,.18) !important;
+  transform:translateY(-2px) !important;
+}
+:root[data-theme="light3d"] nav > button:not(.active):hover,
+:root[data-theme="light3d"] nav > button:not(.active):focus,
+:root[data-theme="light3d"] nav > button:not(.active):active{
+  background:transparent !important;
+  color:var(--muted) !important;
+  box-shadow:none !important;
+  transform:none !important;
+}
+@media(max-width:430px){
+  :root[data-theme="light3d"] nav{gap:3px !important;padding:5px !important}
+  :root[data-theme="light3d"] nav > button,
+  :root[data-theme="light3d"] nav > button:hover,
+  :root[data-theme="light3d"] nav > button:focus,
+  :root[data-theme="light3d"] nav > button:active,
+  :root[data-theme="light3d"] nav > button.active{
+    height:48px !important;
+    min-height:48px !important;
+    max-height:48px !important;
+    padding:4px 1px !important;
+    font-size:9px !important;
+  }
+}
