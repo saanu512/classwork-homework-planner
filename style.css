@@ -2987,3 +2987,148 @@ button.wideAction{
   text-overflow:clip !important;
   overflow-wrap:break-word !important;
 }
+
+/* ================================================================
+   LIGHT THEME — COMPACT LIGHT-3D GEOMETRY, FLAT FACE
+   Match Light 3D button dimensions exactly; remove only elevation.
+   Keep adaptive wrapping and the existing press/click feedback.
+   ================================================================ */
+:root[data-theme="light"] button:not(nav button):not(.backLink){
+  box-sizing:border-box !important;
+  width:max-content !important;
+  min-width:0 !important;
+  max-width:100% !important;
+  min-height:34px !important;
+  height:auto !important;
+  padding:7px 10px !important;
+  margin-left:0 !important;
+  margin-right:0 !important;
+  font-size:10px !important;
+  font-weight:800 !important;
+  line-height:1.08 !important;
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  overflow-wrap:break-word !important;
+  word-break:normal !important;
+  flex:0 0 auto !important;
+  border-radius:11px !important;
+  position:relative !important;
+  transform:none !important;
+  transition:transform .12s ease,box-shadow .12s ease,filter .12s ease !important;
+}
+
+/* Flat Light face: same geometry as Light 3D, without permanent 3D elevation. */
+:root[data-theme="light"] button:not(nav button):not(.backLink){
+  box-shadow:none !important;
+}
+
+/* Preserve the Light 3D-style adaptive grouped layout. */
+:root[data-theme="light"] .cardActions,
+:root[data-theme="light"] .adminRowActions,
+:root[data-theme="light"] .adminQuick,
+:root[data-theme="light"] .modalActions,
+:root[data-theme="light"] .pdfPrintToolbar,
+:root[data-theme="light"] .actions,
+:root[data-theme="light"] .buttonRow,
+:root[data-theme="light"] .actionRow,
+:root[data-theme="light"] .toolbarActions,
+:root[data-theme="light"] .formActions,
+:root[data-theme="light"] .settingsActions{
+  width:100% !important;
+  min-width:0 !important;
+  display:grid !important;
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  gap:8px !important;
+  box-sizing:border-box !important;
+}
+:root[data-theme="light"] .twoCol,
+:root[data-theme="light"] .modalActions{
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+}
+:root[data-theme="light"] .cardActions > button,
+:root[data-theme="light"] .adminRowActions > button,
+:root[data-theme="light"] .adminQuick > button,
+:root[data-theme="light"] .modalActions > button,
+:root[data-theme="light"] .pdfPrintToolbar > button,
+:root[data-theme="light"] .actions > button,
+:root[data-theme="light"] .buttonRow > button,
+:root[data-theme="light"] .actionRow > button,
+:root[data-theme="light"] .toolbarActions > button,
+:root[data-theme="light"] .formActions > button,
+:root[data-theme="light"] .settingsActions > button,
+:root[data-theme="light"] .twoCol > button{
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+  min-height:34px !important;
+  height:auto !important;
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  overflow-wrap:break-word !important;
+}
+
+/* Cloud & Backup/Export: three buttons must fit on one row. */
+:root[data-theme="light"] .adminToolbar:has(#cloudTest),
+:root[data-theme="light"] .adminToolbar:has(#adminExport){
+  width:100% !important;
+  min-width:0 !important;
+  display:grid !important;
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  gap:8px !important;
+  box-sizing:border-box !important;
+}
+:root[data-theme="light"] .adminToolbar:has(#cloudTest) > button,
+:root[data-theme="light"] .adminToolbar:has(#adminExport) > button{
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+  min-height:34px !important;
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  overflow-wrap:break-word !important;
+}
+
+/* Master Schedule: date full row, two action buttons below it. */
+:root[data-theme="light"] .adminToolbar:has(#adminScheduleCopy){
+  width:100% !important;
+  min-width:0 !important;
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  gap:8px !important;
+  box-sizing:border-box !important;
+}
+:root[data-theme="light"] .adminToolbar:has(#adminScheduleCopy) #adminScheduleDate{
+  grid-column:1 / -1 !important;
+  width:100% !important;
+}
+:root[data-theme="light"] .adminToolbar:has(#adminScheduleCopy) > button{
+  width:100% !important;
+  min-width:0 !important;
+}
+
+/* Syllabus publish/restore pair. */
+:root[data-theme="light"] .adminQuick:has(#publishSyllabus){
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+}
+
+/* Filter action pair. */
+:root[data-theme="light"] .adminFilterGrid .settingSave,
+:root[data-theme="light"] .adminFilterGrid .adminDeleteFilterBtn{
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  overflow-wrap:break-word !important;
+}
+
+/* Keep the requested Light-theme click effect. */
+:root[data-theme="light"] button:not(nav button):not(.backLink):active{
+  transform:translateY(1px) scale(.985) !important;
+  box-shadow:inset 0 2px 4px rgba(0,0,0,.16) !important;
+  filter:brightness(.97) !important;
+}
