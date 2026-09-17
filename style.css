@@ -844,3 +844,110 @@ select.selectPressed{transform:translateY(2px);border-color:rgba(99,91,255,.65)!
   .startupAuthCard input{padding:8px 10px;min-height:36px}
   .startupAuthCard .twoCol{margin-top:7px}
 }
+
+/* v40.2 — Light 3D / Dark 3D themes + full 3D interaction system */
+:root[data-theme="light3d"]{
+  --bg:#eef2f8;--surface:rgba(255,255,255,.94);--surface2:#ffffff;--text:#111827;--muted:#687386;
+  --line:rgba(15,23,42,.12);--accent:#5b5cf0;--accent2:#8b5cf6;--green:#15966a;
+  --shadow:12px 14px 28px rgba(53,65,85,.18),-7px -7px 18px rgba(255,255,255,.92);
+  --shadow2:6px 7px 14px rgba(53,65,85,.16),-4px -4px 10px rgba(255,255,255,.90)
+}
+:root[data-theme="dark3d"]{
+  --bg:#000000;--surface:rgba(17,17,17,.98);--surface2:#0d0d0d;--text:#f5f5f5;--muted:#9a9a9a;
+  --line:rgba(255,255,255,.13);--accent:#8b7dff;--accent2:#b18cff;--green:#3ddc97;
+  --shadow:12px 14px 30px rgba(0,0,0,.95),-3px -3px 9px rgba(255,255,255,.035);
+  --shadow2:6px 7px 15px rgba(0,0,0,.9),-2px -2px 7px rgba(255,255,255,.035)
+}
+:root[data-theme="dark3d"] body{background:#000;color:var(--text)}
+:root[data-theme="dark3d"] header{background:linear-gradient(#000 72%,transparent)}
+:root[data-theme="light3d"] body{background:radial-gradient(circle at 10% -5%,rgba(99,91,255,.12),transparent 30%),radial-gradient(circle at 100% 0,rgba(56,190,255,.09),transparent 26%),var(--bg)}
+
+/* Physical-depth surfaces */
+:root[data-theme="light3d"] .classCard,
+:root[data-theme="light3d"] .formCard,
+:root[data-theme="light3d"] .miniCard,
+:root[data-theme="light3d"] .settingCard,
+:root[data-theme="light3d"] .adminPanel,
+:root[data-theme="dark3d"] .classCard,
+:root[data-theme="dark3d"] .formCard,
+:root[data-theme="dark3d"] .miniCard,
+:root[data-theme="dark3d"] .settingCard,
+:root[data-theme="dark3d"] .adminPanel{
+  box-shadow:var(--shadow);transform:translateZ(0);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease
+}
+:root[data-theme="light3d"] .classCard:hover,
+:root[data-theme="light3d"] .settingCard:hover,
+:root[data-theme="light3d"] .miniCard:hover,
+:root[data-theme="dark3d"] .classCard:hover,
+:root[data-theme="dark3d"] .settingCard:hover,
+:root[data-theme="dark3d"] .miniCard:hover{transform:translateY(-3px) rotateX(.25deg);box-shadow:16px 19px 34px rgba(53,65,85,.22),-9px -9px 20px rgba(255,255,255,.8)}
+:root[data-theme="dark3d"] .classCard:hover,
+:root[data-theme="dark3d"] .settingCard:hover,
+:root[data-theme="dark3d"] .miniCard:hover{box-shadow:16px 19px 36px rgba(0,0,0,.98),-3px -3px 10px rgba(255,255,255,.045)}
+
+/* 3D controls */
+:root[data-theme="light3d"] button,
+:root[data-theme="light3d"] select,
+:root[data-theme="light3d"] input,
+:root[data-theme="light3d"] textarea,
+:root[data-theme="dark3d"] button,
+:root[data-theme="dark3d"] select,
+:root[data-theme="dark3d"] input,
+:root[data-theme="dark3d"] textarea{box-shadow:var(--shadow2)}
+:root[data-theme="light3d"] button:not(.backLink),
+:root[data-theme="dark3d"] button:not(.backLink){position:relative;transition:transform .12s ease,box-shadow .12s ease,filter .12s ease}
+:root[data-theme="light3d"] button:not(.backLink):active,
+:root[data-theme="dark3d"] button:not(.backLink):active{transform:translateY(3px);box-shadow:2px 3px 7px rgba(0,0,0,.25),-1px -1px 4px rgba(255,255,255,.35)}
+:root[data-theme="light3d"] input,
+:root[data-theme="light3d"] select,
+:root[data-theme="light3d"] textarea,
+:root[data-theme="dark3d"] input,
+:root[data-theme="dark3d"] select,
+:root[data-theme="dark3d"] textarea{border-color:var(--line);background:var(--surface2);box-shadow:inset 3px 3px 7px rgba(0,0,0,.16),inset -3px -3px 7px rgba(255,255,255,.65),var(--shadow2)}
+:root[data-theme="dark3d"] input,
+:root[data-theme="dark3d"] select,
+:root[data-theme="dark3d"] textarea{box-shadow:inset 3px 3px 8px rgba(0,0,0,.9),inset -2px -2px 6px rgba(255,255,255,.035),var(--shadow2)}
+:root[data-theme="light3d"] .primary,
+:root[data-theme="light3d"] .wideAction,
+:root[data-theme="light3d"] .settingSave,
+:root[data-theme="light3d"] .extraBtn,
+:root[data-theme="dark3d"] .primary,
+:root[data-theme="dark3d"] .wideAction,
+:root[data-theme="dark3d"] .settingSave,
+:root[data-theme="dark3d"] .extraBtn{box-shadow:8px 10px 18px rgba(47,55,85,.25),inset 0 2px 1px rgba(255,255,255,.28),inset 0 -3px 5px rgba(0,0,0,.16)}
+:root[data-theme="dark3d"] .primary,
+:root[data-theme="dark3d"] .wideAction,
+:root[data-theme="dark3d"] .settingSave,
+:root[data-theme="dark3d"] .extraBtn{box-shadow:8px 10px 20px rgba(0,0,0,.85),inset 0 2px 1px rgba(255,255,255,.22),inset 0 -4px 7px rgba(0,0,0,.35)}
+
+/* New raised bottom tab design */
+:root[data-theme="light3d"] nav,
+:root[data-theme="dark3d"] nav{padding:8px;border-radius:25px;gap:8px;background:var(--surface);box-shadow:14px 16px 30px rgba(25,32,48,.22),-6px -6px 15px rgba(255,255,255,.7);border-color:var(--line)}
+:root[data-theme="dark3d"] nav{box-shadow:14px 16px 32px rgba(0,0,0,.98),-3px -3px 9px rgba(255,255,255,.045);background:#0b0b0b}
+:root[data-theme="light3d"] nav button,
+:root[data-theme="dark3d"] nav button{min-height:48px;border:1px solid transparent;border-radius:18px;padding:9px 8px;box-shadow:none;display:flex;align-items:center;justify-content:center;gap:6px}
+:root[data-theme="light3d"] nav button:focus,
+:root[data-theme="light3d"] nav button.active,
+:root[data-theme="dark3d"] nav button:focus,
+:root[data-theme="dark3d"] nav button.active{background:linear-gradient(145deg,var(--accent),var(--accent2));color:#fff;border-color:rgba(255,255,255,.22);box-shadow:6px 7px 12px rgba(58,58,110,.24),inset 0 2px 2px rgba(255,255,255,.35),inset 0 -4px 6px rgba(0,0,0,.2);transform:translateY(-2px)}
+:root[data-theme="dark3d"] nav button:focus,
+:root[data-theme="dark3d"] nav button.active{box-shadow:7px 8px 15px rgba(0,0,0,.9),inset 0 2px 2px rgba(255,255,255,.22),inset 0 -4px 7px rgba(0,0,0,.4)}
+:root[data-theme="light3d"] nav button:active,
+:root[data-theme="dark3d"] nav button:active{transform:translateY(2px)}
+
+/* Extra dimensional detail on key inner boxes */
+:root[data-theme="light3d"] .cardInfoGrid,
+:root[data-theme="light3d"] .cardMiddle,
+:root[data-theme="dark3d"] .cardInfoGrid,
+:root[data-theme="dark3d"] .cardMiddle{box-shadow:inset 3px 3px 8px rgba(0,0,0,.13),inset -3px -3px 8px rgba(255,255,255,.55)}
+:root[data-theme="dark3d"] .cardInfoGrid,
+:root[data-theme="dark3d"] .cardMiddle{box-shadow:inset 3px 3px 9px rgba(0,0,0,.85),inset -2px -2px 6px rgba(255,255,255,.035)}
+:root[data-theme="light3d"] .timePill,
+:root[data-theme="light3d"] .extraPill,
+:root[data-theme="light3d"] .indicator,
+:root[data-theme="dark3d"] .timePill,
+:root[data-theme="dark3d"] .extraPill,
+:root[data-theme="dark3d"] .indicator{box-shadow:inset 2px 2px 5px rgba(0,0,0,.13),inset -2px -2px 5px rgba(255,255,255,.55),var(--shadow2)}
+:root[data-theme="dark3d"] .timePill,
+:root[data-theme="dark3d"] .extraPill,
+:root[data-theme="dark3d"] .indicator{box-shadow:inset 2px 2px 6px rgba(0,0,0,.8),inset -2px -2px 5px rgba(255,255,255,.035),var(--shadow2)}
