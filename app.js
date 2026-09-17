@@ -1,6 +1,10 @@
 import { CloudAPI, GeminiAPI } from "./firebase.js";
 
 let cloudUser=null;
+// Holds name/roll entered in the student login popup until Firebase auth state
+// finishes restoring the same user-local data. This prevents the auth callback
+// from replacing freshly entered profile details with an older local copy.
+let pendingLoginProfile=null;
 let adminUser=null;
 let cloudBusy=false;
 let cloudStudents=[];
@@ -203,6 +207,7 @@ function startAutomaticCloudSync(){
 function stopAutomaticCloudSync(){clearInterval(cloudIntervalTimer);cloudIntervalTimer=null}
 async function cloudSignIn(email,password,name='',roll=''){
   adminAuthInProgress=false;
+  pendingLoginProfile={name:String(name||'').trim(),roll:String(roll||'').trim()};
   try{
     // Authentication is the gate. Never make login depend on Firestore being
     // available, and never let a missing/deleted users/{uid} document block sign-in.
@@ -216,8 +221,10 @@ async function cloudSignIn(email,password,name='',roll=''){
     // from overwriting the student's cloud record after an update.
     switchToUserLocal(cloudUser?.uid,cloudUser?.email||email);
     D.profile.email=cloudUser?.email||D.profile.email;
-    if(name.trim())D.profile.name=name.trim();
-    if(String(roll).trim())D.profile.roll=String(roll).trim();
+    const loginName=pendingLoginProfile?.name||name.trim();
+    const loginRoll=pendingLoginProfile?.roll||String(roll).trim();
+    if(loginName)D.profile.name=loginName;
+    if(loginRoll)D.profile.roll=loginRoll;
     persistLocalStorage();
 
     // Login succeeds immediately. Cloud reconciliation is deliberately
@@ -228,8 +235,9 @@ async function cloudSignIn(email,password,name='',roll=''){
     toast(`✓ Signed in as ${cloudUser?.email||email}`);
     reconcileAfterLogin().catch(e=>console.warn('Background cloud reconciliation failed:',e));
     startAutomaticCloudSync();
+    pendingLoginProfile=null;
     return true;
-  }catch(e){console.error(e);toast(firebaseAuthMessage(e));return false}
+  }catch(e){pendingLoginProfile=null;console.error(e);toast(firebaseAuthMessage(e));return false}
 }
 
 async function reconcileAfterLogin(){
@@ -819,7 +827,17 @@ loadLocal();setTheme();resetAtMidnight();show('today');scheduleNextReminder();
 CloudAPI.onAuthStateChanged(async user=>{
   cloudUser=user||null;
   studentAuthResolved=true;
-  if(user){try{localStorage.setItem(STUDENT_SESSION_HINT,'1')}catch(_){} switchToUserLocal(user.uid,user.email); closeStartupAuth();}
+  if(user){
+    try{localStorage.setItem(STUDENT_SESSION_HINT,'1')}catch(_){}
+    switchToUserLocal(user.uid,user.email);
+    if(pendingLoginProfile){
+      if(pendingLoginProfile.name)D.profile.name=pendingLoginProfile.name;
+      if(pendingLoginProfile.roll)D.profile.roll=pendingLoginProfile.roll;
+      D.profile.email=user.email||D.profile.email;
+      persistLocalStorage();
+    }
+    closeStartupAuth();
+  }
   if(user){
     D.profile.email=user.email||D.profile.email;
     if(!adminSession&&!adminAuthInProgress){
