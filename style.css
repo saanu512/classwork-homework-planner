@@ -3132,3 +3132,352 @@ button.wideAction{
   box-shadow:inset 0 2px 4px rgba(0,0,0,.16) !important;
   filter:brightness(.97) !important;
 }
+
+/* ================================================================
+   DARK + DARK 3D — MIRROR THE FINAL LIGHT-THEME BUTTON SYSTEM
+   Dark = Light geometry/behavior, but dark surfaces/colors.
+   Dark 3D = Light 3D geometry/behavior, but dark surfaces/colors.
+   ================================================================ */
+
+/* ---------- DARK: compact flat buttons ---------- */
+:root[data-theme="dark"] button:not(nav button):not(.backLink){
+  box-sizing:border-box !important;
+  width:max-content !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  min-height:34px !important;
+  height:auto !important;
+  padding:7px 10px !important;
+  font-size:10px !important;
+  font-weight:800 !important;
+  line-height:1.08 !important;
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  overflow-wrap:break-word !important;
+  word-break:normal !important;
+  text-align:center !important;
+}
+
+/* Dark normal buttons: flat face, no permanent elevation. */
+:root[data-theme="dark"] button:not(nav button):not(.backLink):not(.dangerBtn):not(.adminDeleteFilterBtn):not(.logoutBtn):not(.accountLogout):not(.cardDeleteBtn){
+  box-shadow:none !important;
+}
+
+/* Keep dark-theme delete/logout colors, but use the same compact geometry. */
+:root[data-theme="dark"] button.dangerBtn,
+:root[data-theme="dark"] button.adminDeleteFilterBtn,
+:root[data-theme="dark"] button.logoutBtn,
+:root[data-theme="dark"] button.accountLogout,
+:root[data-theme="dark"] button.cardDeleteBtn{
+  box-sizing:border-box !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  min-height:34px !important;
+  height:auto !important;
+  padding:7px 10px !important;
+  font-size:10px !important;
+  font-weight:800 !important;
+  line-height:1.08 !important;
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  overflow-wrap:break-word !important;
+}
+
+/* Group layouts: same as Light. */
+:root[data-theme="dark"] .cardActions,
+:root[data-theme="dark"] .adminRowActions,
+:root[data-theme="dark"] .adminQuick,
+:root[data-theme="dark"] .modalActions,
+:root[data-theme="dark"] .pdfPrintToolbar,
+:root[data-theme="dark"] .actions,
+:root[data-theme="dark"] .buttonRow,
+:root[data-theme="dark"] .actionRow,
+:root[data-theme="dark"] .toolbarActions,
+:root[data-theme="dark"] .formActions,
+:root[data-theme="dark"] .settingsActions{
+  width:100% !important;
+  min-width:0 !important;
+  display:grid !important;
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  gap:8px !important;
+  box-sizing:border-box !important;
+}
+:root[data-theme="dark"] .twoCol,
+:root[data-theme="dark"] .modalActions{
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+}
+:root[data-theme="dark"] .cardActions > button,
+:root[data-theme="dark"] .adminRowActions > button,
+:root[data-theme="dark"] .adminQuick > button,
+:root[data-theme="dark"] .modalActions > button,
+:root[data-theme="dark"] .pdfPrintToolbar > button,
+:root[data-theme="dark"] .actions > button,
+:root[data-theme="dark"] .buttonRow > button,
+:root[data-theme="dark"] .actionRow > button,
+:root[data-theme="dark"] .toolbarActions > button,
+:root[data-theme="dark"] .formActions > button,
+:root[data-theme="dark"] .settingsActions > button,
+:root[data-theme="dark"] .twoCol > button{
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+  min-height:34px !important;
+  height:auto !important;
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  overflow-wrap:break-word !important;
+}
+
+/* Three-button cloud/export groups: fit the card, never the viewport overflow. */
+:root[data-theme="dark"] .adminToolbar:has(#cloudTest),
+:root[data-theme="dark"] .adminToolbar:has(#adminExport){
+  width:100% !important;
+  min-width:0 !important;
+  display:grid !important;
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  gap:8px !important;
+  box-sizing:border-box !important;
+}
+:root[data-theme="dark"] .adminToolbar:has(#cloudTest) > button,
+:root[data-theme="dark"] .adminToolbar:has(#adminExport) > button{
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+  min-height:34px !important;
+  height:auto !important;
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  overflow-wrap:break-word !important;
+}
+
+/* Master Schedule: date row + two compact action buttons. */
+:root[data-theme="dark"] .adminToolbar:has(#adminScheduleCopy){
+  width:100% !important;
+  min-width:0 !important;
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  gap:8px !important;
+  box-sizing:border-box !important;
+}
+:root[data-theme="dark"] .adminToolbar:has(#adminScheduleCopy) #adminScheduleDate{
+  grid-column:1 / -1 !important;
+  width:100% !important;
+}
+:root[data-theme="dark"] .adminToolbar:has(#adminScheduleCopy) > button{width:100% !important;min-width:0 !important}
+:root[data-theme="dark"] .adminQuick:has(#publishSyllabus){grid-template-columns:repeat(2,minmax(0,1fr)) !important}
+:root[data-theme="dark"] .adminFilterGrid .settingSave,
+:root[data-theme="dark"] .adminFilterGrid .adminDeleteFilterBtn{
+  width:100% !important;min-width:0 !important;max-width:none !important;
+  white-space:normal !important;overflow:visible !important;text-overflow:clip !important;overflow-wrap:break-word !important;
+}
+
+/* ---------- DARK 3D: exact Light-3D compact geometry ---------- */
+:root[data-theme="dark3d"] button:not(nav button):not(.backLink){
+  box-sizing:border-box !important;
+  width:max-content !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  min-height:34px !important;
+  height:auto !important;
+  padding:7px 10px !important;
+  font-size:10px !important;
+  font-weight:800 !important;
+  line-height:1.08 !important;
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  overflow-wrap:break-word !important;
+  word-break:normal !important;
+  text-align:center !important;
+}
+
+/* Preserve Dark 3D's existing raised purple button face/elevation. */
+:root[data-theme="dark3d"] button:not(nav button):not(.backLink):not(.dangerBtn):not(.adminDeleteFilterBtn):not(.logoutBtn):not(.accountLogout):not(.cardDeleteBtn){
+  box-shadow:8px 10px 20px rgba(0,0,0,.85),inset 0 2px 1px rgba(255,255,255,.22),inset 0 -4px 7px rgba(0,0,0,.35) !important;
+}
+
+/* Dark 3D delete/logout remain RED — geometry changes only. */
+:root[data-theme="dark3d"] button.dangerBtn,
+:root[data-theme="dark3d"] button.adminDeleteFilterBtn,
+:root[data-theme="dark3d"] button.logoutBtn,
+:root[data-theme="dark3d"] button.accountLogout,
+:root[data-theme="dark3d"] button.cardDeleteBtn{
+  box-sizing:border-box !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  min-height:34px !important;
+  height:auto !important;
+  padding:7px 10px !important;
+  font-size:10px !important;
+  font-weight:800 !important;
+  line-height:1.08 !important;
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  overflow-wrap:break-word !important;
+}
+
+/* Keep all Dark-3D red controls explicitly red despite generic 3D rules. */
+:root[data-theme="dark3d"] button.dangerBtn,
+:root[data-theme="dark3d"] button.adminDeleteFilterBtn,
+:root[data-theme="dark3d"] button.logoutBtn,
+:root[data-theme="dark3d"] button.accountLogout,
+:root[data-theme="dark3d"] button.cardDeleteBtn{
+  background:linear-gradient(145deg,#f05a67,#cf3048) !important;
+  color:#fff !important;
+  border-color:rgba(210,45,65,.45) !important;
+  box-shadow:4px 5px 11px rgba(0,0,0,.82),inset 0 2px 1px rgba(255,255,255,.24),inset 0 -3px 5px rgba(90,10,20,.30) !important;
+}
+:root[data-theme="dark3d"] button.dangerBtn:active,
+:root[data-theme="dark3d"] button.adminDeleteFilterBtn:active,
+:root[data-theme="dark3d"] button.logoutBtn:active,
+:root[data-theme="dark3d"] button.accountLogout:active,
+:root[data-theme="dark3d"] button.cardDeleteBtn:active{
+  box-shadow:1px 2px 5px rgba(0,0,0,.8),inset 0 1px 2px rgba(255,255,255,.18) !important;
+}
+
+/* Dark-3D grouped layouts mirror Light-3D. */
+:root[data-theme="dark3d"] .cardActions,
+:root[data-theme="dark3d"] .adminRowActions,
+:root[data-theme="dark3d"] .adminQuick,
+:root[data-theme="dark3d"] .modalActions,
+:root[data-theme="dark3d"] .pdfPrintToolbar,
+:root[data-theme="dark3d"] .actions,
+:root[data-theme="dark3d"] .buttonRow,
+:root[data-theme="dark3d"] .actionRow,
+:root[data-theme="dark3d"] .toolbarActions,
+:root[data-theme="dark3d"] .formActions,
+:root[data-theme="dark3d"] .settingsActions{
+  width:100% !important;min-width:0 !important;display:grid !important;
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;gap:8px !important;box-sizing:border-box !important;
+}
+:root[data-theme="dark3d"] .twoCol,
+:root[data-theme="dark3d"] .modalActions{grid-template-columns:repeat(2,minmax(0,1fr)) !important}
+:root[data-theme="dark3d"] .cardActions > button,
+:root[data-theme="dark3d"] .adminRowActions > button,
+:root[data-theme="dark3d"] .adminQuick > button,
+:root[data-theme="dark3d"] .modalActions > button,
+:root[data-theme="dark3d"] .pdfPrintToolbar > button,
+:root[data-theme="dark3d"] .actions > button,
+:root[data-theme="dark3d"] .buttonRow > button,
+:root[data-theme="dark3d"] .actionRow > button,
+:root[data-theme="dark3d"] .toolbarActions > button,
+:root[data-theme="dark3d"] .formActions > button,
+:root[data-theme="dark3d"] .settingsActions > button,
+:root[data-theme="dark3d"] .twoCol > button{
+  width:100% !important;min-width:0 !important;max-width:none !important;min-height:34px !important;height:auto !important;
+  white-space:normal !important;overflow:visible !important;text-overflow:clip !important;overflow-wrap:break-word !important;
+}
+:root[data-theme="dark3d"] .adminToolbar:has(#cloudTest),
+:root[data-theme="dark3d"] .adminToolbar:has(#adminExport){
+  width:100% !important;min-width:0 !important;display:grid !important;
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;gap:8px !important;box-sizing:border-box !important;
+}
+:root[data-theme="dark3d"] .adminToolbar:has(#cloudTest) > button,
+:root[data-theme="dark3d"] .adminToolbar:has(#adminExport) > button{
+  width:100% !important;min-width:0 !important;max-width:none !important;min-height:34px !important;height:auto !important;
+  white-space:normal !important;overflow:visible !important;text-overflow:clip !important;overflow-wrap:break-word !important;
+}
+:root[data-theme="dark3d"] .adminToolbar:has(#adminScheduleCopy){
+  width:100% !important;min-width:0 !important;display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:8px !important;box-sizing:border-box !important;
+}
+:root[data-theme="dark3d"] .adminToolbar:has(#adminScheduleCopy) #adminScheduleDate{grid-column:1 / -1 !important;width:100% !important}
+:root[data-theme="dark3d"] .adminToolbar:has(#adminScheduleCopy) > button{width:100% !important;min-width:0 !important}
+:root[data-theme="dark3d"] .adminQuick:has(#publishSyllabus){grid-template-columns:repeat(2,minmax(0,1fr)) !important}
+:root[data-theme="dark3d"] .adminFilterGrid .settingSave,
+:root[data-theme="dark3d"] .adminFilterGrid .adminDeleteFilterBtn{
+  width:100% !important;min-width:0 !important;max-width:none !important;white-space:normal !important;
+  overflow:visible !important;text-overflow:clip !important;overflow-wrap:break-word !important;
+}
+
+/* ---------- DARK NAV: same flat navigation system as Light ---------- */
+:root[data-theme="dark"] nav{
+  width:100% !important;max-width:620px !important;box-sizing:border-box !important;
+  display:grid !important;grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+  gap:5px !important;padding:6px !important;align-items:stretch !important;overflow:hidden !important;
+}
+:root[data-theme="dark"] nav > button,
+:root[data-theme="dark"] nav > button:hover,
+:root[data-theme="dark"] nav > button:focus,
+:root[data-theme="dark"] nav > button:active,
+:root[data-theme="dark"] nav > button.active{
+  width:100% !important;min-width:0 !important;max-width:none !important;height:58px !important;min-height:58px !important;max-height:58px !important;
+  margin:0 !important;padding:5px 2px !important;box-sizing:border-box !important;border-radius:14px !important;transform:none !important;
+  transition:background .15s ease,box-shadow .15s ease,color .15s ease,transform .15s ease !important;overflow:hidden !important;
+}
+:root[data-theme="dark"] nav > button:not(.active),
+:root[data-theme="dark"] nav > button:not(.active):hover,
+:root[data-theme="dark"] nav > button:not(.active):focus,
+:root[data-theme="dark"] nav > button:not(.active):active{
+  background:transparent !important;color:var(--muted) !important;border:1px solid transparent !important;box-shadow:none !important;transform:none !important;
+}
+:root[data-theme="dark"] nav > button.active{
+  background:linear-gradient(145deg,var(--accent2),var(--accent)) !important;color:#fff !important;
+  border:1px solid rgba(255,255,255,.22) !important;box-shadow:none !important;transform:none !important;
+}
+
+/* ---------- DARK 3D NAV: exact Light-3D navigation behavior ---------- */
+:root[data-theme="dark3d"] nav{
+  width:100% !important;max-width:620px !important;box-sizing:border-box !important;
+  display:grid !important;grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+  gap:5px !important;padding:6px !important;align-items:stretch !important;overflow:hidden !important;
+}
+:root[data-theme="dark3d"] nav > button,
+:root[data-theme="dark3d"] nav > button:hover,
+:root[data-theme="dark3d"] nav > button:focus,
+:root[data-theme="dark3d"] nav > button:active,
+:root[data-theme="dark3d"] nav > button.active{
+  width:100% !important;min-width:0 !important;max-width:none !important;height:58px !important;min-height:58px !important;max-height:58px !important;
+  margin:0 !important;padding:5px 2px !important;box-sizing:border-box !important;border-radius:14px !important;transform:none !important;
+  transition:background .15s ease,box-shadow .15s ease,color .15s ease,transform .15s ease !important;overflow:hidden !important;
+}
+:root[data-theme="dark3d"] nav > button:not(.active),
+:root[data-theme="dark3d"] nav > button:not(.active):hover,
+:root[data-theme="dark3d"] nav > button:not(.active):focus,
+:root[data-theme="dark3d"] nav > button:not(.active):active{
+  background:transparent !important;color:var(--muted) !important;border:1px solid transparent !important;box-shadow:none !important;transform:none !important;
+}
+:root[data-theme="dark3d"] nav > button.active{
+  background:linear-gradient(145deg,var(--accent2),var(--accent)) !important;color:#fff !important;
+  border:1px solid rgba(255,255,255,.18) !important;
+  box-shadow:5px 6px 12px rgba(0,0,0,.70),inset 0 2px 2px rgba(255,255,255,.20),inset 0 -4px 6px rgba(0,0,0,.38) !important;
+  transform:translateY(-2px) !important;
+}
+
+@media(max-width:430px){
+  :root[data-theme="dark"] nav,
+  :root[data-theme="dark3d"] nav{gap:3px !important;padding:5px !important}
+  :root[data-theme="dark"] nav > button,
+  :root[data-theme="dark"] nav > button:hover,
+  :root[data-theme="dark"] nav > button:focus,
+  :root[data-theme="dark"] nav > button:active,
+  :root[data-theme="dark"] nav > button.active,
+  :root[data-theme="dark3d"] nav > button,
+  :root[data-theme="dark3d"] nav > button:hover,
+  :root[data-theme="dark3d"] nav > button:focus,
+  :root[data-theme="dark3d"] nav > button:active,
+  :root[data-theme="dark3d"] nav > button.active{
+    height:56px !important;min-height:56px !important;max-height:56px !important;font-size:9px !important;padding:4px 1px !important;
+  }
+}
+
+/* No horizontal page overflow from these controls. */
+:root[data-theme="dark"] main,
+:root[data-theme="dark3d"] main,
+:root[data-theme="dark"] .settingCard,
+:root[data-theme="dark3d"] .settingCard,
+:root[data-theme="dark"] .adminPanel,
+:root[data-theme="dark3d"] .adminPanel{min-width:0 !important;overflow-x:hidden !important}
+
+/* Keep tap feedback for normal buttons in both dark themes. */
+:root[data-theme="dark"] button:not(nav button):not(.backLink):active{
+  transform:translateY(1px) scale(.985) !important;box-shadow:inset 0 2px 4px rgba(0,0,0,.22) !important;filter:brightness(.97) !important;
+}
+:root[data-theme="dark3d"] button:not(nav button):not(.backLink):active{
+  transform:translateY(3px) !important;filter:brightness(.97) !important;
+}
