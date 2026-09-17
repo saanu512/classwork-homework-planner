@@ -801,3 +801,47 @@ main,main>section,.adminGrid,.adminPanel,.adminPanelBody{min-width:0;max-width:1
   .adminFilterGrid{grid-template-columns:1fr!important}
   .adminFilterGrid .settingSave{grid-column:auto!important}
 }
+
+/* v40.1 authentication + native dropdown interaction polish */
+.startupAuthCard{
+  width:min(400px,calc(100vw - 28px));
+  max-height:calc(100vh - 28px);
+  padding:18px;
+  border-radius:24px;
+}
+.startupAuthCard h2{font-size:22px;margin:4px 0 5px}
+.startupAuthCard .mutedIntro{font-size:12px;line-height:1.35;margin:4px 0}
+.startupAuthCard label{font-size:13px;margin:8px 0 5px}
+.startupAuthCard input{padding:10px 12px;font-size:13px;min-height:40px}
+.startupAuthCard .twoCol{gap:8px;margin-top:10px}
+.startupAuthCard .settingSave{margin-top:0;padding:10px 10px;font-size:11px;min-height:40px}
+.startupAuthCard .startupForgotLink,.startupAuthCard .startupAdminLink{margin-top:5px;padding:7px 10px}
+.adminPopupCard{width:min(400px,calc(100vw - 28px))}
+.adminPopupCard .authStatus{margin-top:4px}
+.adminPageAuthCard{width:min(400px,calc(100vw - 28px));padding:18px}
+.adminPageAuthCard .wideAction{margin-top:12px}
+.authStatus{display:none;min-height:0;margin:5px 0 0;padding:7px 10px;border:1px solid var(--line);border-radius:11px;background:var(--surface);color:var(--muted);font-size:11px;line-height:1.35;font-weight:700;text-align:left}
+.authStatus.authStatusVisible{display:block}
+.authStatus[data-state="success"]{color:var(--green);border-color:rgba(60,180,100,.25);background:rgba(60,180,100,.07)}
+.authStatus[data-state="error"]{color:#d64a5d;border-color:rgba(220,70,90,.22);background:rgba(220,70,90,.07)}
+.authStatus[data-state="info"]{color:var(--accent);border-color:rgba(99,91,255,.20);background:rgba(99,91,255,.06)}
+.startupForgotLink,.authForgotLink,.startupAdminLink,.backLink{transition:transform .08s ease,background .08s ease,box-shadow .08s ease}
+.startupForgotLink:active,.authForgotLink:active,.startupAdminLink:active,.backLink:active{transform:translateY(2px);background:rgba(99,91,255,.10);border-radius:10px}
+select{transition:transform .08s ease,box-shadow .08s ease,border-color .08s ease}
+select.selectPressed{transform:translateY(2px);border-color:rgba(99,91,255,.65)!important;box-shadow:0 2px 0 rgba(99,91,255,.20),0 0 0 3px rgba(99,91,255,.09)!important}
+.adminRowActions{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+.dangerAccountBtn{border-color:rgba(180,35,55,.30)!important;background:rgba(220,55,75,.13)!important;color:#c73f54!important}
+@media(max-width:620px){
+  .startupAuthCard{padding:16px;width:min(390px,calc(100vw - 24px))}
+  .startupAuthCard h2{font-size:21px}
+  .startupAuthCard label{font-size:12px;margin-top:7px}
+  .startupAuthCard input{min-height:38px;padding:9px 11px}
+  .adminPopupCard,.adminPageAuthCard{width:min(390px,calc(100vw - 24px))}
+  .adminRowActions{grid-template-columns:1fr 1fr!important}
+}
+@media(max-height:720px){
+  .startupAuthCard{max-height:calc(100vh - 18px);padding:14px}
+  .startupAuthCard label{margin-top:5px}
+  .startupAuthCard input{padding:8px 10px;min-height:36px}
+  .startupAuthCard .twoCol{margin-top:7px}
+}

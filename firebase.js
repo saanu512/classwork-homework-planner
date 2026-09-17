@@ -3,6 +3,7 @@ import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged, s
 import { initializeFirestore, doc, getDoc, setDoc, collection, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 import { getAI, getGenerativeModel, GoogleAIBackend } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-ai.js";
 import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app-check.js";
+import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-functions.js";
 
 export const firebaseConfig = {
   apiKey: "AIzaSyAQfUozDP7xyeZEl15DthoiAI_q05J2ZCM",
@@ -39,6 +40,7 @@ setPersistence(adminAuth, browserLocalPersistence).catch(e => console.warn("Admi
 // Ignore accidental undefined fields instead of rejecting an otherwise valid sync.
 export const db = initializeFirestore(app, { ignoreUndefinedProperties: true });
 export const adminDb = initializeFirestore(adminApp, { ignoreUndefinedProperties: true });
+export const adminFunctions = getFunctions(adminApp);
 
 // Firestore does not support arrays directly inside arrays.
 // The app's schedule uses [start, end, subject] rows, so encode those
@@ -174,5 +176,11 @@ export const CloudAPI = {
   async getAllStudents(){
     const snap = await getDocs(collection(adminDb,'users'));
     return snap.docs.map(d=>({id:d.id,...decodeCloudData(d.data())}));
+  },
+  async adminDeleteStudentAccount(uid){
+    if(!uid) throw Object.assign(new Error('Missing student UID'),{code:'invalid-argument'});
+    const call=httpsCallable(adminFunctions,'deleteStudentAccount');
+    const res=await call({uid});
+    return res?.data||{};
   }
 };

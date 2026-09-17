@@ -281,7 +281,7 @@ function firebaseAuthMessage(e){
 }
 async function resetStudentPassword(email){
   if(!email)return toast('Enter your student email first');
-  try{await CloudAPI.resetPassword(email);toast('✓ Reset email requested\nCheck Inbox/Spam for the Firebase password-reset email.');return true}
+  try{await CloudAPI.resetPassword(email);return true}
   catch(e){console.error(e);toast(({
     'EMAIL_NOT_FOUND':'No Firebase account was found for this email.',
     'INVALID_EMAIL':'Enter a valid email address.',
@@ -290,16 +290,68 @@ async function resetStudentPassword(email){
 }
 async function resetAdminPassword(email){
   if(!email)return toast('Enter your admin email first');
-  try{await CloudAPI.adminResetPassword(email);toast('✓ Reset email requested\nCheck Inbox/Spam for the Firebase password-reset email.');return true}
+  try{await CloudAPI.adminResetPassword(email);return true}
   catch(e){console.error(e);toast(({
     'EMAIL_NOT_FOUND':'No Firebase account was found for this email.',
     'INVALID_EMAIL':'Enter a valid email address.',
     'TOO_MANY_ATTEMPTS_TRY_LATER':'Too many attempts. Try again later.'
   }[e?.code])||'Could not send password reset email.');return false}
 }
+function setAuthStatus(el,text,type='info'){
+  if(!el)return;
+  el.textContent=text;
+  el.dataset.state=type;
+  el.classList.add('authStatusVisible');
+}
+async function requestStudentReset(email,statusEl){
+  if(!email){setAuthStatus(statusEl,'Enter your student email first.','error');return false}
+  setAuthStatus(statusEl,'Sending password-reset email…','info');
+  const ok=await resetStudentPassword(email);
+  setAuthStatus(statusEl,ok?'✓ Password-reset email sent. Check Inbox/Spam.':'Password reset could not be sent. Check the email and try again.',ok?'success':'error');
+  return ok;
+}
+async function requestAdminReset(email,statusEl){
+  if(!email){setAuthStatus(statusEl,'Enter your admin email first.','error');return false}
+  setAuthStatus(statusEl,'Sending password-reset email…','info');
+  const ok=await resetAdminPassword(email);
+  setAuthStatus(statusEl,ok?'✓ Password-reset email sent. Check Inbox/Spam.':'Password reset could not be sent. Check the email and try again.',ok?'success':'error');
+  return ok;
+}
+async function deleteStudentAccountProfile(st){
+  if(!adminUser){toast('Admin login is required.');return false}
+  const p=st?.profile||{};
+  const name=p.name||st?.name||'Unnamed student',email=p.email||st?.email||'',roll=p.roll||'',uid=st?.id||st?.uid||'';
+  if(!uid)return toast('This student has no Firebase UID/profile ID.');
+  if(uid===adminUser.uid)return toast('The current admin account cannot be deleted here.');
+  const ok=await confirmBox('⚠ DELETE STUDENT ID / PROFILE',`This permanently deletes the complete Firebase student account for:
+
+${name}${email?'\n'+email:''}${roll?'\nRoll '+roll:''}
+
+It will remove the Firebase login email/password (Auth account), cloud profile, classwork, homework, syllabus, schedule, reminders and other saved app data.
+
+After deletion, this student must CREATE ACCOUNT again to use the app.
+
+This cannot be undone.`);
+  if(!ok)return false;
+  try{
+    toast('Deleting student account…');
+    const result=await CloudAPI.adminDeleteStudentAccount(uid);
+    cloudStudents=cloudStudents.filter(x=>(x.id||x.uid)!==uid);
+    refreshAdminCloudPanels();
+    await loadAdminCloudData(document.querySelector('#admin'));
+    toast(`✓ Student account deleted${result?.authDeleted?'':' — profile data removed'}`);
+    return true;
+  }catch(e){
+    console.error('Student account deletion failed:',e);
+    const code=e?.code||'';
+    const msg=code==='functions/unauthenticated'?'Admin authentication expired. Please log in again.':code==='functions/permission-denied'?'This admin account is not authorized.':code==='functions/not-found'?'Student account was not found.':code==='functions/failed-precondition'?'Account deletion service is not deployed/configured yet.':`Student account deletion failed (${code||'unknown'}).`;
+    toast(msg);
+    return false;
+  }
+}
 function cloudAccountMarkup(){
   if(cloudUser){const ls=D.settings?.lastSyncAt?`Last synced: ${new Date(D.settings.lastSyncAt).toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'})}`:'Last synced: Not yet';return `<div class="cloudAccount"><div><b>✓ Signed in</b><small>${esc(cloudUser.email||'')}</small></div><div class="twoCol"><button class="settingSave" id="cloudSyncNow">SYNC NOW</button><button class="settingSave" id="cloudLogout">LOG OUT</button></div><p class="statusPill" id="cloudAccountStatus">${esc(ls)}</p></div>`;}
-  return `<div class="cloudAccount"><label>Name</label><input id="cloudName" type="text" autocomplete="name" placeholder="Student name"><label>Roll number</label><input id="cloudRoll" type="number" min="1" max="100" inputmode="numeric" placeholder="Roll number (1–100)"><label>Email</label><input id="cloudEmail" type="email" autocomplete="email" placeholder="Student email"><label>Password</label><input id="cloudPassword" type="password" autocomplete="current-password" placeholder="Password (6+ characters)"><div class="twoCol"><button class="settingSave" id="cloudLogin">LOGIN</button><button class="settingSave" id="cloudSignup">CREATE ACCOUNT</button></div><button class="authForgotLink" id="cloudForgot">Forgot password?</button><p class="statusPill">Not signed in — local data remains on this device</p></div>`;
+  return `<div class="cloudAccount"><label>Name</label><input id="cloudName" type="text" autocomplete="name" placeholder="Student name"><label>Roll number</label><input id="cloudRoll" type="number" min="1" max="100" inputmode="numeric" placeholder="Roll number (1–100)"><label>Email</label><input id="cloudEmail" type="email" autocomplete="email" placeholder="Student email"><label>Password</label><input id="cloudPassword" type="password" autocomplete="current-password" placeholder="Password (6+ characters)"><div class="twoCol"><button class="settingSave" id="cloudLogin">LOGIN</button><button class="settingSave" id="cloudSignup">CREATE ACCOUNT</button></div><button class="authForgotLink" id="cloudForgot">Forgot password?</button><p id="cloudForgotStatus" class="authStatus" aria-live="polite"></p><p class="statusPill">Not signed in — local data remains on this device</p></div>`;
 }
 function adminFilterMarkup(prefix, status=false){
   return `<div class="adminFilterGrid" data-filter-prefix="${prefix}">
@@ -446,10 +498,11 @@ async function loadAdminCloudData(el){
         if(search&&!((n+' '+ro).toLowerCase().includes(search)))return false;
         return allowed.has(st.id||st.uid||'');
       });
-      list.innerHTML=visible.length?visible.map(st=>{const i=cloudStudents.indexOf(st);return `<div class="adminListRow"><div><b>${esc(st.profile?.name||st.name||'Unnamed student')}</b><small>${esc(st.profile?.email||st.email||'')} ${st.profile?.roll?' · Roll '+esc(st.profile.roll):''}</small></div><div class="adminRowActions"><button class="addRow" data-cloud-view="${i}">VIEW RECORDS</button><button class="settingSave" data-cloud-export="${i}">EXPORT PDF</button><button class="dangerBtn" data-cloud-delete="${i}">DELETE DATA</button></div></div>`}).join(''):'<div class="empty glass">No student cloud records match the selected filter.</div>';
+      list.innerHTML=visible.length?visible.map(st=>{const i=cloudStudents.indexOf(st);return `<div class="adminListRow"><div><b>${esc(st.profile?.name||st.name||'Unnamed student')}</b><small>${esc(st.profile?.email||st.email||'')} ${st.profile?.roll?' · Roll '+esc(st.profile.roll):''}</small></div><div class="adminRowActions"><button class="addRow" data-cloud-view="${i}">VIEW RECORDS</button><button class="settingSave" data-cloud-export="${i}">EXPORT PDF</button><button class="dangerBtn" data-cloud-delete="${i}">DELETE DATA</button><button class="dangerBtn dangerAccountBtn" data-cloud-delete-account="${i}">DELETE ID / PROFILE</button></div></div>`}).join(''):'<div class="empty glass">No student cloud records match the selected filter.</div>';
       list.querySelectorAll('[data-cloud-view]').forEach(b=>b.onclick=()=>showCloudStudentDetails(cloudStudents[Number(b.dataset.cloudView)]));
       list.querySelectorAll('[data-cloud-export]').forEach(b=>b.onclick=()=>{const st=cloudStudents[Number(b.dataset.cloudExport)],p=st.profile||{};exportCloudPdf(`Homework Reminder — Firebase Export — ${p.name||st.name||'Student'}`,{name:p.name||st.name||'',email:p.email||st.email||'',roll:p.roll||''})});
       list.querySelectorAll('[data-cloud-delete]').forEach(b=>b.onclick=()=>{const st=cloudStudents[Number(b.dataset.cloudDelete)],p=st.profile||{};deleteFilteredFirebaseData({name:p.name||st.name||'',email:p.email||st.email||'',roll:p.roll||''})});
+      list.querySelectorAll('[data-cloud-delete-account]').forEach(b=>b.onclick=()=>deleteStudentAccountProfile(cloudStudents[Number(b.dataset.cloudDeleteAccount)]));
     };
     ['Name','Email','Roll','Date','Subject','Teacher'].forEach(k=>$(`st${k}`)?.addEventListener('change',redrawStudents));
     $('adminStudentSearch')?.addEventListener('input',redrawStudents);
@@ -661,7 +714,7 @@ function showStartupAuth(){
     $('startSignup').onclick=async()=>{const n=$('startName').value.trim(),r=$('startRoll').value.trim(),e=$('startEmail').value.trim(),pw=$('startPassword').value;if(!n||!r||!e||!pw){status.textContent='Enter name, roll number, email and password';return}if(!/^\d+$/.test(r)||+r<1||+r>100){status.textContent='Enter a valid roll number (1–100)';return}status.textContent='Creating account…';const ok=await cloudSignUp(e,pw);if(ok){D.profile.name=n;D.profile.roll=r;saveAll();await syncCurrentUser('upload',true);status.textContent=`✓ Account created and signed in as ${e}`;setTimeout(closeStartupAuth,350)}};
     $('startAdmin').onclick=()=>showAdminLogin(true);
     $('startPassword').onkeydown=e=>{if(e.key==='Enter')$('startLogin').click()};
-    $('startForgot').onclick=()=>resetStudentPassword($('startEmail').value.trim());
+    $('startForgot').onclick=async()=>requestStudentReset($('startEmail').value.trim(),$('startForgotStatus'));
   }
   if(status && status.textContent==='Checking sign-in status…')status.textContent='Not signed in — local data stays on this device until you sign in.';
 }
@@ -677,7 +730,7 @@ function showAdminLogin(asPopup=false){
       <label>Password</label><input id="popupAdminPass" type="password" autocomplete="current-password" placeholder="Password">
       <div class="twoCol"><button class="settingSave" id="popupAdminLoginBtn">LOGIN AS ADMIN</button><button class="settingSave" id="popupAdminBack">STUDENT LOGIN</button></div>
       <button class="startupForgotLink" id="popupAdminForgot">Forgot password?</button>
-      <p id="popupAdminStatus" class="statusPill">Admin authentication required to enter the app.</p>
+      <p id="popupAdminStatus" class="authStatus authStatusVisible">Admin authentication required to enter the app.</p>
     </div>`;
     document.body.appendChild(m);
     $('popupAdminLoginBtn').onclick=async()=>{
@@ -690,11 +743,11 @@ function showAdminLogin(asPopup=false){
       }catch(err){status.textContent=firebaseAuthMessage(err)}finally{adminAuthInProgress=false;btn.disabled=false}
     };
     $('popupAdminPass').onkeydown=e=>{if(e.key==='Enter')$('popupAdminLoginBtn').click()};
-    $('popupAdminForgot').onclick=()=>resetAdminPassword($('popupAdminUser').value.trim());
+    $('popupAdminForgot').onclick=async()=>requestAdminReset($('popupAdminUser').value.trim(),$('popupAdminStatus'));
     $('popupAdminBack').onclick=()=>{m.remove();showStartupAuth()};
     return;
   }
-document.querySelectorAll('main>section').forEach(x=>x.remove());const s=document.createElement('section');s.id='adminLogin';$('main').appendChild(s);$('pageTitle').textContent='Admin Login';$('dateLine').textContent='';s.innerHTML=`<div class="authWrap"><div class="authCard glass"><div class="eyebrow">RESTRICTED AREA</div><h2>Admin Login</h2><p class="mutedIntro">Administrator access uses Firebase Authentication plus an Admin allow-list. A normal student account cannot open this dashboard.</p><label>Admin email</label><input id="adminUser" type="email" autocomplete="username" placeholder="Admin email"><label>Password</label><input id="adminPass" type="password" autocomplete="current-password" placeholder="Password"><button class="primary wideAction" id="adminLoginBtn">LOGIN AS ADMIN</button><button class="authForgotLink" id="adminForgot">Forgot password?</button><button class="backLink" id="adminCancel">← Back to Login</button><p class="tinyNote">The account must also have a Firestore document at <b>admins/&lt;Firebase UID&gt;</b> with <b>role = admin</b>. This grants administrator privileges.</p></div></div>`;$('adminLoginBtn').onclick=async()=>{const e=$('adminUser').value.trim(),p=$('adminPass').value;if(!e||!p)return toast('Enter admin email and password');$('adminLoginBtn').disabled=true;$('adminLoginBtn').textContent='AUTHENTICATING…';adminAuthInProgress=true;try{await CloudAPI.adminSetPersistence();await CloudAPI.adminSignIn(e,p);const u=CloudAPI.adminCurrentUser();if(await withTimeout(CloudAPI.isAdmin(u?.uid),10000,'Admin verification')){adminSession=true;adminUser=u;show('admin');toast('✓ Admin login successful')}else{await CloudAPI.adminSignOut();toast('Authenticated, but this account is not an admin. Add its UID to the Firestore admins collection.')}}catch(err){toast(firebaseAuthMessage(err))}finally{adminAuthInProgress=false}$('adminLoginBtn').disabled=false;$('adminLoginBtn').textContent='LOGIN AS ADMIN'};$('adminPass').onkeydown=e=>{if(e.key==='Enter')$('adminLoginBtn').click()};$('adminForgot').onclick=()=>resetAdminPassword($('adminUser').value.trim());$('adminCancel').onclick=()=>{showAdminLoginBackToStudentGate()}}
+document.querySelectorAll('main>section').forEach(x=>x.remove());const s=document.createElement('section');s.id='adminLogin';$('main').appendChild(s);$('pageTitle').textContent='Admin Login';$('dateLine').textContent='';s.innerHTML=`<div class="authWrap"><div class="authCard glass adminPageAuthCard"><div class="eyebrow">RESTRICTED AREA</div><h2>Admin Login</h2><p class="mutedIntro">Administrator access uses Firebase Authentication plus an Admin allow-list. A normal student account cannot open this dashboard.</p><label>Admin email</label><input id="adminUser" type="email" autocomplete="username" placeholder="Admin email"><label>Password</label><input id="adminPass" type="password" autocomplete="current-password" placeholder="Password"><button class="primary wideAction" id="adminLoginBtn">LOGIN AS ADMIN</button><button class="authForgotLink" id="adminForgot">Forgot password?</button><p id="adminForgotStatus" class="authStatus" aria-live="polite"></p><button class="backLink" id="adminCancel">← Back to Login</button><p class="tinyNote">The account must also have a Firestore document at <b>admins/&lt;Firebase UID&gt;</b> with <b>role = admin</b>. This grants administrator privileges.</p></div></div>`;$('adminLoginBtn').onclick=async()=>{const e=$('adminUser').value.trim(),p=$('adminPass').value;if(!e||!p)return toast('Enter admin email and password');$('adminLoginBtn').disabled=true;$('adminLoginBtn').textContent='AUTHENTICATING…';adminAuthInProgress=true;try{await CloudAPI.adminSetPersistence();await CloudAPI.adminSignIn(e,p);const u=CloudAPI.adminCurrentUser();if(await withTimeout(CloudAPI.isAdmin(u?.uid),10000,'Admin verification')){adminSession=true;adminUser=u;show('admin');toast('✓ Admin login successful')}else{await CloudAPI.adminSignOut();toast('Authenticated, but this account is not an admin. Add its UID to the Firestore admins collection.')}}catch(err){toast(firebaseAuthMessage(err))}finally{adminAuthInProgress=false}$('adminLoginBtn').disabled=false;$('adminLoginBtn').textContent='LOGIN AS ADMIN'};$('adminPass').onkeydown=e=>{if(e.key==='Enter')$('adminLoginBtn').click()};$('adminForgot').onclick=async()=>requestAdminReset($('adminUser').value.trim(),$('adminForgotStatus'));$('adminCancel').onclick=()=>{showAdminLoginBackToStudentGate()}}
 function showAdminLoginBackToStudentGate(){
   document.querySelectorAll('main>section').forEach(x=>x.remove());
   $('pageTitle').textContent='Today';
@@ -704,7 +757,7 @@ function showAdminLoginBackToStudentGate(){
 
 function renderSettings(el){el.innerHTML=`<div class="settingsGrid"><div class="settingCard"><div class="settingTitle"><span class="settingIcon">◉</span><div><h3>Student Profile</h3><p>Local profile used for records and future cloud sync.</p></div></div><input id="pname" value="${esc(D.profile.name)}" placeholder="Student name"><input id="pemail" value="${esc(D.profile.email)}" placeholder="Email"><input id="roll" type="number" min="1" max="100" value="${esc(D.profile.roll)}" placeholder="Roll number"><button class="settingSave" id="saveProfile">SAVE PROFILE</button></div><div class="settingCard"><div class="settingTitle"><span class="settingIcon">◐</span><div><h3>Theme</h3><p>Keep the v26-style adaptive appearance.</p></div></div><select id="theme"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></div><div class="settingCard"><div class="settingTitle"><span class="settingIcon">⏰</span><div><h3>Homework Reminder</h3><p>One-day-before reminder for saved homework.</p></div></div><label class="switchLine"><input id="oneDay" type="checkbox" ${D.settings.oneDayBefore?'checked':''}> One day before</label><button class="settingSave" id="reminderPage">MANAGE REMINDERS</button></div><div class="settingCard scheduleCard"><div class="settingTitle"><span class="settingIcon">▦</span><div><h3>Manage Schedule & Teachers</h3><p>Edit the preset timetable without changing historical daily records.</p></div></div><div class="scheduleToolbar"><div><label>Effective from</label><input id="effectiveDate" type="date" value="${iso(new Date())}"></div><button class="todayBtn" id="loadOriginal">Original</button></div><div id="scheduleEditor">${scheduleEditor(defaultSchedule())}</div><div class="scheduleExtraBox"><div><b>Copy schedule</b><small>Copy the current weekly schedule into a new effective-date version.</small></div><button class="addRow" id="copySchedule">COPY</button></div><button class="settingSave" id="tsave">SAVE SCHEDULE & TEACHERS</button></div><div class="settingCard"><div class="settingTitle"><span class="settingIcon">☁</span><div><h3>Firebase Cloud Account</h3><p>Sign in to sync your classwork, homework, syllabus, schedule and reminders across devices.</p></div></div>${cloudAccountMarkup()}<div class="twoCol"><button class="settingSave" id="exportData">EXPORT DATA</button><button class="settingSave" id="importData">IMPORT DATA</button></div><input id="importFile" type="file" accept="application/json" hidden></div><div class="settingCard"><div class="settingTitle"><span class="settingIcon">▣</span><div><h3>Administrator</h3><p>Restricted area. Login is required before the Admin Dashboard can be opened.</p></div></div><button class="settingSave" id="adminPage">ADMIN LOGIN</button></div></div>`;$('theme').value=D.theme;$('theme').onchange=()=>{D.theme=$('theme').value;setTheme();saveAll()};$('saveProfile').onclick=()=>{D.profile.name=$('pname').value.trim();D.profile.email=$('pemail').value.trim();D.profile.roll=$('roll').value;saveAll();toast('✓ Profile saved');show('today')};$('oneDay').onchange=e=>{D.settings.oneDayBefore=e.target.checked;saveAll()};$('reminderPage').onclick=()=>show('reminders');$('adminPage').onclick=()=>adminSession?show('admin'):showAdminLogin();$('loadOriginal').onclick=()=>{$('effectiveDate').value=iso(new Date());$('scheduleEditor').innerHTML=scheduleEditor(defaultSchedule());wireScheduleEditor()};$('effectiveDate').onchange=()=>{$('scheduleEditor').innerHTML=scheduleEditor(scheduleForDate(new Date($('effectiveDate').value+'T00:00:00')));wireScheduleEditor()};$('copySchedule').onclick=()=>{const date=$('effectiveDate').value;if(!date)return;D.changes=(D.changes||[]).filter(x=>x.date!==date);D.changes.push({date,schedule:collectSchedule()});D.changes.sort((a,b)=>a.date.localeCompare(b.date));saveAll();toast('✓ Schedule copied')};$('tsave').onclick=()=>{const date=$('effectiveDate').value,s=collectSchedule();if(!date||!Object.values(s).some(a=>a.length))return toast('Add at least one class');D.changes=(D.changes||[]).filter(x=>x.date!==date);D.changes.push({date,schedule:s});D.teachers=collectRowTeachers();saveAll();toast('✓ Schedule & teachers saved');show('today')};$('exportData').onclick=exportData;$('importData').onclick=()=>$('importFile').click();$('importFile').onchange=importData;
  if(cloudUser){$('cloudSyncNow').onclick=()=>syncCurrentUser('upload');$('cloudLogout').onclick=async()=>{try{clearTimeout(cloudSyncTimer);await syncCurrentUser('upload',true);await CloudAPI.signOut();try{localStorage.removeItem(STUDENT_SESSION_HINT)}catch(_){}toast('✓ Logged out of Firebase — your local data is kept on this device')}catch(e){toast('Could not log out')}}}
- else {$('cloudLogin').onclick=async()=>{const n=$('cloudName').value.trim(),r=$('cloudRoll').value.trim(),e=$('cloudEmail').value.trim(),p=$('cloudPassword').value;if(!n||!r||!e||!p)return toast('Enter name, roll number, email and password');if(!/^\d+$/.test(r)||+r<1||+r>100)return toast('Enter a valid roll number (1–100)');await cloudSignIn(e,p,n,r)};$('cloudSignup').onclick=async()=>{const n=$('cloudName').value.trim(),r=$('cloudRoll').value.trim(),e=$('cloudEmail').value.trim(),p=$('cloudPassword').value;if(!n||!r||!e||!p)return toast('Enter name, roll number, email and password');if(!/^\d+$/.test(r)||+r<1||+r>100)return toast('Enter a valid roll number (1–100)');await cloudSignUp(e,p);if(cloudUser){D.profile.name=n;D.profile.roll=r;saveAll();await syncCurrentUser('upload',true)}};$('cloudForgot').onclick=()=>resetStudentPassword($('cloudEmail').value.trim())}
+ else {$('cloudLogin').onclick=async()=>{const n=$('cloudName').value.trim(),r=$('cloudRoll').value.trim(),e=$('cloudEmail').value.trim(),p=$('cloudPassword').value;if(!n||!r||!e||!p)return toast('Enter name, roll number, email and password');if(!/^\d+$/.test(r)||+r<1||+r>100)return toast('Enter a valid roll number (1–100)');await cloudSignIn(e,p,n,r)};$('cloudSignup').onclick=async()=>{const n=$('cloudName').value.trim(),r=$('cloudRoll').value.trim(),e=$('cloudEmail').value.trim(),p=$('cloudPassword').value;if(!n||!r||!e||!p)return toast('Enter name, roll number, email and password');if(!/^\d+$/.test(r)||+r<1||+r>100)return toast('Enter a valid roll number (1–100)');await cloudSignUp(e,p);if(cloudUser){D.profile.name=n;D.profile.roll=r;saveAll();await syncCurrentUser('upload',true)}};$('cloudForgot').onclick=async()=>requestStudentReset($('cloudEmail').value.trim(),$('cloudForgotStatus'))}
  wireScheduleEditor()}
 function timeOptions(selected){return '<option value="">Time</option>'+Array.from({length:48},(_,i)=>{const h=Math.floor(i/2),m=i%2?30:0,v=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');return `<option value="${v}" ${v===selected?'selected':''}>${formatTime(v)}</option>`}).join('')}
 function formatTime(v){if(!v)return'';const[h,m]=v.split(':').map(Number),ap=h>=12?'PM':'AM',hh=h%12||12;return`${hh}:${String(m).padStart(2,'0')} ${ap}`}
@@ -786,6 +839,12 @@ function importData(e){const f=e.target.files?.[0];if(!f)return;const rd=new Fil
 function confirmBox(title,text){return new Promise(resolve=>{const m=$('confirmModal');$('confirmTitle').textContent=title;$('confirmText').textContent=text;m.classList.add('show');const ok=()=>{cleanup();resolve(true)},no=()=>{cleanup();resolve(false)},cleanup=()=>{m.classList.remove('show');$('confirmYes').removeEventListener('click',ok);$('confirmNo').removeEventListener('click',no)};$('confirmYes').addEventListener('click',ok);$('confirmNo').addEventListener('click',no)})}
 function resetAtMidnight(){clearTimeout(midnightTimer);const now=new Date(),next=new Date(now);next.setHours(24,0,1,0);midnightTimer=setTimeout(()=>{today=startOfDay(new Date());show('today');resetAtMidnight()},next-now)}
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>show(b.dataset.page));
+// Give every native dropdown/select a clear tap/press effect across the whole app.
+document.addEventListener('pointerdown',e=>{const el=e.target?.closest?.('select');if(el)el.classList.add('selectPressed')},{passive:true});
+document.addEventListener('pointerup',e=>{const el=e.target?.closest?.('select');if(el)setTimeout(()=>el.classList.remove('selectPressed'),120)},{passive:true});
+document.addEventListener('pointercancel',e=>{const el=e.target?.closest?.('select');if(el)el.classList.remove('selectPressed')},{passive:true});
+document.addEventListener('change',e=>{if(e.target?.matches?.('select'))e.target.classList.remove('selectPressed')},{passive:true});
+document.addEventListener('blur',e=>{if(e.target?.matches?.('select'))e.target.classList.remove('selectPressed')},true);
 loadLocal();setTheme();resetAtMidnight();show('today');scheduleNextReminder();
 // Keep the startup loading screen visible until both Firebase student and admin
 // authentication states have been resolved. Only then show the login gate or open
