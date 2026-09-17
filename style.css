@@ -830,7 +830,6 @@ main,main>section,.adminGrid,.adminPanel,.adminPanelBody{min-width:0;max-width:1
 select{transition:transform .08s ease,box-shadow .08s ease,border-color .08s ease}
 select.selectPressed{transform:translateY(2px);border-color:rgba(99,91,255,.65)!important;box-shadow:0 2px 0 rgba(99,91,255,.20),0 0 0 3px rgba(99,91,255,.09)!important}
 .adminRowActions{grid-template-columns:repeat(4,minmax(0,1fr))!important}
-.dangerAccountBtn{border-color:rgba(180,35,55,.30)!important;background:rgba(220,55,75,.13)!important;color:#c73f54!important}
 @media(max-width:620px){
   .startupAuthCard{padding:16px;width:min(390px,calc(100vw - 24px))}
   .startupAuthCard h2{font-size:21px}

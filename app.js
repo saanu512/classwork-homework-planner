@@ -317,38 +317,6 @@ async function requestAdminReset(email,statusEl){
   setAuthStatus(statusEl,ok?'✓ Password-reset email sent. Check Inbox/Spam.':'Password reset could not be sent. Check the email and try again.',ok?'success':'error');
   return ok;
 }
-async function deleteStudentAccountProfile(st){
-  if(!adminUser){toast('Admin login is required.');return false}
-  const p=st?.profile||{};
-  const name=p.name||st?.name||'Unnamed student',email=p.email||st?.email||'',roll=p.roll||'',uid=st?.id||st?.uid||'';
-  if(!uid)return toast('This student has no Firebase UID/profile ID.');
-  if(uid===adminUser.uid)return toast('The current admin account cannot be deleted here.');
-  const ok=await confirmBox('⚠ DELETE STUDENT ID / PROFILE',`This permanently deletes the complete Firebase student account for:
-
-${name}${email?'\n'+email:''}${roll?'\nRoll '+roll:''}
-
-It will remove the Firebase login email/password (Auth account), cloud profile, classwork, homework, syllabus, schedule, reminders and other saved app data.
-
-After deletion, this student must CREATE ACCOUNT again to use the app.
-
-This cannot be undone.`);
-  if(!ok)return false;
-  try{
-    toast('Deleting student account…');
-    const result=await CloudAPI.adminDeleteStudentAccount(uid);
-    cloudStudents=cloudStudents.filter(x=>(x.id||x.uid)!==uid);
-    refreshAdminCloudPanels();
-    await loadAdminCloudData(document.querySelector('#admin'));
-    toast(`✓ Student account deleted${result?.authDeleted?'':' — profile data removed'}`);
-    return true;
-  }catch(e){
-    console.error('Student account deletion failed:',e);
-    const code=e?.code||'';
-    const msg=code==='functions/unauthenticated'?'Admin authentication expired. Please log in again.':code==='functions/permission-denied'?'This admin account is not authorized.':code==='functions/not-found'?'Student account was not found.':code==='functions/failed-precondition'?'Account deletion service is not deployed/configured yet.':`Student account deletion failed (${code||'unknown'}).`;
-    toast(msg);
-    return false;
-  }
-}
 function cloudAccountMarkup(){
   if(cloudUser){const ls=D.settings?.lastSyncAt?`Last synced: ${new Date(D.settings.lastSyncAt).toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'})}`:'Last synced: Not yet';return `<div class="cloudAccount"><div><b>✓ Signed in</b><small>${esc(cloudUser.email||'')}</small></div><div class="twoCol"><button class="settingSave" id="cloudSyncNow">SYNC NOW</button><button class="settingSave" id="cloudLogout">LOG OUT</button></div><p class="statusPill" id="cloudAccountStatus">${esc(ls)}</p></div>`;}
   return `<div class="cloudAccount"><label>Name</label><input id="cloudName" type="text" autocomplete="name" placeholder="Student name"><label>Roll number</label><input id="cloudRoll" type="number" min="1" max="100" inputmode="numeric" placeholder="Roll number (1–100)"><label>Email</label><input id="cloudEmail" type="email" autocomplete="email" placeholder="Student email"><label>Password</label><input id="cloudPassword" type="password" autocomplete="current-password" placeholder="Password (6+ characters)"><div class="twoCol"><button class="settingSave" id="cloudLogin">LOGIN</button><button class="settingSave" id="cloudSignup">CREATE ACCOUNT</button></div><button class="authForgotLink" id="cloudForgot">Forgot password?</button><p id="cloudForgotStatus" class="authStatus" aria-live="polite"></p><p class="statusPill">Not signed in — local data remains on this device</p></div>`;
@@ -498,11 +466,10 @@ async function loadAdminCloudData(el){
         if(search&&!((n+' '+ro).toLowerCase().includes(search)))return false;
         return allowed.has(st.id||st.uid||'');
       });
-      list.innerHTML=visible.length?visible.map(st=>{const i=cloudStudents.indexOf(st);return `<div class="adminListRow"><div><b>${esc(st.profile?.name||st.name||'Unnamed student')}</b><small>${esc(st.profile?.email||st.email||'')} ${st.profile?.roll?' · Roll '+esc(st.profile.roll):''}</small></div><div class="adminRowActions"><button class="addRow" data-cloud-view="${i}">VIEW RECORDS</button><button class="settingSave" data-cloud-export="${i}">EXPORT PDF</button><button class="dangerBtn" data-cloud-delete="${i}">DELETE DATA</button><button class="dangerBtn dangerAccountBtn" data-cloud-delete-account="${i}">DELETE ID / PROFILE</button></div></div>`}).join(''):'<div class="empty glass">No student cloud records match the selected filter.</div>';
+      list.innerHTML=visible.length?visible.map(st=>{const i=cloudStudents.indexOf(st);return `<div class="adminListRow"><div><b>${esc(st.profile?.name||st.name||'Unnamed student')}</b><small>${esc(st.profile?.email||st.email||'')} ${st.profile?.roll?' · Roll '+esc(st.profile.roll):''}</small></div><div class="adminRowActions"><button class="addRow" data-cloud-view="${i}">VIEW RECORDS</button><button class="settingSave" data-cloud-export="${i}">EXPORT PDF</button><button class="dangerBtn" data-cloud-delete="${i}">DELETE DATA</button></div></div>`}).join(''):'<div class="empty glass">No student cloud records match the selected filter.</div>';
       list.querySelectorAll('[data-cloud-view]').forEach(b=>b.onclick=()=>showCloudStudentDetails(cloudStudents[Number(b.dataset.cloudView)]));
       list.querySelectorAll('[data-cloud-export]').forEach(b=>b.onclick=()=>{const st=cloudStudents[Number(b.dataset.cloudExport)],p=st.profile||{};exportCloudPdf(`Homework Reminder — Firebase Export — ${p.name||st.name||'Student'}`,{name:p.name||st.name||'',email:p.email||st.email||'',roll:p.roll||''})});
       list.querySelectorAll('[data-cloud-delete]').forEach(b=>b.onclick=()=>{const st=cloudStudents[Number(b.dataset.cloudDelete)],p=st.profile||{};deleteFilteredFirebaseData({name:p.name||st.name||'',email:p.email||st.email||'',roll:p.roll||''})});
-      list.querySelectorAll('[data-cloud-delete-account]').forEach(b=>b.onclick=()=>deleteStudentAccountProfile(cloudStudents[Number(b.dataset.cloudDeleteAccount)]));
     };
     ['Name','Email','Roll','Date','Subject','Teacher'].forEach(k=>$(`st${k}`)?.addEventListener('change',redrawStudents));
     $('adminStudentSearch')?.addEventListener('input',redrawStudents);
