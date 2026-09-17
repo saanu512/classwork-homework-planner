@@ -2912,3 +2912,78 @@ button.wideAction{
     font-size:9px !important;
   }
 }
+
+/* ================================================================
+   LIGHT THEME — FLAT VERSION OF LIGHT 3D BUTTONS
+   Keep the exact Light 3D button geometry/size/typography.
+   Remove only the 3D elevation and shadow from the normal state.
+   Keep a tactile click/press effect.
+   ================================================================ */
+:root[data-theme="light"] button:not(nav button):not(.backLink),
+:root[data-theme="light"] button.dangerBtn,
+:root[data-theme="light"] button.adminDeleteFilterBtn,
+:root[data-theme="light"] button.logoutBtn,
+:root[data-theme="light"] button.accountLogout,
+:root[data-theme="light"] button.cardDeleteBtn{
+  box-sizing:border-box !important;
+  min-width:0 !important;
+  max-width:100% !important;
+  min-height:32px !important;
+  height:auto !important;
+  padding:6px 10px !important;
+  border-radius:10px !important;
+  font-size:10px !important;
+  font-weight:800 !important;
+  line-height:1.08 !important;
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  overflow-wrap:break-word !important;
+  word-break:normal !important;
+  text-align:center !important;
+  vertical-align:middle !important;
+  transition:transform .14s ease, box-shadow .14s ease, filter .14s ease !important;
+}
+
+/* Flat Light button face: same shape/size as Light 3D, no elevation. */
+:root[data-theme="light"] button:not(nav button):not(.backLink):not(.dangerBtn):not(.adminDeleteFilterBtn):not(.logoutBtn):not(.accountLogout):not(.cardDeleteBtn){
+  border:1px solid rgba(255,255,255,.28) !important;
+  background:linear-gradient(135deg,var(--accent),var(--accent2)) !important;
+  color:#fff !important;
+  box-shadow:none !important;
+  transform:none !important;
+}
+
+/* Delete/logout retain the same geometry, but remain red and flat. */
+:root[data-theme="light"] button.dangerBtn,
+:root[data-theme="light"] button.adminDeleteFilterBtn,
+:root[data-theme="light"] button.logoutBtn,
+:root[data-theme="light"] button.accountLogout,
+:root[data-theme="light"] button.cardDeleteBtn{
+  box-shadow:none !important;
+  transform:none !important;
+}
+
+/* Keep the existing click/press feedback without restoring permanent 3D. */
+:root[data-theme="light"] button:not(nav button):not(.backLink):active{
+  transform:translateY(1px) scale(.985) !important;
+  box-shadow:inset 0 2px 4px rgba(0,0,0,.16) !important;
+  filter:brightness(.97) !important;
+}
+
+/* The compact Light-3D geometry is retained for the important button groups. */
+:root[data-theme="light"] #cloudTest,
+:root[data-theme="light"] #cloudBackup,
+:root[data-theme="light"] #cloudRestore,
+:root[data-theme="light"] #adminExport,
+:root[data-theme="light"] #adminExportRecords,
+:root[data-theme="light"] #adminExportPdf,
+:root[data-theme="light"] #publishSyllabus,
+:root[data-theme="light"] #restoreSyllabus{
+  min-width:0 !important;
+  max-width:100% !important;
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  overflow-wrap:break-word !important;
+}
