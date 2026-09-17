@@ -951,3 +951,207 @@ select.selectPressed{transform:translateY(2px);border-color:rgba(99,91,255,.65)!
 :root[data-theme="dark3d"] .timePill,
 :root[data-theme="dark3d"] .extraPill,
 :root[data-theme="dark3d"] .indicator{box-shadow:inset 2px 2px 6px rgba(0,0,0,.8),inset -2px -2px 5px rgba(255,255,255,.035),var(--shadow2)}
+
+/* v40.3 — stronger 3D depth + compact controls
+   Compact sizing is limited to the Light 3D / Dark 3D editions. */
+:root[data-theme="light3d"] button,
+:root[data-theme="dark3d"] button{
+  font-size:11px;
+  line-height:1.1;
+  min-height:34px;
+  padding:7px 10px;
+  border-radius:11px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+/* Compact buttons sized to their text instead of filling the whole card. */
+:root[data-theme="light3d"] .settingSave,
+:root[data-theme="dark3d"] .settingSave,
+:root[data-theme="light3d"] .todayBtn,
+:root[data-theme="dark3d"] .todayBtn,
+:root[data-theme="light3d"] .addRow,
+:root[data-theme="dark3d"] .addRow,
+:root[data-theme="light3d"] .extraBtn,
+:root[data-theme="dark3d"] .extraBtn,
+:root[data-theme="light3d"] .cardSaveBtn,
+:root[data-theme="dark3d"] .cardSaveBtn,
+:root[data-theme="light3d"] .cardDeleteBtn,
+:root[data-theme="dark3d"] .cardDeleteBtn,
+:root[data-theme="light3d"] .primary,
+:root[data-theme="dark3d"] .primary,
+:root[data-theme="light3d"] .wideAction,
+:root[data-theme="dark3d"] .wideAction{
+  width:auto;
+  min-width:0;
+  min-height:34px;
+  padding:7px 11px;
+  font-size:11px;
+}
+
+:root[data-theme="light3d"] .settingSave,
+:root[data-theme="dark3d"] .settingSave{margin-top:8px}
+:root[data-theme="light3d"] .twoCol,
+:root[data-theme="dark3d"] .twoCol{align-items:start}
+:root[data-theme="light3d"] .twoCol > button,
+:root[data-theme="dark3d"] .twoCol > button{justify-self:start;width:auto}
+
+/* Strong physical button face: raised top edge + deep underside shadow. */
+:root[data-theme="light3d"] button:not(.backLink),
+:root[data-theme="dark3d"] button:not(.backLink){
+  border:1px solid rgba(255,255,255,.28);
+  box-shadow:6px 7px 13px rgba(38,46,65,.20),
+             inset 0 2px 1px rgba(255,255,255,.55),
+             inset 0 -3px 5px rgba(0,0,0,.16);
+  transform:translateY(-1px);
+}
+:root[data-theme="dark3d"] button:not(.backLink){
+  border-color:rgba(255,255,255,.10);
+  box-shadow:7px 8px 15px rgba(0,0,0,.88),
+             inset 0 2px 1px rgba(255,255,255,.14),
+             inset 0 -4px 7px rgba(0,0,0,.48);
+}
+:root[data-theme="light3d"] button:not(.backLink):hover,
+:root[data-theme="dark3d"] button:not(.backLink):hover{transform:translateY(-2px)}
+:root[data-theme="light3d"] button:not(.backLink):active,
+:root[data-theme="dark3d"] button:not(.backLink):active{
+  transform:translateY(2px);
+  box-shadow:2px 3px 6px rgba(0,0,0,.28),
+             inset 0 2px 3px rgba(0,0,0,.12),
+             inset 0 -1px 2px rgba(255,255,255,.35);
+}
+
+/* Keep utility/text links visually light rather than turning them into raised blocks. */
+:root[data-theme="light3d"] .backLink,
+:root[data-theme="dark3d"] .backLink{box-shadow:none!important;transform:none!important;border:0!important;background:transparent!important;overflow:visible}
+
+/* Smaller controls for forms and schedule editors. */
+:root[data-theme="light3d"] .settingCard input,
+:root[data-theme="light3d"] .settingCard select,
+:root[data-theme="dark3d"] .settingCard input,
+:root[data-theme="dark3d"] .settingCard select{
+  min-height:38px;
+  padding:8px 10px;
+  font-size:12px;
+  border-radius:11px;
+}
+:root[data-theme="light3d"] .scheduleRow select,
+:root[data-theme="light3d"] .scheduleRow input,
+:root[data-theme="dark3d"] .scheduleRow select,
+:root[data-theme="dark3d"] .scheduleRow input{min-height:34px;padding:7px 8px;font-size:10px}
+
+/* Compact admin action groups: four small buttons can stay on one row on phones. */
+:root[data-theme="light3d"] .adminRowActions,
+:root[data-theme="dark3d"] .adminRowActions{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:5px;
+}
+:root[data-theme="light3d"] .adminRowActions button,
+:root[data-theme="dark3d"] .adminRowActions button{
+  width:100%!important;
+  min-width:0!important;
+  min-height:32px!important;
+  padding:6px 4px!important;
+  font-size:8.5px!important;
+  white-space:nowrap!important;
+}
+
+/* Cards are visibly raised even before interaction. */
+:root[data-theme="light3d"] .classCard,
+:root[data-theme="light3d"] .formCard,
+:root[data-theme="light3d"] .miniCard,
+:root[data-theme="light3d"] .settingCard,
+:root[data-theme="light3d"] .topicRecord,
+:root[data-theme="light3d"] .subjectTile,
+:root[data-theme="light3d"] .scheduleCard,
+:root[data-theme="light3d"] .authCard,
+:root[data-theme="dark3d"] .classCard,
+:root[data-theme="dark3d"] .formCard,
+:root[data-theme="dark3d"] .miniCard,
+:root[data-theme="dark3d"] .settingCard,
+:root[data-theme="dark3d"] .topicRecord,
+:root[data-theme="dark3d"] .subjectTile,
+:root[data-theme="dark3d"] .scheduleCard,
+:root[data-theme="dark3d"] .authCard{
+  position:relative;
+  box-shadow:var(--shadow),inset 1px 1px 0 rgba(255,255,255,.34),inset -2px -2px 0 rgba(0,0,0,.08);
+  transform:translateY(-1px);
+}
+:root[data-theme="dark3d"] .classCard,
+:root[data-theme="dark3d"] .formCard,
+:root[data-theme="dark3d"] .miniCard,
+:root[data-theme="dark3d"] .settingCard,
+:root[data-theme="dark3d"] .topicRecord,
+:root[data-theme="dark3d"] .subjectTile,
+:root[data-theme="dark3d"] .scheduleCard,
+:root[data-theme="dark3d"] .authCard{
+  box-shadow:var(--shadow),inset 1px 1px 0 rgba(255,255,255,.06),inset -2px -2px 0 rgba(0,0,0,.55);
+}
+
+/* Make inner boxes look inset, like physical controls. */
+:root[data-theme="light3d"] .cardInfoGrid,
+:root[data-theme="light3d"] .cardMiddle,
+:root[data-theme="light3d"] .scheduleExtraBox,
+:root[data-theme="dark3d"] .cardInfoGrid,
+:root[data-theme="dark3d"] .cardMiddle,
+:root[data-theme="dark3d"] .scheduleExtraBox{
+  border-color:var(--line);
+  box-shadow:inset 4px 4px 9px rgba(0,0,0,.18),inset -3px -3px 8px rgba(255,255,255,.42);
+}
+:root[data-theme="dark3d"] .cardInfoGrid,
+:root[data-theme="dark3d"] .cardMiddle,
+:root[data-theme="dark3d"] .scheduleExtraBox{
+  box-shadow:inset 4px 4px 10px rgba(0,0,0,.90),inset -2px -2px 6px rgba(255,255,255,.035);
+}
+
+/* New compact segmented 3D tab bar. */
+:root[data-theme="light3d"] nav,
+:root[data-theme="dark3d"] nav{
+  padding:6px;
+  gap:5px;
+  border-radius:21px;
+  box-shadow:10px 12px 25px rgba(31,38,55,.28),inset 1px 1px 0 rgba(255,255,255,.55),inset -2px -2px 5px rgba(0,0,0,.10);
+}
+:root[data-theme="dark3d"] nav{
+  background:#080808;
+  box-shadow:11px 13px 27px rgba(0,0,0,.98),inset 1px 1px 0 rgba(255,255,255,.045),inset -2px -2px 6px rgba(0,0,0,.85);
+}
+:root[data-theme="light3d"] nav button,
+:root[data-theme="dark3d"] nav button{
+  min-height:42px;
+  padding:6px 5px;
+  border-radius:15px;
+  font-size:10px;
+  gap:4px;
+  box-shadow:none;
+  transform:none;
+  border:1px solid transparent;
+}
+:root[data-theme="light3d"] nav button.active,
+:root[data-theme="light3d"] nav button:focus,
+:root[data-theme="dark3d"] nav button.active,
+:root[data-theme="dark3d"] nav button:focus{
+  transform:translateY(-2px);
+  box-shadow:5px 6px 11px rgba(45,52,76,.30),inset 0 2px 2px rgba(255,255,255,.42),inset 0 -3px 5px rgba(0,0,0,.20);
+}
+:root[data-theme="dark3d"] nav button.active,
+:root[data-theme="dark3d"] nav button:focus{
+  box-shadow:6px 7px 13px rgba(0,0,0,.92),inset 0 2px 2px rgba(255,255,255,.18),inset 0 -4px 6px rgba(0,0,0,.45);
+}
+:root[data-theme="light3d"] nav button:active,
+:root[data-theme="dark3d"] nav button:active{transform:translateY(2px)}
+
+@media(max-width:430px){
+  :root[data-theme="light3d"] nav,
+  :root[data-theme="dark3d"] nav{width:calc(100% - 18px);padding:5px;gap:3px}
+  :root[data-theme="light3d"] nav button,
+  :root[data-theme="dark3d"] nav button{min-height:40px;padding:5px 3px;font-size:9px}
+  :root[data-theme="light3d"] .settingSave,
+  :root[data-theme="dark3d"] .settingSave,
+  :root[data-theme="light3d"] .primary,
+  :root[data-theme="dark3d"] .primary,
+  :root[data-theme="light3d"] .wideAction,
+  :root[data-theme="dark3d"] .wideAction{font-size:10px;padding:6px 9px;min-height:32px}
+}
