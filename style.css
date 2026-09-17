@@ -1788,3 +1788,270 @@ select.selectPressed{transform:translateY(2px);border-color:rgba(99,91,255,.65)!
   :root[data-theme="light3d"] .adminFilterGrid>.adminDeleteFilterBtn,
   :root[data-theme="dark3d"] .adminFilterGrid>.adminDeleteFilterBtn{font-size:8px!important;padding:8px 3px!important}
 }
+
+/* FINAL GLOBAL BUTTON SYSTEM — applies to every app theme.
+   Navigation tabs are deliberately excluded and use their own equal-tab system. */
+
+/* Base button appearance everywhere (except bottom navigation). */
+button:not(nav button){
+  box-sizing:border-box;
+  min-width:0;
+  max-width:100%;
+  min-height:38px;
+  height:auto;
+  padding:8px 12px;
+  margin:0;
+  border-radius:12px;
+  font-size:11px;
+  line-height:1.15;
+  font-weight:800;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  vertical-align:middle;
+  transform:translateZ(0);
+  transition:transform .12s ease,box-shadow .12s ease,filter .12s ease;
+}
+
+/* Every multi-button action group fills its complete row. */
+.cardActions:has(>button + button),
+.adminRowActions:has(>button + button),
+.adminQuick:has(>button + button),
+.adminFilterGrid:has(>button + button),
+.twoCol:has(>button + button),
+.modalActions:has(>button + button),
+.pdfPrintToolbar:has(>button + button),
+.panel .actions:has(>button + button),
+.actions:has(>button + button),
+.buttonRow:has(>button + button),
+.actionRow:has(>button + button),
+.toolbarActions:has(>button + button),
+.formActions:has(>button + button),
+.settingsActions:has(>button + button){
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  width:100% !important;
+  gap:8px !important;
+  align-items:stretch !important;
+}
+
+/* Three-or-more direct action buttons share the row equally. */
+.cardActions:has(>button + button + button),
+.adminRowActions:has(>button + button + button),
+.adminQuick:has(>button + button + button),
+.pdfPrintToolbar:has(>button + button + button),
+.actions:has(>button + button + button),
+.buttonRow:has(>button + button + button),
+.actionRow:has(>button + button + button),
+.toolbarActions:has(>button + button + button),
+.formActions:has(>button + button + button){
+  grid-template-columns:repeat(3,minmax(0,1fr));
+}
+
+/* Every direct button in a grouped row fills its assigned column. */
+.cardActions:has(>button + button)>button,
+.adminRowActions:has(>button + button)>button,
+.adminQuick:has(>button + button)>button,
+.adminFilterGrid:has(>button + button)>button,
+.twoCol:has(>button + button)>button,
+.modalActions:has(>button + button)>button,
+.pdfPrintToolbar:has(>button + button)>button,
+.panel .actions:has(>button + button)>button,
+.actions:has(>button + button)>button,
+.buttonRow:has(>button + button)>button,
+.actionRow:has(>button + button)>button,
+.toolbarActions:has(>button + button)>button,
+.formActions:has(>button + button)>button,
+.settingsActions:has(>button + button)>button{
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+  min-height:42px !important;
+  height:100% !important;
+  margin:0 !important;
+  flex:none !important;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+/* Known admin filter group: export and delete are always one aligned pair. */
+.adminFilterGrid{
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  width:100% !important;
+  gap:8px !important;
+  align-items:stretch !important;
+}
+.adminFilterGrid .settingSave,
+.adminFilterGrid .adminDeleteFilterBtn{
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+  min-height:42px !important;
+  margin:0 !important;
+}
+.adminFilterGrid .adminFilterHint{grid-column:1/-1 !important}
+
+/* Student action rows: VIEW / EXPORT / DELETE fill the complete card width. */
+.adminRowActions{
+  display:grid !important;
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  width:100% !important;
+  gap:8px !important;
+  align-items:stretch !important;
+}
+.adminRowActions>button{
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+  min-height:42px !important;
+  margin:0 !important;
+}
+
+/* Three-button export/action rows also fill the complete card. */
+.adminQuick:has(>button + button + button),
+.pdfPrintToolbar:has(>button + button + button){
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+}
+
+/* A single action button remains content-sized unless its component explicitly
+   marks it as a full-width action. */
+button:not(nav button){flex:0 0 auto}
+
+/* Physical 3D effect for ordinary buttons in every theme. */
+button:not(nav button){
+  box-shadow:0 5px 0 rgba(0,0,0,.10),
+             0 10px 18px rgba(0,0,0,.12),
+             inset 0 2px 1px rgba(255,255,255,.62),
+             inset 0 -3px 5px rgba(0,0,0,.10);
+}
+button:not(nav button):hover{transform:translateY(-2px) translateZ(0)}
+button:not(nav button):active{
+  transform:translateY(3px) translateZ(0);
+  box-shadow:0 2px 4px rgba(0,0,0,.16),inset 0 3px 6px rgba(0,0,0,.18) !important;
+}
+
+/* The five bottom tabs are NOT ordinary buttons: always five equal columns,
+   equal dimensions, and identical alignment in every theme. */
+nav{
+  display:grid !important;
+  grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+  gap:6px !important;
+  align-items:stretch !important;
+}
+nav button{
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+  height:68px !important;
+  min-height:68px !important;
+  max-height:68px !important;
+  padding:8px 4px !important;
+  margin:0 !important;
+  flex:none !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  box-sizing:border-box !important;
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  transform:none !important;
+}
+
+/* Keep grouped buttons on one line on phone widths by reducing typography,
+   rather than moving a member of the group underneath. */
+@media(max-width:560px){
+  button:not(nav button){font-size:10px;padding:7px 8px}
+  .cardActions:has(>button + button),
+  .adminRowActions:has(>button + button),
+  .adminQuick:has(>button + button),
+  .adminFilterGrid:has(>button + button),
+  .twoCol:has(>button + button),
+  .modalActions:has(>button + button),
+  .pdfPrintToolbar:has(>button + button),
+  .panel .actions:has(>button + button),
+  .actions:has(>button + button),
+  .buttonRow:has(>button + button),
+  .actionRow:has(>button + button),
+  .toolbarActions:has(>button + button),
+  .formActions:has(>button + button),
+  .settingsActions:has(>button + button){gap:6px !important}
+  .cardActions:has(>button + button)>button,
+  .adminRowActions:has(>button + button)>button,
+  .adminQuick:has(>button + button)>button,
+  .adminFilterGrid:has(>button + button)>button,
+  .twoCol:has(>button + button)>button,
+  .modalActions:has(>button + button)>button,
+  .pdfPrintToolbar:has(>button + button)>button,
+  .actions:has(>button + button)>button,
+  .buttonRow:has(>button + button)>button,
+  .actionRow:has(>button + button)>button,
+  .toolbarActions:has(>button + button)>button,
+  .formActions:has(>button + button)>button,
+  .settingsActions:has(>button + button)>button{min-height:40px !important;padding:7px 4px !important}
+  nav{gap:4px !important}
+  nav button{height:62px !important;min-height:62px !important;max-height:62px !important;font-size:9px !important}
+}
+
+/* FINAL NAVIGATION FIX — navigation tabs are a separate fixed 5-column system.
+   They must never inherit ordinary action-button sizing or change dimensions when active. */
+nav{
+  display:grid !important;
+  grid-template-columns:repeat(5, minmax(0, 1fr)) !important;
+  width:100% !important;
+  box-sizing:border-box !important;
+  gap:6px !important;
+  align-items:stretch !important;
+}
+nav > button{
+  grid-column:auto !important;
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+  flex:initial !important;
+  margin:0 !important;
+  box-sizing:border-box !important;
+  height:68px !important;
+  min-height:68px !important;
+  max-height:68px !important;
+  padding:7px 3px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  flex-direction:column !important;
+  overflow:hidden !important;
+  white-space:normal !important;
+  transform:none !important;
+}
+nav > button.active,
+nav > button:focus,
+nav > button:hover,
+nav > button:active{
+  width:100% !important;
+  height:68px !important;
+  min-height:68px !important;
+  max-height:68px !important;
+  transform:none !important;
+  box-sizing:border-box !important;
+}
+@media(max-width:560px){
+  nav{
+    grid-template-columns:repeat(5, minmax(0,1fr)) !important;
+    gap:4px !important;
+  }
+  nav > button,
+  nav > button.active,
+  nav > button:focus,
+  nav > button:hover,
+  nav > button:active{
+    width:100% !important;
+    height:62px !important;
+    min-height:62px !important;
+    max-height:62px !important;
+    padding:5px 2px !important;
+    font-size:9px !important;
+  }
+}
