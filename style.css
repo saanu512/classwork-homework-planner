@@ -3481,3 +3481,47 @@ button.wideAction{
 :root[data-theme="dark3d"] button:not(nav button):not(.backLink):active{
   transform:translateY(3px) !important;filter:brightness(.97) !important;
 }
+
+/* ===== FINAL NAVIGATION READABILITY — ALL THEMES ===== */
+/* All themes: larger, clearly visible icon + label; five equal tabs.
+   Theme-specific surfaces/effects remain different. */
+:root[data-theme="light"] nav, :root[data-theme="light3d"] nav, :root[data-theme="dark"] nav, :root[data-theme="dark3d"] nav{
+  width:100% !important; box-sizing:border-box !important;
+  display:grid !important; grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+  gap:5px !important; padding:6px !important; overflow:hidden !important;
+}
+:root[data-theme="light"] nav > button, :root[data-theme="light3d"] nav > button,
+:root[data-theme="dark"] nav > button, :root[data-theme="dark3d"] nav > button{
+  width:100% !important; min-width:0 !important; max-width:none !important;
+  height:64px !important; min-height:64px !important; max-height:64px !important;
+  margin:0 !important; padding:6px 2px !important;
+  box-sizing:border-box !important; overflow:hidden !important;
+  font-family:inherit !important; font-size:12px !important; font-weight:800 !important;
+  line-height:1.15 !important; text-align:center !important;
+  display:flex !important; flex-direction:column !important; justify-content:center !important; align-items:center !important;
+  gap:3px !important; white-space:normal !important;
+}
+/* First line is the icon (the button markup uses icon<br>label). */
+:root[data-theme="light"] nav > button::first-line, :root[data-theme="light3d"] nav > button::first-line,
+:root[data-theme="dark"] nav > button::first-line, :root[data-theme="dark3d"] nav > button::first-line{
+  font-size:22px !important; line-height:1 !important;
+}
+/* Theme-specific navigation design — keep them visually different. */
+:root[data-theme="light"] nav > button:not(.active){background:rgba(255,255,255,.55) !important; border:1px solid rgba(90,100,150,.14) !important; box-shadow:none !important;}
+:root[data-theme="light"] nav > button.active{background:linear-gradient(145deg,var(--accent2),var(--accent)) !important; color:#fff !important; border:1px solid rgba(255,255,255,.3) !important; box-shadow:none !important; transform:none !important;}
+:root[data-theme="light3d"] nav > button:not(.active){background:transparent !important; border:1px solid transparent !important; box-shadow:none !important; transform:none !important;}
+:root[data-theme="light3d"] nav > button.active{background:linear-gradient(145deg,var(--accent2),var(--accent)) !important; color:#fff !important; border:1px solid rgba(255,255,255,.24) !important; box-shadow:5px 6px 12px rgba(65,55,110,.28), inset 0 2px 2px rgba(255,255,255,.32), inset 0 -4px 6px rgba(70,45,120,.22) !important; transform:translateY(-2px) !important;}
+:root[data-theme="dark"] nav > button:not(.active){background:rgba(255,255,255,.035) !important; border:1px solid rgba(255,255,255,.07) !important; box-shadow:none !important;}
+:root[data-theme="dark"] nav > button.active{background:linear-gradient(145deg,var(--accent2),var(--accent)) !important; color:#fff !important; border:1px solid rgba(255,255,255,.18) !important; box-shadow:none !important; transform:none !important;}
+:root[data-theme="dark3d"] nav > button:not(.active){background:transparent !important; border:1px solid transparent !important; box-shadow:none !important; transform:none !important;}
+:root[data-theme="dark3d"] nav > button.active{background:linear-gradient(145deg,var(--accent2),var(--accent)) !important; color:#fff !important; border:1px solid rgba(255,255,255,.18) !important; box-shadow:5px 6px 12px rgba(0,0,0,.70), inset 0 2px 2px rgba(255,255,255,.20), inset 0 -4px 6px rgba(0,0,0,.38) !important; transform:translateY(-2px) !important;}
+@media(max-width:430px){
+ :root[data-theme="light"] nav, :root[data-theme="light3d"] nav, :root[data-theme="dark"] nav, :root[data-theme="dark3d"] nav{gap:3px !important; padding:5px !important;}
+ :root[data-theme="light"] nav > button, :root[data-theme="light3d"] nav > button, :root[data-theme="dark"] nav > button, :root[data-theme="dark3d"] nav > button{height:62px !important;min-height:62px !important;max-height:62px !important;font-size:12px !important;padding:5px 1px !important;}
+ :root[data-theme="light"] nav > button::first-line, :root[data-theme="light3d"] nav > button::first-line, :root[data-theme="dark"] nav > button::first-line, :root[data-theme="dark3d"] nav > button::first-line{font-size:21px !important;}
+}
+
+/* Robust icon/label sizing using explicit nav spans */
+:root[data-theme="light"] nav > button .navIcon,:root[data-theme="light3d"] nav > button .navIcon,:root[data-theme="dark"] nav > button .navIcon,:root[data-theme="dark3d"] nav > button .navIcon{font-size:22px !important;line-height:1 !important;display:block !important;}
+:root[data-theme="light"] nav > button .navLabel,:root[data-theme="light3d"] nav > button .navLabel,:root[data-theme="dark"] nav > button .navLabel,:root[data-theme="dark3d"] nav > button .navLabel{font-size:12px !important;line-height:1.15 !important;display:block !important;}
+@media(max-width:430px){:root[data-theme="light"] nav > button .navIcon,:root[data-theme="light3d"] nav > button .navIcon,:root[data-theme="dark"] nav > button .navIcon,:root[data-theme="dark3d"] nav > button .navIcon{font-size:21px !important;} :root[data-theme="light"] nav > button .navLabel,:root[data-theme="light3d"] nav > button .navLabel,:root[data-theme="dark"] nav > button .navLabel,:root[data-theme="dark3d"] nav > button .navLabel{font-size:12px !important;}}
