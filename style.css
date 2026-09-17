@@ -2472,3 +2472,169 @@ button.wideAction{
     font-size:9px !important;
   }
 }
+
+/* ===== LIGHT 3D THEME — FINAL BUTTON + NAVIGATION CORRECTION ===== */
+:root[data-theme="light3d"] .twoCol,
+:root[data-theme="light3d"] .cardActions,
+:root[data-theme="light3d"] .adminRowActions,
+:root[data-theme="light3d"] .adminQuick,
+:root[data-theme="light3d"] .modalActions,
+:root[data-theme="light3d"] .pdfPrintToolbar,
+:root[data-theme="light3d"] .actions,
+:root[data-theme="light3d"] .buttonRow,
+:root[data-theme="light3d"] .actionRow,
+:root[data-theme="light3d"] .toolbarActions,
+:root[data-theme="light3d"] .formActions,
+:root[data-theme="light3d"] .settingsActions{
+  width:100% !important;
+  min-width:0 !important;
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  gap:8px !important;
+  box-sizing:border-box !important;
+}
+:root[data-theme="light3d"] .adminQuick,
+:root[data-theme="light3d"] .adminRowActions,
+:root[data-theme="light3d"] .cardActions,
+:root[data-theme="light3d"] .pdfPrintToolbar,
+:root[data-theme="light3d"] .actions,
+:root[data-theme="light3d"] .buttonRow,
+:root[data-theme="light3d"] .actionRow,
+:root[data-theme="light3d"] .toolbarActions,
+:root[data-theme="light3d"] .formActions,
+:root[data-theme="light3d"] .settingsActions{
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+}
+:root[data-theme="light3d"] .twoCol,
+:root[data-theme="light3d"] .modalActions{grid-template-columns:repeat(2,minmax(0,1fr)) !important}
+
+/* Compact Light-3D button geometry, with adaptive two-line labels. */
+:root[data-theme="light3d"] button:not(nav button):not(.backLink){
+  box-sizing:border-box !important;
+  width:max-content !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  min-height:34px !important;
+  height:auto !important;
+  padding:7px 10px !important;
+  font-size:10px !important;
+  font-weight:800 !important;
+  line-height:1.08 !important;
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  overflow-wrap:break-word !important;
+  word-break:normal !important;
+  text-align:center !important;
+}
+
+/* Buttons inside a group fill their own column, but labels wrap instead of overflowing. */
+:root[data-theme="light3d"] .twoCol > button,
+:root[data-theme="light3d"] .cardActions > button,
+:root[data-theme="light3d"] .adminRowActions > button,
+:root[data-theme="light3d"] .adminQuick > button,
+:root[data-theme="light3d"] .modalActions > button,
+:root[data-theme="light3d"] .pdfPrintToolbar > button,
+:root[data-theme="light3d"] .actions > button,
+:root[data-theme="light3d"] .buttonRow > button,
+:root[data-theme="light3d"] .actionRow > button,
+:root[data-theme="light3d"] .toolbarActions > button,
+:root[data-theme="light3d"] .formActions > button,
+:root[data-theme="light3d"] .settingsActions > button{
+  width:100% !important;
+  max-width:none !important;
+  min-width:0 !important;
+  min-height:34px !important;
+  height:auto !important;
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  overflow-wrap:break-word !important;
+}
+
+/* Filter action pair: two equal columns, no horizontal overflow. */
+:root[data-theme="light3d"] .adminFilterGrid{
+  width:100% !important;
+  min-width:0 !important;
+  box-sizing:border-box !important;
+}
+:root[data-theme="light3d"] .adminFilterGrid .settingSave,
+:root[data-theme="light3d"] .adminFilterGrid .adminDeleteFilterBtn{
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+  height:auto !important;
+  min-height:34px !important;
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  overflow-wrap:break-word !important;
+}
+
+/* LIGHT 3D NAV: exactly five equal tabs. Only the selected tab is raised. */
+:root[data-theme="light3d"] nav{
+  width:100% !important;
+  max-width:620px !important;
+  box-sizing:border-box !important;
+  display:grid !important;
+  grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+  gap:5px !important;
+  padding:6px !important;
+  align-items:stretch !important;
+  overflow:hidden !important;
+}
+:root[data-theme="light3d"] nav > button,
+:root[data-theme="light3d"] nav > button:hover,
+:root[data-theme="light3d"] nav > button:focus,
+:root[data-theme="light3d"] nav > button:active,
+:root[data-theme="light3d"] nav > button.active{
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+  height:58px !important;
+  min-height:58px !important;
+  max-height:58px !important;
+  margin:0 !important;
+  padding:5px 2px !important;
+  box-sizing:border-box !important;
+  border-radius:14px !important;
+  transform:none !important;
+  transition:background .15s ease,box-shadow .15s ease,color .15s ease,transform .15s ease !important;
+  overflow:hidden !important;
+}
+/* Flat unselected tabs */
+:root[data-theme="light3d"] nav > button:not(.active),
+:root[data-theme="light3d"] nav > button:not(.active):hover,
+:root[data-theme="light3d"] nav > button:not(.active):focus,
+:root[data-theme="light3d"] nav > button:not(.active):active{
+  background:transparent !important;
+  color:var(--muted) !important;
+  border:1px solid transparent !important;
+  box-shadow:none !important;
+  transform:none !important;
+}
+/* Selected tab only: raised 3D face + shadow */
+:root[data-theme="light3d"] nav > button.active{
+  background:linear-gradient(145deg,var(--accent2),var(--accent)) !important;
+  color:#fff !important;
+  border:1px solid rgba(255,255,255,.38) !important;
+  box-shadow:
+    5px 6px 12px rgba(55,60,100,.30),
+    inset 0 2px 2px rgba(255,255,255,.42),
+    inset 0 -4px 6px rgba(40,30,120,.18) !important;
+  transform:translateY(-2px) !important;
+}
+@media(max-width:430px){
+  :root[data-theme="light3d"] nav{gap:3px !important;padding:5px !important}
+  :root[data-theme="light3d"] nav > button,
+  :root[data-theme="light3d"] nav > button:hover,
+  :root[data-theme="light3d"] nav > button:focus,
+  :root[data-theme="light3d"] nav > button:active,
+  :root[data-theme="light3d"] nav > button.active{
+    height:56px !important;
+    min-height:56px !important;
+    max-height:56px !important;
+    font-size:9px !important;
+    padding:4px 1px !important;
+  }
+}
