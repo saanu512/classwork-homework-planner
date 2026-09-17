@@ -3482,223 +3482,46 @@ button.wideAction{
   transform:translateY(3px) !important;filter:brightness(.97) !important;
 }
 
-/* ================================================================
-   FINAL NAVIGATION + SYLLABUS SUBJECT CARDS
-   Navigation is a dedicated component, never part of normal buttons.
-   Subject tiles are CARDS, not buttons.
-   ================================================================ */
-.subjectTile{
-  cursor:pointer !important;
-  user-select:none !important;
-  -webkit-tap-highlight-color:transparent !important;
-  min-width:0 !important;
-  overflow:hidden !important;
-  word-break:normal !important;
-  overflow-wrap:anywhere !important;
+/* ===== FINAL NAVIGATION READABILITY — ALL THEMES ===== */
+/* All themes: larger, clearly visible icon + label; five equal tabs.
+   Theme-specific surfaces/effects remain different. */
+:root[data-theme="light"] nav, :root[data-theme="light3d"] nav, :root[data-theme="dark"] nav, :root[data-theme="dark3d"] nav{
+  width:100% !important; box-sizing:border-box !important;
+  display:grid !important; grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+  gap:5px !important; padding:6px !important; overflow:hidden !important;
 }
-.subjectTile:focus-visible{outline:2px solid var(--accent) !important;outline-offset:2px !important}
-
-/* Light: flat cards with a clean, non-button appearance. */
-:root[data-theme="light"] .subjectTile{
-  background:var(--surface) !important;
-  color:var(--text) !important;
-  border:1px solid var(--line) !important;
-  box-shadow:var(--shadow2) !important;
-  transform:none !important;
+:root[data-theme="light"] nav > button, :root[data-theme="light3d"] nav > button,
+:root[data-theme="dark"] nav > button, :root[data-theme="dark3d"] nav > button{
+  width:100% !important; min-width:0 !important; max-width:none !important;
+  height:64px !important; min-height:64px !important; max-height:64px !important;
+  margin:0 !important; padding:6px 2px !important;
+  box-sizing:border-box !important; overflow:hidden !important;
+  font-family:inherit !important; font-size:12px !important; font-weight:800 !important;
+  line-height:1.15 !important; text-align:center !important;
+  display:flex !important; flex-direction:column !important; justify-content:center !important; align-items:center !important;
+  gap:3px !important; white-space:normal !important;
 }
-:root[data-theme="light"] .subjectTile:active{transform:translateY(1px) !important;box-shadow:var(--shadow2) !important}
-
-/* Light 3D: physical raised subject cards. */
-:root[data-theme="light3d"] .subjectTile{
-  background:var(--surface) !important;
-  color:var(--text) !important;
-  border:1px solid var(--line) !important;
-  box-shadow:var(--shadow) !important;
-  transform:translateY(-1px) !important;
-  transition:transform .12s ease,box-shadow .12s ease !important;
+/* First line is the icon (the button markup uses icon<br>label). */
+:root[data-theme="light"] nav > button::first-line, :root[data-theme="light3d"] nav > button::first-line,
+:root[data-theme="dark"] nav > button::first-line, :root[data-theme="dark3d"] nav > button::first-line{
+  font-size:22px !important; line-height:1 !important;
 }
-:root[data-theme="light3d"] .subjectTile:active{transform:translateY(2px) !important;box-shadow:var(--shadow2) !important}
-
-/* Dark: flat dark cards. */
-:root[data-theme="dark"] .subjectTile{
-  background:var(--surface) !important;
-  color:var(--text) !important;
-  border:1px solid var(--line) !important;
-  box-shadow:none !important;
-  transform:none !important;
-}
-:root[data-theme="dark"] .subjectTile:active{transform:translateY(1px) !important}
-
-/* Dark 3D: deep raised cards, never purple action buttons. */
-:root[data-theme="dark3d"] .subjectTile{
-  background:#0b0b0b !important;
-  color:#f7f7f7 !important;
-  border:1px solid rgba(255,255,255,.14) !important;
-  box-shadow:12px 14px 30px rgba(0,0,0,.95),inset 1px 1px 0 rgba(255,255,255,.055),inset -3px -3px 7px rgba(0,0,0,.9) !important;
-  transform:translateY(-1px) !important;
-  transition:transform .12s ease,box-shadow .12s ease !important;
-}
-:root[data-theme="dark3d"] .subjectTile:active{transform:translateY(2px) !important;box-shadow:var(--shadow2) !important}
-
-/* Universal navigation geometry: exactly five equal tabs, larger readable icon + label. */
-nav{
-  display:grid !important;
-  grid-template-columns:repeat(5,minmax(0,1fr)) !important;
-  width:100% !important;
-  max-width:620px !important;
-  box-sizing:border-box !important;
-  overflow:hidden !important;
-  align-items:stretch !important;
-}
-nav > button,
-nav > button:hover,
-nav > button:focus,
-nav > button:active,
-nav > button.active{
-  width:100% !important;
-  min-width:0 !important;
-  max-width:none !important;
-  height:64px !important;
-  min-height:64px !important;
-  max-height:64px !important;
-  margin:0 !important;
-  padding:6px 2px !important;
-  box-sizing:border-box !important;
-  display:flex !important;
-  flex:1 1 0 !important;
-  flex-direction:column !important;
-  align-items:center !important;
-  justify-content:center !important;
-  gap:3px !important;
-  border-radius:15px !important;
-  font-size:inherit !important;
-  line-height:1 !important;
-  white-space:normal !important;
-  overflow:hidden !important;
-  text-overflow:clip !important;
-  transform:none !important;
-  transition:background .15s ease,color .15s ease,box-shadow .15s ease,transform .12s ease !important;
-}
-nav .navIcon{
-  display:block !important;
-  width:100% !important;
-  font-family:inherit !important;
-  font-size:20px !important;
-  line-height:20px !important;
-  font-weight:800 !important;
-  text-align:center !important;
-}
-nav .navLabel{
-  display:block !important;
-  width:100% !important;
-  font-family:inherit !important;
-  font-size:11.5px !important;
-  line-height:15px !important;
-  font-weight:800 !important;
-  text-align:center !important;
-  white-space:nowrap !important;
-  overflow:visible !important;
-}
-
-/* LIGHT navigation: clean flat white bar; active tab gets a flat accent face. */
-:root[data-theme="light"] nav{
-  gap:5px !important;
-  padding:6px !important;
-  border-radius:24px !important;
-  background:rgba(255,255,255,.94) !important;
-  border:1px solid var(--line) !important;
-  box-shadow:var(--shadow2) !important;
-}
-:root[data-theme="light"] nav > button:not(.active){
-  background:transparent !important;
-  color:var(--muted) !important;
-  border:1px solid transparent !important;
-  box-shadow:none !important;
-}
-:root[data-theme="light"] nav > button.active{
-  background:linear-gradient(135deg,var(--accent),var(--accent2)) !important;
-  color:#fff !important;
-  border:1px solid rgba(255,255,255,.25) !important;
-  box-shadow:none !important;
-}
-
-/* LIGHT 3D navigation: only active tab is raised; inactive tabs are flat. */
-:root[data-theme="light3d"] nav{
-  gap:5px !important;
-  padding:7px !important;
-  border-radius:25px !important;
-  background:var(--surface) !important;
-  border:1px solid var(--line) !important;
-  box-shadow:var(--shadow) !important;
-}
-:root[data-theme="light3d"] nav > button:not(.active){
-  background:transparent !important;
-  color:var(--muted) !important;
-  border:1px solid transparent !important;
-  box-shadow:none !important;
-}
-:root[data-theme="light3d"] nav > button.active{
-  background:linear-gradient(145deg,var(--accent),var(--accent2)) !important;
-  color:#fff !important;
-  border:1px solid rgba(255,255,255,.38) !important;
-  box-shadow:6px 8px 14px rgba(55,60,100,.30),inset 0 2px 2px rgba(255,255,255,.42),inset 0 -4px 6px rgba(40,30,120,.18) !important;
-  transform:translateY(-2px) !important;
-}
-:root[data-theme="light3d"] nav > button.active:active{transform:translateY(1px) !important}
-
-/* DARK navigation: separate flat dark design. */
-:root[data-theme="dark"] nav{
-  gap:5px !important;
-  padding:6px !important;
-  border-radius:24px !important;
-  background:var(--surface) !important;
-  border:1px solid var(--line) !important;
-  box-shadow:none !important;
-}
-:root[data-theme="dark"] nav > button:not(.active){
-  background:transparent !important;
-  color:var(--muted) !important;
-  border:1px solid transparent !important;
-  box-shadow:none !important;
-}
-:root[data-theme="dark"] nav > button.active{
-  background:linear-gradient(135deg,var(--accent),var(--accent2)) !important;
-  color:#fff !important;
-  border:1px solid rgba(255,255,255,.16) !important;
-  box-shadow:none !important;
-}
-
-/* DARK 3D navigation: deep outer surface; only active tab is raised. */
-:root[data-theme="dark3d"] nav{
-  gap:5px !important;
-  padding:7px !important;
-  border-radius:25px !important;
-  background:#0b0b0b !important;
-  border:1px solid rgba(255,255,255,.13) !important;
-  box-shadow:14px 16px 32px rgba(0,0,0,.98),-3px -3px 9px rgba(255,255,255,.045) !important;
-}
-:root[data-theme="dark3d"] nav > button:not(.active){
-  background:transparent !important;
-  color:#a8a8a8 !important;
-  border:1px solid transparent !important;
-  box-shadow:none !important;
-}
-:root[data-theme="dark3d"] nav > button.active{
-  background:linear-gradient(145deg,var(--accent2),var(--accent)) !important;
-  color:#fff !important;
-  border:1px solid rgba(255,255,255,.18) !important;
-  box-shadow:7px 9px 16px rgba(0,0,0,.90),inset 0 2px 2px rgba(255,255,255,.22),inset 0 -4px 7px rgba(0,0,0,.40) !important;
-  transform:translateY(-2px) !important;
-}
-:root[data-theme="dark3d"] nav > button.active:active{transform:translateY(1px) !important}
-
+/* Theme-specific navigation design — keep them visually different. */
+:root[data-theme="light"] nav > button:not(.active){background:rgba(255,255,255,.55) !important; border:1px solid rgba(90,100,150,.14) !important; box-shadow:none !important;}
+:root[data-theme="light"] nav > button.active{background:linear-gradient(145deg,var(--accent2),var(--accent)) !important; color:#fff !important; border:1px solid rgba(255,255,255,.3) !important; box-shadow:none !important; transform:none !important;}
+:root[data-theme="light3d"] nav > button:not(.active){background:transparent !important; border:1px solid transparent !important; box-shadow:none !important; transform:none !important;}
+:root[data-theme="light3d"] nav > button.active{background:linear-gradient(145deg,var(--accent2),var(--accent)) !important; color:#fff !important; border:1px solid rgba(255,255,255,.24) !important; box-shadow:5px 6px 12px rgba(65,55,110,.28), inset 0 2px 2px rgba(255,255,255,.32), inset 0 -4px 6px rgba(70,45,120,.22) !important; transform:translateY(-2px) !important;}
+:root[data-theme="dark"] nav > button:not(.active){background:rgba(255,255,255,.035) !important; border:1px solid rgba(255,255,255,.07) !important; box-shadow:none !important;}
+:root[data-theme="dark"] nav > button.active{background:linear-gradient(145deg,var(--accent2),var(--accent)) !important; color:#fff !important; border:1px solid rgba(255,255,255,.18) !important; box-shadow:none !important; transform:none !important;}
+:root[data-theme="dark3d"] nav > button:not(.active){background:transparent !important; border:1px solid transparent !important; box-shadow:none !important; transform:none !important;}
+:root[data-theme="dark3d"] nav > button.active{background:linear-gradient(145deg,var(--accent2),var(--accent)) !important; color:#fff !important; border:1px solid rgba(255,255,255,.18) !important; box-shadow:5px 6px 12px rgba(0,0,0,.70), inset 0 2px 2px rgba(255,255,255,.20), inset 0 -4px 6px rgba(0,0,0,.38) !important; transform:translateY(-2px) !important;}
 @media(max-width:430px){
-  nav{gap:3px !important;padding:5px !important}
-  nav > button,
-  nav > button:hover,
-  nav > button:focus,
-  nav > button:active,
-  nav > button.active{height:64px !important;min-height:64px !important;max-height:64px !important;padding:5px 1px !important}
-  nav .navIcon{font-size:20px !important;line-height:20px !important}
-  nav .navLabel{font-size:11px !important;line-height:15px !important}
+ :root[data-theme="light"] nav, :root[data-theme="light3d"] nav, :root[data-theme="dark"] nav, :root[data-theme="dark3d"] nav{gap:3px !important; padding:5px !important;}
+ :root[data-theme="light"] nav > button, :root[data-theme="light3d"] nav > button, :root[data-theme="dark"] nav > button, :root[data-theme="dark3d"] nav > button{height:62px !important;min-height:62px !important;max-height:62px !important;font-size:12px !important;padding:5px 1px !important;}
+ :root[data-theme="light"] nav > button::first-line, :root[data-theme="light3d"] nav > button::first-line, :root[data-theme="dark"] nav > button::first-line, :root[data-theme="dark3d"] nav > button::first-line{font-size:21px !important;}
 }
+
+/* Robust icon/label sizing using explicit nav spans */
+:root[data-theme="light"] nav > button .navIcon,:root[data-theme="light3d"] nav > button .navIcon,:root[data-theme="dark"] nav > button .navIcon,:root[data-theme="dark3d"] nav > button .navIcon{font-size:22px !important;line-height:1 !important;display:block !important;}
+:root[data-theme="light"] nav > button .navLabel,:root[data-theme="light3d"] nav > button .navLabel,:root[data-theme="dark"] nav > button .navLabel,:root[data-theme="dark3d"] nav > button .navLabel{font-size:12px !important;line-height:1.15 !important;display:block !important;}
+@media(max-width:430px){:root[data-theme="light"] nav > button .navIcon,:root[data-theme="light3d"] nav > button .navIcon,:root[data-theme="dark"] nav > button .navIcon,:root[data-theme="dark3d"] nav > button .navIcon{font-size:21px !important;} :root[data-theme="light"] nav > button .navLabel,:root[data-theme="light3d"] nav > button .navLabel,:root[data-theme="dark"] nav > button .navLabel,:root[data-theme="dark3d"] nav > button .navLabel{font-size:12px !important;}}
