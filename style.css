@@ -1500,3 +1500,113 @@ select.selectPressed{transform:translateY(2px);border-color:rgba(99,91,255,.65)!
     padding:6px 7px!important;
   }
 }
+
+/* FINAL v40.6 — grouped action buttons fill their available card row
+   while single buttons remain compact. Applies globally in both 3D themes. */
+:root[data-theme="light3d"] .adminRowActions,
+:root[data-theme="dark3d"] .adminRowActions{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  width:100%!important;
+  flex:1 1 100%!important;
+  gap:7px!important;
+  align-items:stretch!important;
+}
+:root[data-theme="light3d"] .adminRowActions button,
+:root[data-theme="dark3d"] .adminRowActions button{
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  min-height:38px!important;
+  height:100%!important;
+  padding:7px 6px!important;
+  font-size:10px!important;
+  white-space:nowrap!important;
+  text-overflow:clip!important;
+  overflow:hidden!important;
+}
+
+/* Filter export/delete are a paired action group: always side-by-side when
+   the card can accommodate them, including narrow phone screens. */
+:root[data-theme="light3d"] .adminFilterGrid,
+:root[data-theme="dark3d"] .adminFilterGrid{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  align-items:stretch!important;
+}
+:root[data-theme="light3d"] .adminFilterGrid .settingSave,
+:root[data-theme="dark3d"] .adminFilterGrid .settingSave,
+:root[data-theme="light3d"] .adminFilterGrid .adminDeleteFilterBtn,
+:root[data-theme="dark3d"] .adminFilterGrid .adminDeleteFilterBtn{
+  grid-column:auto!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  min-height:38px!important;
+  height:100%!important;
+  margin:0!important;
+  padding:7px 6px!important;
+  font-size:10px!important;
+  white-space:nowrap!important;
+}
+:root[data-theme="light3d"] .adminFilterHint,
+:root[data-theme="dark3d"] .adminFilterHint{grid-column:1/-1!important}
+
+/* Any common two-button row fills the card evenly. */
+:root[data-theme="light3d"] .twoCol:has(>button),
+:root[data-theme="dark3d"] .twoCol:has(>button){
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  align-items:stretch!important;
+}
+:root[data-theme="light3d"] .twoCol:has(>button)>button,
+:root[data-theme="dark3d"] .twoCol:has(>button)>button{
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+}
+
+/* Announcement/action and other multi-button flex rows: equal fill. */
+:root[data-theme="light3d"] .adminQuick:has(>button),
+:root[data-theme="dark3d"] .adminQuick:has(>button),
+:root[data-theme="light3d"] .cardActions:has(>button + button),
+:root[data-theme="dark3d"] .cardActions:has(>button + button),
+:root[data-theme="light3d"] .modalActions:has(>button + button),
+:root[data-theme="dark3d"] .modalActions:has(>button + button){
+  display:flex!important;
+  flex-wrap:nowrap!important;
+  width:100%!important;
+  align-items:stretch!important;
+}
+:root[data-theme="light3d"] .adminQuick:has(>button)>button,
+:root[data-theme="dark3d"] .adminQuick:has(>button)>button,
+:root[data-theme="light3d"] .cardActions:has(>button + button)>button,
+:root[data-theme="dark3d"] .cardActions:has(>button + button)>button,
+:root[data-theme="light3d"] .modalActions:has(>button + button)>button,
+:root[data-theme="dark3d"] .modalActions:has(>button + button)>button{
+  flex:1 1 0!important;
+  width:auto!important;
+  min-width:0!important;
+  max-width:none!important;
+}
+
+@media(max-width:620px){
+  :root[data-theme="light3d"] .adminRowActions,
+  :root[data-theme="dark3d"] .adminRowActions{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:5px!important}
+  :root[data-theme="light3d"] .adminRowActions button,
+  :root[data-theme="dark3d"] .adminRowActions button{font-size:9px!important;padding:7px 4px!important}
+  :root[data-theme="light3d"] .adminFilterGrid,
+  :root[data-theme="dark3d"] .adminFilterGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important}
+  :root[data-theme="light3d"] .adminFilterGrid .settingSave,
+  :root[data-theme="dark3d"] .adminFilterGrid .settingSave,
+  :root[data-theme="light3d"] .adminFilterGrid .adminDeleteFilterBtn,
+  :root[data-theme="dark3d"] .adminFilterGrid .adminDeleteFilterBtn{font-size:9px!important;padding:7px 4px!important}
+}
+@media(max-width:390px){
+  :root[data-theme="light3d"] .adminRowActions button,
+  :root[data-theme="dark3d"] .adminRowActions button{font-size:8px!important;padding:7px 2px!important}
+  :root[data-theme="light3d"] .adminFilterGrid .settingSave,
+  :root[data-theme="dark3d"] .adminFilterGrid .settingSave,
+  :root[data-theme="light3d"] .adminFilterGrid .adminDeleteFilterBtn,
+  :root[data-theme="dark3d"] .adminFilterGrid .adminDeleteFilterBtn{font-size:8px!important;padding:7px 2px!important}
+}
