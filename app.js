@@ -228,10 +228,11 @@ async function cloudSignIn(email,password,name='',roll=''){
     // The authentication-state listener skips its generic sync while a login
     // identity is pending. Reconciliation below then applies the entered name
     // and roll AFTER any existing cloud data is merged.
-    if($('settings'))show('settings');
+    // Open Today immediately after successful authentication. Do not wait for Firestore reconciliation.
+    show('today');
     closeStartupAuth();
     toast(`✓ Signed in as ${cloudUser?.email||email}`);
-    await reconcileAfterLogin(loginName,loginRoll);
+    reconcileAfterLogin(loginName,loginRoll).catch(e=>console.warn('Post-login cloud reconciliation failed',e));
     pendingStudentIdentity=null;
     startAutomaticCloudSync();
     return true;
@@ -701,7 +702,10 @@ function finishStartupAuthCheck(){
   if(startupFinished||(!studentAuthResolved||!adminAuthResolved))return;
   startupFinished=true;
   closeStartupLoading();
-  if(cloudUser||adminUser){closeStartupAuth();return;}
+  // A valid student session must always land on Today after the auth gate.
+  // Do this here rather than leaving main empty after the login popup closes.
+  if(cloudUser){closeStartupAuth();show('today');return;}
+  if(adminUser&&adminSession){closeStartupAuth();show('admin');return;}
   showStartupAuth();
 }
 function closeStartupAuth(){const m=$('startupAuth');if(m)m.style.display='none'}
@@ -870,6 +874,8 @@ CloudAPI.onAuthStateChanged(async user=>{
       if(pendingStudentIdentity.name)D.profile.name=pendingStudentIdentity.name;
       if(pendingStudentIdentity.roll)D.profile.roll=pendingStudentIdentity.roll;
       persistLocalStorage();
+      // Render Today immediately after authentication; cloud reconciliation runs in the background.
+      show('today');
     }else if(!adminSession&&!adminAuthInProgress){
       show('today');
       // Authentication is complete; never make the user wait for Firestore reconciliation.
