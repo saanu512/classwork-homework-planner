@@ -226,13 +226,13 @@ async function cloudSignIn(email,password,name='',roll=''){
     if($('settings'))show('settings');
     closeStartupAuth();
     toast(`✓ Signed in as ${cloudUser?.email||email}`);
-    reconcileAfterLogin().catch(e=>console.warn('Background cloud reconciliation failed:',e));
+    reconcileAfterLogin(name,roll).catch(e=>console.warn('Background cloud reconciliation failed:',e));
     startAutomaticCloudSync();
     return true;
   }catch(e){console.error(e);toast(firebaseAuthMessage(e));return false}
 }
 
-async function reconcileAfterLogin(){
+async function reconcileAfterLogin(loginName='',loginRoll=''){
   if(!cloudUser||cloudBusy)return false;
   cloudBusy=true; const previousSuppress=suppressCloudQueue; suppressCloudQueue=true;
   try{
@@ -240,19 +240,30 @@ async function reconcileAfterLogin(){
     const localStamp=Number(D._dataUpdatedAt||D._savedAt||0);
     const remoteStamp=dataStamp(remote?(remote._dataUpdatedAt||remote.updatedAt):0);
     if(remote){
-      // If this device has no meaningful local records, restore the cloud copy.
-      // Otherwise use the newer timestamp and merge collections without losing
-      // local records. Never treat a missing users document as an auth failure.
+      // Restore/merge the student's cloud records first. The name and roll number
+      // entered on this login are identity/profile fields and are intentionally
+      // applied AFTER the merge so an older profile in Firebase cannot overwrite
+      // the values the student just entered.
       const hasLocalData=Object.keys(D.records||{}).length || (D.extras||[]).length || Object.keys(D.syllabus||{}).length || (D.changes||[]).length;
       if(!hasLocalData || remoteStamp>localStamp){
         mergeCloudIntoLocal(remote);
       }
-      await withTimeout(CloudAPI.saveUserData(cloudUser.uid,cloudSafeData()),CLOUD_READ_TIMEOUT,'Cloud save');
-    }else{
-      // The admin may have deleted this student's educational document. Recreate
-      // it from the local student copy; this does NOT touch Firebase Auth.
-      await withTimeout(CloudAPI.saveUserData(cloudUser.uid,cloudSafeData()),CLOUD_READ_TIMEOUT,'Cloud save');
     }
+
+    // Always persist the name/roll entered in the login popup to the local
+    // Student Profile and to this student's users/{uid} Firebase document.
+    // This means the same email can log in later with new identity details and
+    // Firebase will change, for example, roll 7 -> 8 and name A -> B.
+    if(String(loginName).trim())D.profile.name=String(loginName).trim();
+    if(String(loginRoll).trim())D.profile.roll=String(loginRoll).trim();
+    D.profile.email=cloudUser?.email||D.profile.email;
+    D._dataUpdatedAt=Date.now();
+    D._savedAt=D._dataUpdatedAt;
+    persistLocalStorage();
+
+    // Write the complete current student document so all existing educational
+    // data is preserved while the entered profile identity is updated.
+    await withTimeout(CloudAPI.saveUserData(cloudUser.uid,cloudSafeData()),CLOUD_READ_TIMEOUT,'Cloud save');
     D.settings.lastSyncAt=Date.now();
     persistLocalStorage();
     return true;
@@ -675,6 +686,11 @@ function showStartupAuth(){
   if(!m)return;
   m.style.display='grid';
   const status=$('startAuthStatus');
+  // Reuse the last saved Student Profile values as editable login-popup defaults.
+  // Email is intentionally left to the student because Firebase Authentication
+  // identifies the account by email; name and roll are profile fields.
+  if($('startName') && !$('startName').value.trim() && D.profile?.name) $('startName').value=D.profile.name;
+  if($('startRoll') && !$('startRoll').value.trim() && D.profile?.roll) $('startRoll').value=D.profile.roll;
   if(status && !status.dataset.wired){
     status.dataset.wired='1';
     $('startLogin').onclick=async()=>{const n=$('startName').value.trim(),r=$('startRoll').value.trim(),e=$('startEmail').value.trim(),pw=$('startPassword').value;if(!n||!r||!e||!pw){status.textContent='Enter name, roll number, email and password';return}if(!/^\d+$/.test(r)||+r<1||+r>100){status.textContent='Enter a valid roll number (1–100)';return}status.textContent='Signing in…';const ok=await cloudSignIn(e,pw,n,r);if(ok){status.textContent=`✓ Signed in as ${e}`;setTimeout(closeStartupAuth,150)}else{status.textContent='Sign-in failed. Please check your email and password.'}};
