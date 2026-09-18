@@ -3643,3 +3643,33 @@ nav > button{display:flex!important;flex-direction:column!important;align-items:
   :root[data-theme="dark3d"] nav>button{height:66px!important;min-height:66px!important;max-height:66px!important}
   :root[data-theme="dark"] nav>button{height:64px!important;min-height:64px!important;max-height:64px!important}
 }
+
+/* FINAL DARK THEME BUTTON COLORS — preserve existing geometry/effects.
+   Dark = purple, Dark 3D = blue. Destructive controls remain red. */
+:root[data-theme="dark"] button:not(nav button):not(.backLink):not(.dangerBtn):not(.adminDeleteFilterBtn):not(.logoutBtn):not(.accountLogout):not(.cardDeleteBtn),
+:root[data-theme="dark"] .settingSave,
+:root[data-theme="dark"] .primary,
+:root[data-theme="dark"] .wideAction{
+  background:linear-gradient(145deg,#6d5dfc,#8a6cf5)!important;
+  color:#fff!important;
+}
+
+:root[data-theme="dark3d"] button:not(nav button):not(.backLink):not(.dangerBtn):not(.adminDeleteFilterBtn):not(.logoutBtn):not(.accountLogout):not(.cardDeleteBtn){
+  background:linear-gradient(145deg,#3f83f8,#2563eb)!important;
+  color:#fff!important;
+}
+
+/* Preserve red destructive controls in Dark and Dark 3D. */
+:root[data-theme="dark"] button.dangerBtn,
+:root[data-theme="dark"] button.adminDeleteFilterBtn,
+:root[data-theme="dark"] button.logoutBtn,
+:root[data-theme="dark"] button.accountLogout,
+:root[data-theme="dark"] button.cardDeleteBtn,
+:root[data-theme="dark3d"] button.dangerBtn,
+:root[data-theme="dark3d"] button.adminDeleteFilterBtn,
+:root[data-theme="dark3d"] button.logoutBtn,
+:root[data-theme="dark3d"] button.accountLogout,
+:root[data-theme="dark3d"] button.cardDeleteBtn{
+  background:linear-gradient(145deg,#f05a67,#cf3048)!important;
+  color:#fff!important;
+}
