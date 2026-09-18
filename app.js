@@ -3,6 +3,9 @@ import { CloudAPI, GeminiAPI } from "./firebase.js";
 let cloudUser=null;
 let adminUser=null;
 let cloudBusy=false;
+// Login/signup identity is applied after cloud data reconciliation so the
+// name and roll entered on the login popup always become the current profile.
+let pendingStudentIdentity=null;
 let cloudStudents=[];
 let suppressCloudQueue=false;
 let cloudSyncTimer=null;
@@ -203,6 +206,8 @@ function startAutomaticCloudSync(){
 function stopAutomaticCloudSync(){clearInterval(cloudIntervalTimer);cloudIntervalTimer=null}
 async function cloudSignIn(email,password,name='',roll=''){
   adminAuthInProgress=false;
+  const loginName=String(name||'').trim(), loginRoll=String(roll||'').trim();
+  pendingStudentIdentity={name:loginName,roll:loginRoll};
   try{
     // Authentication is the gate. Never make login depend on Firestore being
     // available, and never let a missing/deleted users/{uid} document block sign-in.
@@ -216,20 +221,24 @@ async function cloudSignIn(email,password,name='',roll=''){
     // from overwriting the student's cloud record after an update.
     switchToUserLocal(cloudUser?.uid,cloudUser?.email||email);
     D.profile.email=cloudUser?.email||D.profile.email;
-    if(name.trim())D.profile.name=name.trim();
-    if(String(roll).trim())D.profile.roll=String(roll).trim();
+    if(loginName)D.profile.name=loginName;
+    if(loginRoll)D.profile.roll=loginRoll;
     persistLocalStorage();
 
-    // Login succeeds immediately. Cloud reconciliation is deliberately
-    // background-only so a slow/offline Firestore service can never leave the
-    // login button stuck on "Signing in…".
+    // The authentication-state listener skips its generic sync while a login
+    // identity is pending. Reconciliation below then applies the entered name
+    // and roll AFTER any existing cloud data is merged.
     if($('settings'))show('settings');
     closeStartupAuth();
     toast(`✓ Signed in as ${cloudUser?.email||email}`);
-    reconcileAfterLogin(name,roll).catch(e=>console.warn('Background cloud reconciliation failed:',e));
+    await reconcileAfterLogin(loginName,loginRoll);
+    pendingStudentIdentity=null;
     startAutomaticCloudSync();
     return true;
-  }catch(e){console.error(e);toast(firebaseAuthMessage(e));return false}
+  }catch(e){
+    pendingStudentIdentity=null;
+    console.error(e);toast(firebaseAuthMessage(e));return false
+  }
 }
 
 async function reconcileAfterLogin(loginName='',loginRoll=''){
@@ -269,7 +278,9 @@ async function reconcileAfterLogin(loginName='',loginRoll=''){
     return true;
   }finally{suppressCloudQueue=previousSuppress;cloudBusy=false}
 }
-async function cloudSignUp(email,password){
+async function cloudSignUp(email,password,name='',roll=''){
+  const signupName=String(name||'').trim(), signupRoll=String(roll||'').trim();
+  pendingStudentIdentity={name:signupName,roll:signupRoll};
   try{
     await CloudAPI.setPersistence();
     const cred=await withTimeout(CloudAPI.signUp(email,password),15000,'Firebase account creation');
@@ -277,14 +288,28 @@ async function cloudSignUp(email,password){
     try{localStorage.setItem(STUDENT_SESSION_HINT,'1')}catch(_){}
     D=freshStudentData();
     D.profile.email=cloudUser?.email||email;
+    D.profile.name=signupName;
+    D.profile.roll=signupRoll;
     switchToUserLocal(cloudUser?.uid,cloudUser?.email||email);
+    // switchToUserLocal may restore an existing device backup for this UID;
+    // reapply the identity entered during account creation after that restore.
+    D.profile.email=cloudUser?.email||email;
+    if(signupName)D.profile.name=signupName;
+    if(signupRoll)D.profile.roll=signupRoll;
     saveAll();
     if($('settings'))show('settings');
     toast(`✓ Account created and signed in as ${cloudUser?.email||email}`);
-    syncCurrentUser('upload',true).catch(e=>console.warn('Background cloud upload failed',e));
+    // Write the entered identity together with the new student's complete data.
+    await withTimeout(CloudAPI.saveUserData(cloudUser.uid,cloudSafeData()),CLOUD_READ_TIMEOUT,'Cloud save');
+    D.settings.lastSyncAt=Date.now();
+    persistLocalStorage();
+    pendingStudentIdentity=null;
     startAutomaticCloudSync();
     return true;
-  }catch(e){console.error(e);toast(firebaseAuthMessage(e));return false}
+  }catch(e){
+    pendingStudentIdentity=null;
+    console.error(e);toast(firebaseAuthMessage(e));return false
+  }
 }
 function firebaseAuthMessage(e){
   const c=e?.code||'';
@@ -694,7 +719,7 @@ function showStartupAuth(){
   if(status && !status.dataset.wired){
     status.dataset.wired='1';
     $('startLogin').onclick=async()=>{const n=$('startName').value.trim(),r=$('startRoll').value.trim(),e=$('startEmail').value.trim(),pw=$('startPassword').value;if(!n||!r||!e||!pw){status.textContent='Enter name, roll number, email and password';return}if(!/^\d+$/.test(r)||+r<1||+r>100){status.textContent='Enter a valid roll number (1–100)';return}status.textContent='Signing in…';const ok=await cloudSignIn(e,pw,n,r);if(ok){status.textContent=`✓ Signed in as ${e}`;setTimeout(closeStartupAuth,150)}else{status.textContent='Sign-in failed. Please check your email and password.'}};
-    $('startSignup').onclick=async()=>{const n=$('startName').value.trim(),r=$('startRoll').value.trim(),e=$('startEmail').value.trim(),pw=$('startPassword').value;if(!n||!r||!e||!pw){status.textContent='Enter name, roll number, email and password';return}if(!/^\d+$/.test(r)||+r<1||+r>100){status.textContent='Enter a valid roll number (1–100)';return}status.textContent='Creating account…';const ok=await cloudSignUp(e,pw);if(ok){D.profile.name=n;D.profile.roll=r;saveAll();await syncCurrentUser('upload',true);status.textContent=`✓ Account created and signed in as ${e}`;setTimeout(closeStartupAuth,350)}};
+    $('startSignup').onclick=async()=>{const n=$('startName').value.trim(),r=$('startRoll').value.trim(),e=$('startEmail').value.trim(),pw=$('startPassword').value;if(!n||!r||!e||!pw){status.textContent='Enter name, roll number, email and password';return}if(!/^\d+$/.test(r)||+r<1||+r>100){status.textContent='Enter a valid roll number (1–100)';return}status.textContent='Creating account…';const ok=await cloudSignUp(e,pw,n,r);if(ok){status.textContent=`✓ Account created and signed in as ${e}`;setTimeout(closeStartupAuth,350)}};
     $('startAdmin').onclick=()=>showAdminLogin(true);
     $('startPassword').onkeydown=e=>{if(e.key==='Enter')$('startLogin').click()};
     $('startForgot').onclick=async()=>requestStudentReset($('startEmail').value.trim(),$('startForgotStatus'));
@@ -740,7 +765,7 @@ function showAdminLoginBackToStudentGate(){
 
 function renderSettings(el){el.innerHTML=`<div class="settingsGrid"><div class="settingCard"><div class="settingTitle"><span class="settingIcon">◉</span><div><h3>Student Profile</h3><p>Local profile used for records and future cloud sync.</p></div></div><input id="pname" value="${esc(D.profile.name)}" placeholder="Student name"><input id="pemail" value="${esc(D.profile.email)}" placeholder="Email"><input id="roll" type="number" min="1" max="100" value="${esc(D.profile.roll)}" placeholder="Roll number"><button class="settingSave" id="saveProfile">SAVE PROFILE</button></div><div class="settingCard"><div class="settingTitle"><span class="settingIcon">◐</span><div><h3>Theme</h3><p>Keep the v26-style adaptive appearance.</p></div></div><select id="theme"><option value="light">Light</option><option value="dark">Dark</option><option value="light3d">Light 3D</option><option value="dark3d">Dark 3D</option></select></div><div class="settingCard"><div class="settingTitle"><span class="settingIcon">⏰</span><div><h3>Homework Reminder</h3><p>One-day-before reminder for saved homework.</p></div></div><label class="switchLine"><input id="oneDay" type="checkbox" ${D.settings.oneDayBefore?'checked':''}> One day before</label><button class="settingSave" id="reminderPage">MANAGE REMINDERS</button></div><div class="settingCard scheduleCard"><div class="settingTitle"><span class="settingIcon">▦</span><div><h3>Manage Schedule & Teachers</h3><p>Edit the preset timetable without changing historical daily records.</p></div></div><div class="scheduleToolbar"><div><label>Effective from</label><input id="effectiveDate" type="date" value="${iso(new Date())}"></div><button class="todayBtn" id="loadOriginal">Original</button></div><div id="scheduleEditor">${scheduleEditor(defaultSchedule())}</div><div class="scheduleExtraBox"><div><b>Copy schedule</b><small>Copy the current weekly schedule into a new effective-date version.</small></div><button class="addRow" id="copySchedule">COPY</button></div><button class="settingSave" id="tsave">SAVE SCHEDULE & TEACHERS</button></div><div class="settingCard"><div class="settingTitle"><span class="settingIcon">☁</span><div><h3>Firebase Cloud Account</h3><p>Sign in to sync your classwork, homework, syllabus, schedule and reminders across devices.</p></div></div>${cloudAccountMarkup()}<div class="twoCol"><button class="settingSave" id="exportData">EXPORT DATA</button><button class="settingSave" id="importData">IMPORT DATA</button></div><input id="importFile" type="file" accept="application/json" hidden></div><div class="settingCard"><div class="settingTitle"><span class="settingIcon">▣</span><div><h3>Administrator</h3><p>Restricted area. Login is required before the Admin Dashboard can be opened.</p></div></div><button class="settingSave" id="adminPage">ADMIN LOGIN</button></div></div>`;$('theme').value=D.theme;$('theme').onchange=()=>{D.theme=$('theme').value;setTheme();saveAll()};$('saveProfile').onclick=()=>{D.profile.name=$('pname').value.trim();D.profile.email=$('pemail').value.trim();D.profile.roll=$('roll').value;saveAll();toast('✓ Profile saved');show('today')};$('oneDay').onchange=e=>{D.settings.oneDayBefore=e.target.checked;saveAll()};$('reminderPage').onclick=()=>show('reminders');$('adminPage').onclick=()=>adminSession?show('admin'):showAdminLogin();$('loadOriginal').onclick=()=>{$('effectiveDate').value=iso(new Date());$('scheduleEditor').innerHTML=scheduleEditor(defaultSchedule());wireScheduleEditor()};$('effectiveDate').onchange=()=>{$('scheduleEditor').innerHTML=scheduleEditor(scheduleForDate(new Date($('effectiveDate').value+'T00:00:00')));wireScheduleEditor()};$('copySchedule').onclick=()=>{const date=$('effectiveDate').value;if(!date)return;D.changes=(D.changes||[]).filter(x=>x.date!==date);D.changes.push({date,schedule:collectSchedule()});D.changes.sort((a,b)=>a.date.localeCompare(b.date));saveAll();toast('✓ Schedule copied')};$('tsave').onclick=()=>{const date=$('effectiveDate').value,s=collectSchedule();if(!date||!Object.values(s).some(a=>a.length))return toast('Add at least one class');D.changes=(D.changes||[]).filter(x=>x.date!==date);D.changes.push({date,schedule:s});D.teachers=collectRowTeachers();saveAll();toast('✓ Schedule & teachers saved');show('today')};$('exportData').onclick=exportData;$('importData').onclick=()=>$('importFile').click();$('importFile').onchange=importData;
  if(cloudUser){$('cloudSyncNow').onclick=()=>syncCurrentUser('upload');$('cloudLogout').onclick=async()=>{try{clearTimeout(cloudSyncTimer);await syncCurrentUser('upload',true);await CloudAPI.signOut();try{localStorage.removeItem(STUDENT_SESSION_HINT)}catch(_){}toast('✓ Logged out of Firebase — your local data is kept on this device')}catch(e){toast('Could not log out')}}}
- else {$('cloudLogin').onclick=async()=>{const n=$('cloudName').value.trim(),r=$('cloudRoll').value.trim(),e=$('cloudEmail').value.trim(),p=$('cloudPassword').value;if(!n||!r||!e||!p)return toast('Enter name, roll number, email and password');if(!/^\d+$/.test(r)||+r<1||+r>100)return toast('Enter a valid roll number (1–100)');await cloudSignIn(e,p,n,r)};$('cloudSignup').onclick=async()=>{const n=$('cloudName').value.trim(),r=$('cloudRoll').value.trim(),e=$('cloudEmail').value.trim(),p=$('cloudPassword').value;if(!n||!r||!e||!p)return toast('Enter name, roll number, email and password');if(!/^\d+$/.test(r)||+r<1||+r>100)return toast('Enter a valid roll number (1–100)');await cloudSignUp(e,p);if(cloudUser){D.profile.name=n;D.profile.roll=r;saveAll();await syncCurrentUser('upload',true)}};$('cloudForgot').onclick=async()=>requestStudentReset($('cloudEmail').value.trim(),$('cloudForgotStatus'))}
+ else {$('cloudLogin').onclick=async()=>{const n=$('cloudName').value.trim(),r=$('cloudRoll').value.trim(),e=$('cloudEmail').value.trim(),p=$('cloudPassword').value;if(!n||!r||!e||!p)return toast('Enter name, roll number, email and password');if(!/^\d+$/.test(r)||+r<1||+r>100)return toast('Enter a valid roll number (1–100)');await cloudSignIn(e,p,n,r)};$('cloudSignup').onclick=async()=>{const n=$('cloudName').value.trim(),r=$('cloudRoll').value.trim(),e=$('cloudEmail').value.trim(),p=$('cloudPassword').value;if(!n||!r||!e||!p)return toast('Enter name, roll number, email and password');if(!/^\d+$/.test(r)||+r<1||+r>100)return toast('Enter a valid roll number (1–100)');await cloudSignUp(e,p,n,r)};$('cloudForgot').onclick=async()=>requestStudentReset($('cloudEmail').value.trim(),$('cloudForgotStatus'))}
  wireScheduleEditor()}
 function timeOptions(selected){return '<option value="">Time</option>'+Array.from({length:48},(_,i)=>{const h=Math.floor(i/2),m=i%2?30:0,v=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');return `<option value="${v}" ${v===selected?'selected':''}>${formatTime(v)}</option>`}).join('')}
 function formatTime(v){if(!v)return'';const[h,m]=v.split(':').map(Number),ap=h>=12?'PM':'AM',hh=h%12||12;return`${hh}:${String(m).padStart(2,'0')} ${ap}`}
@@ -838,7 +863,14 @@ CloudAPI.onAuthStateChanged(async user=>{
   if(user){try{localStorage.setItem(STUDENT_SESSION_HINT,'1')}catch(_){} switchToUserLocal(user.uid,user.email); closeStartupAuth();}
   if(user){
     D.profile.email=user.email||D.profile.email;
-    if(!adminSession&&!adminAuthInProgress){
+    if(pendingStudentIdentity){
+      // cloudSignIn/cloudSignUp will reconcile and persist the entered identity.
+      // Do not start the generic upload here, otherwise a race can overwrite
+      // the just-entered name/roll with an older cloud profile.
+      if(pendingStudentIdentity.name)D.profile.name=pendingStudentIdentity.name;
+      if(pendingStudentIdentity.roll)D.profile.roll=pendingStudentIdentity.roll;
+      persistLocalStorage();
+    }else if(!adminSession&&!adminAuthInProgress){
       show('today');
       // Authentication is complete; never make the user wait for Firestore reconciliation.
       syncCurrentUser('upload',true).catch(e=>console.warn('Initial cloud reconciliation failed',e));
