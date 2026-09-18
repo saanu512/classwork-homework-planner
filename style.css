@@ -3673,3 +3673,48 @@ nav > button{display:flex!important;flex-direction:column!important;align-items:
   background:linear-gradient(145deg,#f05a67,#cf3048)!important;
   color:#fff!important;
 }
+
+/* ================================================================
+   FINAL LIGHT THEME — ADMIN SYLLABUS MANAGEMENT PARITY
+   Match the Light-3D syllabus management layout/geometry without
+   changing Light-theme colors or other panels.
+   ================================================================ */
+:root[data-theme="light"] #syllabusPanel{
+  min-width:0 !important;
+  max-width:100% !important;
+  overflow-x:hidden !important;
+  box-sizing:border-box !important;
+}
+:root[data-theme="light"] #syllabusPanel .adminPanelBody,
+:root[data-theme="light"] #syllabusPanel .adminToolbar,
+:root[data-theme="light"] #syllabusPanel .adminList,
+:root[data-theme="light"] #syllabusPanel .adminQuick{
+  min-width:0 !important;
+  max-width:100% !important;
+  box-sizing:border-box !important;
+}
+/* Publish + Restore: the same compact two-column arrangement as Light 3D. */
+:root[data-theme="light"] #syllabusPanel .adminQuick:has(#publishSyllabus){
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  gap:8px !important;
+  width:100% !important;
+  overflow:hidden !important;
+}
+:root[data-theme="light"] #syllabusPanel .adminQuick:has(#publishSyllabus) > button{
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+  min-height:34px !important;
+  height:auto !important;
+  box-sizing:border-box !important;
+  padding:7px 10px !important;
+  font-size:10px !important;
+  line-height:1.08 !important;
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  overflow-wrap:anywhere !important;
+  word-break:normal !important;
+  text-align:center !important;
+}
